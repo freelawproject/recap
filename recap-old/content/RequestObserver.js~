@@ -1,0 +1,29 @@
+function RequestObserver() {
+    this._register();
+}
+
+RequestObserver.prototype = {
+
+    observe: function(subject, topic, data) {
+        if (topic != "http-on-examine-response")
+            return;
+
+        //var chan = subject.QueryInterface(Ci.nsIHttpChannel);
+        //LOG("observed URI: " + chan.URI.prePath + chan.URI.path);
+    },
+    
+    get _observerService() {
+        return Cc["@mozilla.org/observer-service;1"].getService(Ci.nsIObserverService);
+    },
+    
+    _register: function() {
+        LOG("register RequestObserver");
+        this._observerService.addObserver(this, "http-on-examine-response", false);
+    },
+    
+    unregister: function() {
+        LOG("unregister RequestObserver");
+        this._observerService.removeObserver(this, "http-on-examine-response");
+    }
+};
+
