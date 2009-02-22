@@ -12,7 +12,7 @@ RequestObserver.prototype = {
     },
 
     logHeaders: function(channel) {
-	var headers = ["Age", "Cache-Control", "ETag", "Pragma", "Vary", "Last-Modified", "Expires", "Date", "Content-Disposition"];
+	var headers = ["Age", "Cache-Control", "ETag", "Pragma", "Vary", "Last-Modified", "Expires", "Date", "Content-Disposition", "Content-Type"];
 	
 	output = "Headers for " + channel.URI.asciiSpec + "\n  ";
 	for (var i = 0; i < headers.length; i++) {
@@ -37,6 +37,31 @@ RequestObserver.prototype = {
 	}
 	
 	return hpragma.replace(/no-cache/g, "");
+    },
+
+    setContentDispositionHeader: function(channel) {
+
+	ctype = channel.getResponseHeader("Content-Type");
+	if (ctype == "application/pdf") {
+	    
+	    // URIpath, e.g.:
+	    //   cgi-bin/show_temp.pl?file=86147-0-_LM.pdf&type=application/pdf
+	    var URIpath = channel.URI.path;
+
+	    // Strip out filename:
+	    //  file=86147-0-_LM.pdf
+
+	    var filename = URIpath.match(/file=(.*)\.pdf/gi);
+	    
+	    if (filename != null) {
+		var filenameVal = filename[0].replace(/file=/, "filename=\"");
+		filenameVal += "\"";
+		// Set cdVal to 'inline; filename="<FILENAME>"';
+		var cdVal = "inline; " + filenameVal;
+		log("Setting Content-Disposition to: " + cdVal);
+		channel.setResponseHeader("Content-Disposition", cdVal, false);
+	    }
+	}
     },
 
     observe: function(subject, topic, data) {
@@ -69,10 +94,7 @@ RequestObserver.prototype = {
 	channel.setResponseHeader("Expires", expiresVal, false);
 	channel.setResponseHeader("Date", dateVal, false);
 
-	// TK: check if it's a pdf download
-	//var cdVal = "attachment; filename='<TK: FILENAME>'";
-	//channel.setResponseHeader("Content-Disposition", cdVal, false);
-
+	this.setContentDispositionHeader(channel);
     },
     
     get _observerService() {
