@@ -1,4 +1,18 @@
+
+/** DownloadListener: 
+ *    implements nsIStreamListener 
+ *
+ *    Listens for HTTP data and pipes the stream directly to a server using
+ *      an AJAX POST input form request, then forwards the stream on to the
+ *      original listener.
+ *
+ *    This should be registered as a listener to an nsITraceableChannel
+ *      (only available for Firefox 3.0.4 or later).
+ *
+*/
+
 function DownloadListener(URIhost, filename, mimeType) {
+    // instance metadata the expected file
     this.URIhost = URIhost;
     this.filename = filename;
     this.mimeType = mimeType;
@@ -6,8 +20,10 @@ function DownloadListener(URIhost, filename, mimeType) {
 
 DownloadListener.prototype = {
 
+    // Arbitrary multipart form separator
     boundary: "-------recap-multipart-boundary-" + (new Date().getTime()),
 
+    // Appends the prefix for the multipart input form
     appendPrefixStream: function() {
 
 	var prefixStream = CCIN("@mozilla.org/io/string-input-stream;1",
@@ -27,6 +43,7 @@ DownloadListener.prototype = {
 	this.multiplexStream.appendStream(prefixStream);
     },
 
+    // Appends the suffix for the multipart input form
     appendSuffixStream: function() {
 
 	var suffixStream = CCIN("@mozilla.org/io/string-input-stream;1",
@@ -43,13 +60,16 @@ DownloadListener.prototype = {
 	this.multiplexStream.appendStream(suffixStream);
     },
 
+    // Posts the file to the server directly using the data stream
     postFile: function() {
 
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
-			"nsIXMLHttpRequest");
-
-	req.open("POST", "http://tails.princeton.edu/recapsite/doupload/", true);
-	 
+		       "nsIXMLHttpRequest");
+	
+	req.open("POST", 
+		 "http://tails.princeton.edu/recapsite/doupload/", 
+		 true);
+	
 	req.setRequestHeader("Content-Type", 
 			     "multipart/form-data; boundary=" + 
 			     this.boundary);
@@ -61,7 +81,6 @@ DownloadListener.prototype = {
 	    this.multiplexStream.count);
 	
 	req.onreadystatechange = function() {
-	    //log(req.readyState);
 	    if (req.readyState == 4) {
 		log(req.responseText);
 	    }
@@ -73,11 +92,11 @@ DownloadListener.prototype = {
     
     originalListener: null,
     
+    // The buffer stream
     multiplexStream: CCIN("@mozilla.org/io/multiplex-input-stream;1",
 			  "nsIMultiplexInputStream"),
     
-    receivedData: [],    
-    
+    // Called when data is arriving on the HTTP channel
     onDataAvailable: function(request, context, inputStream, offset, count) {
         var binaryInputStream = CCIN("@mozilla.org/binaryinputstream;1",
 				     "nsIBinaryInputStream");
@@ -90,18 +109,17 @@ DownloadListener.prototype = {
         storageStream.init(4096, count, null);
         binaryOutputStream.setOutputStream(storageStream.getOutputStream(0));
 
-        // Copy received data as they come.
+        // Copy received data as they come
         var data = binaryInputStream.readBytes(count);
 
-	// this.receivedData.push(data);
-	//log("got some data");
-	
 	// Store data in the storageStream
         binaryOutputStream.writeBytes(data, count);
 	binaryOutputStream.close();
 	
+	// Add this data chunk to the buffer stream
 	this.multiplexStream.appendStream(storageStream.newInputStream(0));
 
+	// Forward the data to the original listener
         this.originalListener.onDataAvailable(request, 
 					      context,
 					      storageStream.newInputStream(0), 
@@ -109,21 +127,22 @@ DownloadListener.prototype = {
 					      count);
     },
     
+    // Called when the HTTP request is beginning
     onStartRequest: function(request, context) {
-	// this.receivedData = [];
-	this.multiplexStream = CCIN("@mozilla.org/io/multiplex-input-stream;1",
-				    "nsIMultiplexInputStream");
+
+	// add the form prefix data before any content arrives
 	this.appendPrefixStream();
 	
         this.originalListener.onStartRequest(request, context);
     },
 
+    // Called when the HTTP request is ending
     onStopRequest: function(request, context, statusCode)
     {
-        // Get entire response
-        //var responseSource = this.receivedData.join();
 
+	// add the form suffix data after all the content arrives
 	this.appendSuffixStream();
+	// POST the file to the server
 	this.postFile();
 
         this.originalListener.onStopRequest(request, context, statusCode);
