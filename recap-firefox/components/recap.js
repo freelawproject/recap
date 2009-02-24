@@ -11,6 +11,12 @@ var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
                 .getService(Ci.mozIJSSubScriptLoader);
 
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
+jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
+
+// Helper for creating a XPCOM instances
+function CCIN(contractID, interfaceName) {
+    return Cc[contractID].createInstance(Ci[interfaceName]);
+}
 
 function log(text) {
     var msg = "Recap: " + text + "\n";
@@ -41,6 +47,7 @@ RecapService.prototype = {
             Recap.gRequestObserver = new Recap.RequestObserver();
 	    
 	    this.initialized = true;
+
 	}
     },
 	
@@ -117,4 +124,5 @@ RecapService.prototype = {
 
 function NSGetModule(compMgr, fileSpec) 
     XPCOMUtils.generateModule([RecapService]);
+
 
