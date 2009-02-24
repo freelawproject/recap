@@ -5,7 +5,7 @@ const RECAP_PATH = "chrome://recap/content/";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
-var Recap = {}; // Extension Namespace
+var Recap = {}; // New empty extension namespace
 	
 var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
                 .getService(Ci.mozIJSSubScriptLoader);
@@ -13,11 +13,12 @@ var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 
-// Helper for creating a XPCOM instances
+// Helper function to create XPCOM instances
 function CCIN(contractID, interfaceName) {
     return Cc[contractID].createInstance(Ci[interfaceName]);
 }
 
+// Helper function to log to both stdout and Error Console
 function log(text) {
     var msg = "Recap: " + text + "\n";
     
@@ -30,6 +31,9 @@ function log(text) {
 
 log("recap.js loaded");
 
+/** RecapService: Turning PACER inside out.
+ *    Mostly boilerplate code to set up the new service component.
+ */
 function RecapService() {
 	// constructor
 }
@@ -47,7 +51,7 @@ RecapService.prototype = {
             Recap.gRequestObserver = new Recap.RequestObserver();
 	    
 	    this.initialized = true;
-
+	    
 	}
     },
 	
@@ -64,9 +68,9 @@ RecapService.prototype = {
         os.removeObserver(this, "quit-application");
     },
     
-    /************************************************************************
-	Setting up and Registering the extension using XPCOMUtil
-    ************************************************************************/
+    /**
+     * Setting up and Registering the extension using XPCOMUtil
+     */
 
     // properties required for XPCOM registration:
     classDescription: "Recap",
