@@ -57,72 +57,57 @@ RequestObserver.prototype = {
     },
 
     // Sets a better filename in the Content-Disposition header
-    setContentDispositionHeader: function(channel) {
+    setContentDispositionHeader: function(channel, filename) {
 
-        var ctype = "";
-        try {
-	    ctype = channel.getResponseHeader("Content-Type");
-	} catch(e) {
-	    return;
+	if (filename != null) {
+
+	    var cdVal = "inline; filename=\"" + filename + "\"";	
+
+	    log("Setting Content-Disposition to: " + cdVal);
+	    channel.setResponseHeader("Content-Disposition", cdVal, false);
 	}
 
-	if (ctype == "application/pdf") {
-	
-	    var filename = this.parseFilename(channel.URI.path);
-	    
-	    if (filename != null) {
-
-		var cdVal = "inline; filename=\"" + filename + "\"";
-
-		log("Setting Content-Disposition to: " + cdVal);
-		channel.setResponseHeader("Content-Disposition", cdVal, false);
-	    }
-	}
     },
     
-    // Tries to parse a better filename from the URIpath
-    parseFilename: function(URIpath) {
+    // Gets the file metadata from the referrer URI
+    getFilemeta: function(channel) {
 
-	// 1st attempt, tries to match a URIpath that looks like:
-	//   cgi-bin/show_temp.pl?file=86147-0-_LM.pdf&type=application/pdf
-	// and returns:
-	//   86147-0-_LM.pdf
-	var matches1 = URIpath.match(/file=((.*)\.pdf)/i);
+	var referrer = channel.referrer;
 
-	// 2nd attempt, tries to match a normal URIpath:
-	//   dir1/dir2/filename.pdf
-	// and returns:
-	//   filename.pdf
-	var matches2 = URIpath.match(/(.*\/)*(.*.pdf)/i);
-
-	// If both fail to match, returns original URIpath
-
-	if (matches1) {
-	    return matches1[1];
-	} else if (matches2) {
-	    return matches2[2];
-	} else {
-	    log("Could not parse filename from: " + URIpath);
-	    return URIpath;
+	try {
+	    var refhost = referrer.asciiHost;
+	    var refpath = referrer.path;	   
+	    log("Referrer: " + refhost + refpath);
+	} catch(e) {
+	    log("Referrer: " + e);
+	    return {court: null, path: null, name: null};
 	}
+
+	// get court name from hostname
+	var court = refhost.match(/(\w*)\.uscourts.gov/i)[1];
+
+	var pathSplit = refpath.split("/");
+
+	// filename will be the last segment of the path, append ".pdf"
+	var filename = pathSplit.pop() + ".pdf";
+	
+	pathSplit.push("");
+	var filepath = pathSplit.join("/");
+	
+	log("Court: " + court + "; Path: " + filepath + "; Name: " + filename);
+	
+	return {court: court, path: filepath, name: filename};
+	
     },
 
-    // Returns a boolean, whether the file should be uploaded to the server
-    isUploadworthy: function(channel) {
-
-        var ctype = "";
-        try {
-	    ctype = channel.getResponseHeader("Content-Type");
-	} catch(e) {
+    // Returns a boolean, whether the file is a PDF
+    isPDF: function(mimetype) {
+	if (mimetype == "application/pdf") {
+	    return true;
+	} else {
 	    return false;
 	}
-
-	// TK: for now, just cache all PDF documents
-	if (ctype == "application/pdf") {
-	    return true;
-	}
     },
-
 
     // Returns the specified Content-type from the HTTP response header
     getMimeType: function(channel) {
@@ -166,22 +151,22 @@ RequestObserver.prototype = {
 	channel.setResponseHeader("Expires", expiresVal, false);
 	channel.setResponseHeader("Date", dateVal, false);
 
-	// Set Content-Disposition header to be save-friendly
-	this.setContentDispositionHeader(channel);
+	var mimeType = this.getMimeType(channel);	
 
-	// Upload the content to the server if the file is interesting
-	if (this.isUploadworthy(channel)) {
+	// Upload the content to the server if the file is a PDF
+	if (this.isPDF(mimeType)) {
 
-	    var filename = this.parseFilename(URIpath);
-	    var mimeType = this.getMimeType(channel);
+	    var filemeta = this.getFilemeta(channel);
+	    filemeta.mimeType = mimeType;
 
-	    log("An uploadworthy file: " + filename);
+	    // Set Content-Disposition header to be save-friendly
+	    this.setContentDispositionHeader(channel, filemeta.name);
 
-	    var dlistener = new DownloadListener(URIhost, filename, mimeType);
+	    var dlistener = new DownloadListener(filemeta);
 	    subject.QueryInterface(Ci.nsITraceableChannel);
 	    dlistener.originalListener = subject.setNewListener(dlistener);
-	}
 
+	}
     },
     
     get _observerService() {
