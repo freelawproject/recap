@@ -11,11 +11,14 @@
  *
 */
 
-function DownloadListener(URIhost, filename, mimeType) {
-    // instance metadata the expected file
-    this.URIhost = URIhost;
-    this.filename = filename;
-    this.mimeType = mimeType;
+function DownloadListener(filemeta) {
+    // metadata for the expected file, which has the following properties:
+    //    filemeta.name ('1234567890.pdf')
+    //    filemeta.path ('/doc1/')
+    //    filemeta.court ('cacd')
+    //    filemeta.mimeType ('application/pdf')
+
+    this.filemeta = filemeta;
 }
 
 DownloadListener.prototype = {
@@ -32,8 +35,8 @@ DownloadListener.prototype = {
 	var formData = [];
 	formData.push("--" + this.boundary);
 	formData.push("Content-Disposition: form-data; name=\"data\"; " +
-			"filename=\"" + this.filename + "\"");
-	formData.push("Content-Type: " + this.mimeType);
+			"filename=\"" + this.filemeta.name + "\"");
+	formData.push("Content-Type: " + this.filemeta.mimeType);
 	formData.push("");
 	formData.push("");
 	formString = formData.join("\r\n");
@@ -67,7 +70,7 @@ DownloadListener.prototype = {
 		       "nsIXMLHttpRequest");
 	
 	req.open("POST", 
-		 "http://tails.princeton.edu/recapsite/doupload/", 
+		 "http://monocle.princeton.edu/recap/doupload/", 
 		 true);
 	
 	req.setRequestHeader("Content-Type", 
@@ -76,9 +79,11 @@ DownloadListener.prototype = {
 	req.setRequestHeader("Content-Length", 
 			     this.multiplexStream.available());
 	
-	log(this.URIhost + " " + this.filename + " " + 
-	    this.mimeType + " " + this.multiplexStream.available() + " " + 
-	    this.multiplexStream.count);
+	log("Court: " + this.filemeta.court + 
+	    "; Path: " + this.filemeta.path +
+	    "; Name: " + this.filemeta.name +
+	    "; MimeType: " + this.filemeta.mimeType +
+	    "; StreamBytes: " + this.multiplexStream.available());
 	
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4) {
