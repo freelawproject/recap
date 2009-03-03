@@ -13,20 +13,21 @@
 
 function DownloadListener(filemeta) {
     // metadata for the expected file, which has the following properties:
-    //    filemeta.name ('1234567890.pdf')
-    //    filemeta.path ('/doc1/')
+
+    //    filemeta.mimetype ('application/pdf')
     //    filemeta.court ('cacd')
-    //    filemeta.mimeType ('application/pdf')
+    //    filemeta.url ('/doc1/1234567890')
+    //    filemeta.name ('1234567890.pdf')
 
     this.filemeta = filemeta;
 }
 
 DownloadListener.prototype = {
 
-    // Arbitrary multipart form separator
+    // Arbitrary multipart POST separator
     boundary: "-------recap-multipart-boundary-" + (new Date().getTime()),
 
-    // Appends the prefix for the multipart input form
+    // Appends the prefix to the multipart POST
     appendPrefixStream: function() {
 
 	var prefixStream = CCIN("@mozilla.org/io/string-input-stream;1",
@@ -36,7 +37,7 @@ DownloadListener.prototype = {
 	formData.push("--" + this.boundary);
 	formData.push("Content-Disposition: form-data; name=\"data\"; " +
 			"filename=\"" + this.filemeta.name + "\"");
-	formData.push("Content-Type: " + this.filemeta.mimeType);
+	formData.push("Content-Type: " + this.filemeta.mimetype);
 	formData.push("");
 	formData.push("");
 	formString = formData.join("\r\n");
@@ -46,7 +47,34 @@ DownloadListener.prototype = {
 	this.multiplexStream.appendStream(prefixStream);
     },
 
-    // Appends the suffix for the multipart input form
+    // Appends the file metadeta to the multipart POST
+    appendFilemetaStream: function() {
+	
+	var filemetaStream = CCIN("@mozilla.org/io/string-input-stream;1",
+				  "nsIStringInputStream");
+
+	var formData = [];
+	formData.push("");
+	formData.push("--" + this.boundary);
+	formData.push("Content-Disposition: form-data; name=\"mimetype\"");
+	formData.push("");
+	formData.push(this.filemeta.mimetype);
+	formData.push("--" + this.boundary);
+	formData.push("Content-Disposition: form-data; name=\"court\"");
+	formData.push("");
+	formData.push(this.filemeta.court);
+	formData.push("--" + this.boundary);
+	formData.push("Content-Disposition: form-data; name=\"url\"");
+	formData.push("");
+	formData.push(this.filemeta.url);
+	formString = formData.join("\r\n");
+	
+	filemetaStream.setData(formString, formString.length);
+
+	this.multiplexStream.appendStream(filemetaStream);
+    },
+
+    // Appends the suffix to the multipart POST
     appendSuffixStream: function() {
 
 	var suffixStream = CCIN("@mozilla.org/io/string-input-stream;1",
@@ -79,10 +107,10 @@ DownloadListener.prototype = {
 	req.setRequestHeader("Content-Length", 
 			     this.multiplexStream.available());
 	
-	log("Court: " + this.filemeta.court + 
-	    "; Path: " + this.filemeta.path +
-	    "; Name: " + this.filemeta.name +
-	    "; MimeType: " + this.filemeta.mimeType +
+	log("Posting file!  Name: " + this.filemeta.name + 
+	    "; Court: " + this.filemeta.court + 
+	    "; URL: " + this.filemeta.url +
+	    "; Mimetype: " + this.filemeta.mimetype +
 	    "; StreamBytes: " + this.multiplexStream.available());
 	
 	req.onreadystatechange = function() {
@@ -145,6 +173,8 @@ DownloadListener.prototype = {
     onStopRequest: function(request, context, statusCode)
     {
 
+	// add other file metadata to the stream
+	this.appendFilemetaStream();
 	// add the form suffix data after all the content arrives
 	this.appendSuffixStream();
 	// POST the file to the server
