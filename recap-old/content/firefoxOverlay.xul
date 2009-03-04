@@ -15,4 +15,6 @@
     <stringbundle id="recap-strings" src="chrome://recap/locale/en-US/recap.properties"/>
   </stringbundleset>
 
+
+
 </overlay>

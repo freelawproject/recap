@@ -10,8 +10,10 @@ var Recap = {}; // New empty extension namespace
 var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
                 .getService(Ci.mozIJSSubScriptLoader);
 
+jsLoader.loadSubScript(RECAP_PATH + "common.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
+jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 
 // Helper function to create XPCOM instances
 function CCIN(contractID, interfaceName) {
@@ -49,6 +51,7 @@ RecapService.prototype = {
 	    os.addObserver(this, "quit-application", false);
 	    
             Recap.gRequestObserver = new Recap.RequestObserver();
+	    Recap.gContentListener = new Recap.ContentListener();
 	    
 	    this.initialized = true;
 	    
@@ -61,6 +64,9 @@ RecapService.prototype = {
 	if(this.initialized) {
 	    Recap.gRequestObserver.unregister();
             Recap.gRequestObserver = null;
+
+	    Recap.gContentListener.unregister();
+	    Recap.gContentListener = null;
 	}
     },
     
@@ -128,5 +134,3 @@ RecapService.prototype = {
 
 function NSGetModule(compMgr, fileSpec) 
     XPCOMUtils.generateModule([RecapService]);
-
-
