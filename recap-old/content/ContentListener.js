@@ -25,48 +25,72 @@ ContentListener.prototype = {
 	if (!isPACERHost(URIhost) && !this.isModifiable(URIpath)) {
 	    return;
 	}
+	var court = getCourtFromHost(URIhost);	
+	var document = navigation.document;	
 
-	var court = getCourtFromHost(URIhost);
-	
-	var document = navigation.document;
-	
-	var links = document.getElementsByTagName("a");
-
-	for (var i = 0; i < links.length; i++) {
-	    var link = links[i];
-
-	    var docURL = this.getDocURL(link.href);
-
-	    if (court && docURL) {
-		log(court + " " + docURL);
-		this.modifyDocument(court, docURL, document, link);
-	    }
+	if (court && document) {
+	    this.sendDocCheck(court, document);
 	}
     },
 
-    modifyDocument: function(court, url, document, link) {
+     sendDocCheck: function(court, document) {
 
+	// construct JSON object parameter
+	var jsonout = { "court": court, 
+			"urls": [] };
+	var links = document.getElementsByTagName("a");
+	var elements = {};
+
+	for (var i = 0; i < links.length; i++) {
+	    var link = links[i];
+	    var docURL = this.getDocURL(link.href);
+	    
+	    if (docURL) {
+		jsonout.urls.push(docURL);
+		elements[docURL] = link;
+	    }
+	}
+	
+	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	
+	var jsonouts = nativeJSON.encode(jsonout);
+
+        // send AJAX request
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
 		       "nsIXMLHttpRequest");
-
-	var params = "url=" + url + "&court=" + court;
 	
+	var params = "params=" + jsonouts;
+
 	req.open("POST", 
 		 "http://monocle.princeton.edu/recap/document/",
 		 true);
 
 	req.onreadystatechange = function() {
+	    
 	    if (req.readyState == 4) {
-		var json = eval('('+req.responseText+')');
-		if (json.filename) {
-		    log("got it");
+		var jsonin = nativeJSON.decode(req.responseText);
+
+		for (var docURL in jsonin) {
+		    var filename = jsonin[docURL]["filename"];
+		    var timestamp = jsonin[docURL]["timestamp"];
+		    var element = elements[docURL];
+		    
+		    if (element.previousSibling) {
+			previousElement = element.previousSibling;
+			previousClass = previousElement.className;
+			if (previousClass == "recap") 
+			    continue;
+		    }
+
 		    var newLink = document.createElement("a");
-		    newLink.href = "http://monocle.princeton.edu/recap_docs/" + 
-			json.filename;
-		    newLink.setAttribute("style", "margin: 0 0 0 20px;");
-		    var newText = document.createTextNode("[RECAP]");
+		    newLink.href = "http://monocle.princeton.edu/recap_docs/" 
+			+ filename; 
+		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
+		    newLink.setAttribute("class", "recap");
+		    var newText = document.createTextNode("[RECAP " + 
+							  timestamp + "]");
 		    newLink.appendChild(newText);
-		    link.parentNode.appendChild(newLink);
+		    element.parentNode.insertBefore(newLink, element);
 		}
 	    }
 	};
