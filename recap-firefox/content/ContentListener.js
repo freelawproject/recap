@@ -1,18 +1,18 @@
 
-
 function ContentListener() {
     this._register();
 }
 
 ContentListener.prototype = {
     
+    // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
 	const WPL = Ci.nsIWebProgressListener;
 
+	// Ensure that the document is done loading
 	var isNetwork = stateFlags & WPL.STATE_IS_NETWORK;
 	var isStop = stateFlags & WPL.STATE_STOP;
 	var doneLoading = isNetwork && isStop;
-
 	if (!doneLoading) {
 	    return;
 	}
@@ -22,23 +22,28 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 
+	// Ensure that the page is from a PACER host and warrants modification
 	if (!isPACERHost(URIhost) && !this.isModifiable(URIpath)) {
 	    return;
 	}
+
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;	
 
 	if (court && document) {
-	    this.sendDocCheck(court, document);
+	    this.docCheckAndModify(court, document);
 	}
     },
 
-     sendDocCheck: function(court, document) {
+    // Check our server for cached copies of documents linked on the page,
+    //   and modify the page with links to documents on our server
+    docCheckAndModify: function(court, document) {
 
-	// construct JSON object parameter
+	// Construct the JSON object parameter
 	var jsonout = { "court": court, 
 			"urls": [] };
 	var links = document.getElementsByTagName("a");
+	// Save pointers to the HTML elements for each "a" tag, keyed by URL
 	var elements = {};
 
 	for (var i = 0; i < links.length; i++) {
@@ -50,16 +55,18 @@ ContentListener.prototype = {
 		elements[docURL] = link;
 	    }
 	}
-	
+
+	log("  Num docs to check: " + jsonout.urls.length);
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	
+	// Serialize the JSON object to a string
 	var jsonouts = nativeJSON.encode(jsonout);
 
-        // send AJAX request
+        // Send the AJAX POST request
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
 		       "nsIXMLHttpRequest");
 	
-	var params = "params=" + jsonouts;
+	var params = "json=" + jsonouts;
 
 	req.open("POST", 
 		 "http://monocle.princeton.edu/recap/document/",
@@ -75,13 +82,17 @@ ContentListener.prototype = {
 		    var timestamp = jsonin[docURL]["timestamp"];
 		    var element = elements[docURL];
 		    
+		    log("  File found: " + filename);
+		    // Ensure that the element isn't already modified
 		    if (element.previousSibling) {
 			previousElement = element.previousSibling;
 			previousClass = previousElement.className;
+
 			if (previousClass == "recap") 
 			    continue;
 		    }
 
+		    // Insert our link to the left of the PACER link
 		    var newLink = document.createElement("a");
 		    newLink.href = "http://monocle.princeton.edu/recap_docs/" 
 			+ filename; 
@@ -98,6 +109,7 @@ ContentListener.prototype = {
 	req.send(params);
     },
 
+    // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
 	var docURL = null;
 	try {
@@ -109,20 +121,21 @@ ContentListener.prototype = {
 	return docURL;
     },
 
+    // Check if the page worth modifying with our links
     isModifiable: function(path) {
 	var PACERpages = ["qrySummary.pl", "DktRpt.pl", "HistDocQry.pl"];
 	
-	var plname = null;
+	var plName = null;
 	try {
-	    plname = path.match(/(\w*)\.pl/i)[0];
+	    plName = path.match(/(\w*)\.pl/i)[0];
 	} catch(e) {
 	    return false;
 	}
 
-	return (PACERpages.indexOf(plname) >= 0) ? true : false;
-
+	return (PACERpages.indexOf(plName) >= 0) ? true : false;
     },
 
+    // implementing nsIWebProgressListener, unnecessary functions.
     onLocationChange: function(webProgress, request, location) {},
     onProgressChange: function(webProgress, request, 
 			       curSelfProgress, maxSelfProgress, 
@@ -147,6 +160,7 @@ ContentListener.prototype = {
     
     _register: function() {
 	log("register ContentListener");
+	// add listener, only listen for document loading start/stop events
 	this._webProgressService
 	    .addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_NETWORK);
     },
