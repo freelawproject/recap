@@ -51,6 +51,11 @@ ContentListener.prototype = {
 	    }
 	}
 	
+	// if no linked docs, don't bother sending docCheck
+	if (jsonout.urls.length == 0) {
+		return;
+	}
+	
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	
 	var jsonouts = nativeJSON.encode(jsonout);
