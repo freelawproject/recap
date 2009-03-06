@@ -22,7 +22,7 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 
-	if (!isPACERHost(URIhost) && !this.isModifiable(URIpath)) {
+	if (!isPACERHost(URIhost) || !this.isModifiable(URIpath)) {
 	    return;
 	}
 	var court = getCourtFromHost(URIhost);	
