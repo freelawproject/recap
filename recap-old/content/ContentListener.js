@@ -23,7 +23,7 @@ ContentListener.prototype = {
 	var URIpath = navigation.currentURI.path;
 
 	// Ensure that the page is from a PACER host and warrants modification
-	if (!isPACERHost(URIhost) && !this.isModifiable(URIpath)) {
+	if (!isPACERHost(URIhost) || !this.isModifiable(URIpath)) {
 	    return;
 	}
 
@@ -55,8 +55,12 @@ ContentListener.prototype = {
 		elements[docURL] = link;
 	    }
 	}
+	
+	// if no linked docs, don't bother sending docCheck
+	if (jsonout.urls.length == 0) {
+		return;
+	}
 
-	log("  Num docs to check: " + jsonout.urls.length);
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	
 	// Serialize the JSON object to a string
