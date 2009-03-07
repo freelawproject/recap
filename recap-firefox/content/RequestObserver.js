@@ -115,6 +115,20 @@ RequestObserver.prototype = {
 	}
     },
 
+    ignorePage: function(path) {
+	var ignorePages = ["login.pl", "iquery.pl", "BillingRpt.pl"];
+	
+	var pageName = null;
+	try {
+	    pageName = path.match(/(\w*)\.pl/i)[0];
+	} catch(e) {
+	    return false;
+	}
+
+	return (ignorePages.indexOf(pageName) >= 0) ? true : false;
+	
+    },
+
     // Called on every HTTP response
     observe: function(subject, topic, data) {
         if (topic != "http-on-examine-response")
@@ -125,8 +139,9 @@ RequestObserver.prototype = {
 	var URIhost = channel.URI.asciiHost;
 	var URIpath = channel.URI.path;
 
-	// Ignore everything on non-PACER domains
-	if (!isPACERHost(URIhost)) {
+	// Ignore everything on non-PACER domains and some PACER pages
+	if (!isPACERHost(URIhost) || this.ignorePage(URIpath)) {
+	    log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}
 
