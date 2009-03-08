@@ -78,7 +78,7 @@ ContentListener.prototype = {
 
 	req.onreadystatechange = function() {
 	    
-	    if (req.readyState == 4) {
+	    if (req.readyState == 4 && req.status == 200) {
 		var jsonin = nativeJSON.decode(req.responseText);
 
 		for (var docURL in jsonin) {
@@ -98,8 +98,7 @@ ContentListener.prototype = {
 
 		    // Insert our link to the left of the PACER link
 		    var newLink = document.createElement("a");
-		    newLink.href = "http://monocle.princeton.edu/recap_docs/" 
-			+ filename; 
+		    newLink.href = filename; 
 		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
 		    newLink.setAttribute("class", "recap");
 		    var newText = document.createTextNode("[RECAP " + 
@@ -111,6 +110,7 @@ ContentListener.prototype = {
 	};
 	
 	req.send(params);
+
     },
 
     // Get the document URL path (e.g. '/doc1/1234567890')
