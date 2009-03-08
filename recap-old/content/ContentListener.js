@@ -29,18 +29,20 @@ ContentListener.prototype = {
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;	
+	var show_subdocs = this.isDocPath(URIpath);
 
 	if (court && document) {
-	    this.docCheckAndModify(court, document);
+	    this.docCheckAndModify(court, document, show_subdocs);
 	}
     },
 
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
-    docCheckAndModify: function(court, document) {
+    docCheckAndModify: function(court, document, show_subdocs) {
 
 	// Construct the JSON object parameter
-	var jsonout = { "court": court, 
+	var jsonout = { "show_subdocs": show_subdocs,
+			"court": court, 
 			"urls": [] };
 	var links = document.getElementsByTagName("a");
 	// Save pointers to the HTML elements for each "a" tag, keyed by URL
@@ -55,7 +57,7 @@ ContentListener.prototype = {
 		elements[docURL] = link;
 	    }
 	}
-	
+
 	// if no linked docs, don't bother sending docCheck
 	if (jsonout.urls.length == 0) {
 		return;
@@ -125,18 +127,29 @@ ContentListener.prototype = {
 	return docURL;
     },
 
+    // Returns true if path matches ".../doc1/<docnum>"
+    isDocPath: function(path) {
+
+	try {
+	    var docMatch = path.match(/\/doc1\/(\d+)$/i);
+	    return docMatch ? true : false;
+	} catch(e) {
+	    return false;
+	}	
+    },
+
     // Check if the page worth modifying with our links
     isModifiable: function(path) {
 	var modifiablePages = ["qrySummary.pl", "DktRpt.pl", "HistDocQry.pl"];
-	
-	var pageName = null;
+
+	// Parse out the Perl script name from the path
+	var pageName = "";
 	try {
 	    pageName = path.match(/(\w*)\.pl/i)[0];
-	} catch(e) {
-	    return false;
-	}
+	} catch(e) {}
 
-	return (modifiablePages.indexOf(pageName) >= 0) ? true : false;
+	return (modifiablePages.indexOf(pageName) >= 0 ||
+		this.isDocPath(path)) ? true : false;
     },
 
     // implementing nsIWebProgressListener, unnecessary functions.

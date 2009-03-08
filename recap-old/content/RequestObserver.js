@@ -141,11 +141,11 @@ RequestObserver.prototype = {
 
 	// Ignore everything on non-PACER domains and some PACER pages
 	if (!isPACERHost(URIhost) || this.ignorePage(URIpath)) {
-	    log("Ignored: " + URIhost + " " + URIpath)
+	    //log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}
 
-	this.logHeaders(channel);
+	//this.logHeaders(channel);
 
 	var pragmaVal = this.getPragmaValue(channel);
 	// expiration arbitrarily set to one day
