@@ -127,16 +127,16 @@ ContentListener.prototype = {
 
     // Check if the page worth modifying with our links
     isModifiable: function(path) {
-	var PACERpages = ["qrySummary.pl", "DktRpt.pl", "HistDocQry.pl"];
+	var modifiablePages = ["qrySummary.pl", "DktRpt.pl", "HistDocQry.pl"];
 	
-	var plName = null;
+	var pageName = null;
 	try {
-	    plName = path.match(/(\w*)\.pl/i)[0];
+	    pageName = path.match(/(\w*)\.pl/i)[0];
 	} catch(e) {
 	    return false;
 	}
 
-	return (PACERpages.indexOf(plName) >= 0) ? true : false;
+	return (modifiablePages.indexOf(pageName) >= 0) ? true : false;
     },
 
     // implementing nsIWebProgressListener, unnecessary functions.
