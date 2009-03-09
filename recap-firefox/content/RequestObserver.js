@@ -62,18 +62,16 @@ RequestObserver.prototype = {
 	}
 
     },
-    
-    // Gets the file metadata from the referrer URI
-    getFilemeta: function(channel, mimetype) {
+
+    // Gets the PDF metadata from the referrer URI
+    getPDFmeta: function(channel, mimetype) {
 
 	var referrer = channel.referrer;
 
 	try {
 	    var refhost = referrer.asciiHost;
 	    var refpath = referrer.path;	   
-	    log("Referrer: " + refhost + refpath);
 	} catch(e) {
-	    log("Referrer: " + e);
 	    return {mimetype: mimetype, court: null, 
 		    url: null, name: null};
 	}
@@ -86,9 +84,51 @@ RequestObserver.prototype = {
 	var filename = pathSplit.pop() + this.fileSuffixFromMime(mimetype);
 
 	return {mimetype: mimetype, court: court, 
-		url: refpath, name: filename};	
+		url: refpath, name: filename};
     },
 
+    tryHTMLmeta: function(channel, path, mimetype) {
+
+	if (mimetype.indexOf("text/html") >= 0) {
+
+	    var downloadablePages = ["HistDocQry.pl", "DktRpt.pl"];
+	    
+	    var referrer = channel.referrer;
+	    try {
+		var refhost = referrer.asciiHost;
+		var refpath = referrer.path;	   
+	    } catch(e) {
+		return false;
+	    }
+
+	    var pageName = this.pathMatch(path);
+	    var refPageName = this.pathMatch(refpath);
+	    
+	    // If this is an interesting HTML document, return metadata
+	    if (pageName && refPageName &&
+		pageName == refPageName &&
+		downloadablePages.indexOf(pageName) >= 0) {
+
+		var casenum = null;
+		try {
+		    casenum = refpath.match(/\?(\d+)$/i)[1];
+		} catch (e) {}
+
+		var name = pageName.replace(".pl", ".html");
+
+		var court = getCourtFromHost(refhost);
+
+		log("HTMLmeta: " + mimetype + " " + casenum + " " + name
+		    + " " + court);
+
+		return {mimetype: mimetype, casenum: casenum, 
+			name: name, court: court};
+	    }
+	}
+	return false;
+    },
+
+    
     fileSuffixFromMime: function(mimetype) {
 	if (mimetype == "application/pdf") {
 	    return ".pdf";
@@ -118,15 +158,18 @@ RequestObserver.prototype = {
     ignorePage: function(path) {
 	var ignorePages = ["login.pl", "iquery.pl", "BillingRpt.pl"];
 	
+	var pageName = this.pathMatch(path);
+
+	return (pageName && ignorePages.indexOf(pageName) >= 0) ? true : false;
+    },
+
+    pathMatch: function(path) {
 	var pageName = null;
 	try {
-	    pageName = path.match(/(\w*)\.pl/i)[0];
-	} catch(e) {
-	    return false;
-	}
+	    pageName = path.match(/(\w+)\.pl/i)[0];
+	} catch(e) {}
 
-	return (ignorePages.indexOf(pageName) >= 0) ? true : false;
-	
+	return pageName;
     },
 
     // Called on every HTTP response
@@ -165,18 +208,30 @@ RequestObserver.prototype = {
 
 	var mimetype = this.getMimetype(channel);	
 
-	// Upload the content to the server if the file is a PDF
+	// Upload content to the server if the file is a PDF
 	if (this.isPDF(mimetype)) {
 
-	    var filemeta = this.getFilemeta(channel, mimetype);
+	    var PDFmeta = this.getPDFmeta(channel, mimetype);
 
 	    // Set Content-Disposition header to be save-friendly
-	    this.setContentDispositionHeader(channel, filemeta.name, filemeta.court);
+	    this.setContentDispositionHeader(channel, 
+					     PDFmeta.name, 
+					     PDFmeta.court);
 
-	    var dlistener = new DownloadListener(filemeta);
+	    var dlistener = new DownloadListener(PDFmeta);
 	    subject.QueryInterface(Ci.nsITraceableChannel);
 	    dlistener.originalListener = subject.setNewListener(dlistener);
 
+	} else {
+	    // Upload content to the server if the file is interesting HTML
+	    
+	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
+
+	    if (HTMLmeta) {	    	    
+		var dlistener = new DownloadListener(HTMLmeta);
+		subject.QueryInterface(Ci.nsITraceableChannel);
+		dlistener.originalListener = subject.setNewListener(dlistener);
+	    }
 	}
     },
 
