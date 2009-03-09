@@ -140,7 +140,7 @@ ContentListener.prototype = {
 
     // Check if the page worth modifying with our links
     isModifiable: function(path) {
-	var modifiablePages = ["qrySummary.pl", "DktRpt.pl", "HistDocQry.pl"];
+	var modifiablePages = ["DktRpt.pl", "HistDocQry.pl"];
 
 	// Parse out the Perl script name from the path
 	var pageName = "";

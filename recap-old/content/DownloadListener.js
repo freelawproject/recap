@@ -12,12 +12,17 @@
 */
 
 function DownloadListener(filemeta) {
-    // metadata for the expected file, which has the following properties:
-
+    // metadata for a PDF file, which should have the following properties:
     //    filemeta.mimetype ('application/pdf')
     //    filemeta.court ('cacd')
     //    filemeta.url ('/doc1/1234567890')
     //    filemeta.name ('1234567890.pdf')
+    
+    // metadata for an HTML file, which should have the following properties:
+    //    filemeta.mimetype
+    //    fimemeta.court
+    //    filemeta.casenum
+    //    filemeta.name
 
     this.filemeta = filemeta;
 }
@@ -55,18 +60,17 @@ DownloadListener.prototype = {
 
 	var formData = [];
 	formData.push("");
-	formData.push("--" + this.boundary);
-	formData.push("Content-Disposition: form-data; name=\"mimetype\"");
-	formData.push("");
-	formData.push(this.filemeta.mimetype);
-	formData.push("--" + this.boundary);
-	formData.push("Content-Disposition: form-data; name=\"court\"");
-	formData.push("");
-	formData.push(this.filemeta.court);
-	formData.push("--" + this.boundary);
-	formData.push("Content-Disposition: form-data; name=\"url\"");
-	formData.push("");
-	formData.push(this.filemeta.url);
+
+	for (fieldname in this.filemeta) {
+	    if (fieldname == "name") continue;
+
+	    formData.push("--" + this.boundary);
+	    formData.push("Content-Disposition: form-data; name=\"" 
+			  + fieldname + "\"");
+	    formData.push("");
+	    formData.push(this.filemeta[fieldname]);
+	}
+
 	formString = formData.join("\r\n");
 	
 	filemetaStream.setData(formString, formString.length);
@@ -109,12 +113,11 @@ DownloadListener.prototype = {
 	
 	log("Posting file!  Name: " + this.filemeta.name + 
 	    "; Court: " + this.filemeta.court + 
-	    "; URL: " + this.filemeta.url +
 	    "; Mimetype: " + this.filemeta.mimetype +
 	    "; StreamBytes: " + this.multiplexStream.available());
 	
 	req.onreadystatechange = function() {
-	    if (req.readyState == 4) {
+	    if (req.readyState == 4 && req.status == 200) {
 		log(req.responseText);
 	    }
 	};
