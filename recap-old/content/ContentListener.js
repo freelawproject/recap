@@ -40,6 +40,12 @@ ContentListener.prototype = {
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(court, document, show_subdocs) {
 
+//not sure if we need the subModal.css here or not
+		this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.css','css');
+		this.loadjscssfile(document,'http://outpacer.com/recap/submodal/common.js','js');
+	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.js','js');
+		
+
 	// Construct the JSON object parameter
 	var jsonout = { "show_subdocs": show_subdocs,
 			"court": court, 
@@ -100,9 +106,10 @@ ContentListener.prototype = {
 
 		    // Insert our link to the left of the PACER link
 		    var newLink = document.createElement("a");
-		    newLink.href = filename; 
+		   	newLink.href = filename; 
 		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
 		    newLink.setAttribute("class", "recap");
+		    newLink.setAttribute("onclick", "showPopWin('http://outpacer.com/recap/submodal/modalContent.html', 400, 200);");
 		    var newText = document.createTextNode("[RECAP " + 
 							  timestamp + "]");
 		    newLink.appendChild(newText);
@@ -185,6 +192,24 @@ ContentListener.prototype = {
     unregister: function() {
 	log("unregister ContentListener");
 	this._webProgressService.removeProgressListener(this);
-    }
+    },
+    
+    loadjscssfile: function(document, filename, filetype){
+		if (filetype=="js"){ //if filename is a external JavaScript file
+			var fileref=document.createElement('script')
+			fileref.setAttribute("type","text/javascript")
+			fileref.setAttribute("src", filename)
+		}
+		else if (filetype=="css"){ //if filename is an external CSS file
+			var fileref=document.createElement("link")
+			fileref.setAttribute("rel", "stylesheet")
+			fileref.setAttribute("type", "text/css")
+			fileref.setAttribute("href", filename)
+		}
+		if (typeof fileref!="undefined")
+			document.getElementsByTagName("head")[0].appendChild(fileref)
+		log("loadjscssfile: " + filename);
+		}
+
 
 }
