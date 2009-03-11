@@ -29,7 +29,7 @@ ContentListener.prototype = {
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;	
-	var show_subdocs = this.isDocPath(URIpath);
+	var show_subdocs = this.hasDocPath(URIpath);
 
 	if (court && document) {
 	    this.docCheckAndModify(court, document, show_subdocs);
@@ -135,7 +135,7 @@ ContentListener.prototype = {
     },
 
     // Returns true if path matches ".../doc1/<docnum>"
-    isDocPath: function(path) {
+    hasDocPath: function(path) {
 
 	try {
 	    var docMatch = path.match(/\/doc1\/(\d+)$/i);
@@ -156,7 +156,7 @@ ContentListener.prototype = {
 	} catch(e) {}
 
 	return (modifiablePages.indexOf(pageName) >= 0 ||
-		this.isDocPath(path)) ? true : false;
+		this.hasDocPath(path)) ? true : false;
     },
 
     // implementing nsIWebProgressListener, unnecessary functions.

@@ -38,6 +38,26 @@ RequestObserver.prototype = {
 	log(output);
     },
 
+    setCacheFriendlyHeaders: function(channel) {
+
+	var pragmaVal = this.getPragmaValue(channel);
+	// expiration arbitrarily set to one day
+	var oneday = (new Date()).getTime() + 24*60*60*1000;
+	var expiresVal = (new Date(oneday)).toUTCString();
+	var dateVal = (new Date()).toUTCString();
+
+	// Set HTTP response headers to be cache-friendly
+	channel.setResponseHeader("Age", "", false);
+	channel.setResponseHeader("Cache-Control", "", false);
+	channel.setResponseHeader("ETag", "", false);
+	channel.setResponseHeader("Pragma", pragmaVal, false);
+	channel.setResponseHeader("Vary", "", false);
+	channel.setResponseHeader("Last-Modified", "", false);
+	channel.setResponseHeader("Expires", expiresVal, false);
+	channel.setResponseHeader("Date", dateVal, false);
+
+    },
+
     // Removes 'no-cache' from the Pragma response header if it exists
     getPragmaValue: function(channel) {
 	try {
@@ -84,47 +104,79 @@ RequestObserver.prototype = {
 	var filename = pathSplit.pop() + this.fileSuffixFromMime(mimetype);
 
 	return {mimetype: mimetype, court: court, 
-		url: refpath, name: filename};
+		name: filename, url: refpath };
+    },
+
+    tryPerlHTMLmeta: function(channel, path, mimetype) {
+
+	var downloadablePages = ["HistDocQry.pl", "DktRpt.pl"];
+	    
+	var referrer = channel.referrer;
+	try {
+	    var refhost = referrer.asciiHost;
+	    var refpath = referrer.path;	   
+	} catch(e) {
+	    return false;
+	}
+
+	var pageName = this.perlPathMatch(path);
+	var refPageName = this.perlPathMatch(refpath);
+	
+	// If this is an interesting HTML document, return metadata
+	if (pageName && refPageName &&
+	    pageName == refPageName &&
+	    downloadablePages.indexOf(pageName) >= 0) {
+
+	    var casenum = null;
+	    try {
+		casenum = refpath.match(/\?(\d+)$/i)[1];
+	    } catch (e) {}
+	    
+	    var name = pageName.replace(".pl", ".html");
+	    
+	    var court = getCourtFromHost(refhost);
+	    
+	    log("PerlHTMLmeta: " + mimetype + " " + court + 
+		" " + name + " " + casenum);
+
+	    return {mimetype: mimetype, court: court,
+		    name: name, casenum: casenum };
+	}
+	
+	return false;
+
+    },
+
+    tryDocHTMLmeta: function(channel, path, mimetype) {
+
+	// If this is a /doc1/.. HTML document, return metadata
+	if (this.isDocPath(path)) {
+
+	    var court = getCourtFromHost(channel.URI.asciiHost);
+
+	    log("DocHTMLmeta: " + mimetype + " " + court + 
+		" " + path );
+
+	    return {mimetype: mimetype, court: court,
+		    name: path };
+	}
+	
+	return false;
+
     },
 
     tryHTMLmeta: function(channel, path, mimetype) {
 
-	if (mimetype.indexOf("text/html") >= 0) {
-
-	    var downloadablePages = ["HistDocQry.pl", "DktRpt.pl"];
-	    
-	    var referrer = channel.referrer;
-	    try {
-		var refhost = referrer.asciiHost;
-		var refpath = referrer.path;	   
-	    } catch(e) {
-		return false;
-	    }
-
-	    var pageName = this.pathMatch(path);
-	    var refPageName = this.pathMatch(refpath);
-	    
-	    // If this is an interesting HTML document, return metadata
-	    if (pageName && refPageName &&
-		pageName == refPageName &&
-		downloadablePages.indexOf(pageName) >= 0) {
-
-		var casenum = null;
-		try {
-		    casenum = refpath.match(/\?(\d+)$/i)[1];
-		} catch (e) {}
-
-		var name = pageName.replace(".pl", ".html");
-
-		var court = getCourtFromHost(refhost);
-
-		log("HTMLmeta: " + mimetype + " " + casenum + " " + name
-		    + " " + court);
-
-		return {mimetype: mimetype, casenum: casenum, 
-			name: name, court: court};
-	    }
+	meta = this.tryPerlHTMLmeta(channel, path, mimetype);
+	if (meta) {
+	    return meta;
 	}
+	
+	meta = this.tryDocHTMLmeta(channel, path, mimetype);
+	if (meta) {
+	    return meta;
+	}
+
 	return false;
     },
 
@@ -137,13 +189,12 @@ RequestObserver.prototype = {
 	}
     },
 
-    // Returns a boolean, whether the file is a PDF
     isPDF: function(mimetype) {
-	if (mimetype == "application/pdf") {
-	    return true;
-	} else {
-	    return false;
-	}
+	return (mimetype == "application/pdf") ? true: false;
+    },
+
+    isHTML: function(mimetype) {
+	return (mimetype.indexOf("text/html") >= 0) ? true: false;
     },
 
     // Returns the specified Content-type from the HTTP response header
@@ -158,18 +209,29 @@ RequestObserver.prototype = {
     ignorePage: function(path) {
 	var ignorePages = ["login.pl", "iquery.pl", "BillingRpt.pl"];
 	
-	var pageName = this.pathMatch(path);
+	var pageName = this.perlPathMatch(path);
 
 	return (pageName && ignorePages.indexOf(pageName) >= 0) ? true : false;
     },
 
-    pathMatch: function(path) {
+    perlPathMatch: function(path) {
 	var pageName = null;
 	try {
 	    pageName = path.match(/(\w+)\.pl/i)[0];
 	} catch(e) {}
 
 	return pageName;
+    },
+
+    // Returns true if path matches "/doc1/<docnum>"
+    isDocPath: function(path) {
+
+	try {
+	    var docMatch = path.match(/^\/doc1\/(\d+)$/i);
+	    return docMatch ? true : false;
+	} catch(e) {
+	    return false;
+	}	
     },
 
     // Called on every HTTP response
@@ -189,22 +251,7 @@ RequestObserver.prototype = {
 	}
 
 	//this.logHeaders(channel);
-
-	var pragmaVal = this.getPragmaValue(channel);
-	// expiration arbitrarily set to one day
-	var oneday = (new Date()).getTime() + 24*60*60*1000;
-	var expiresVal = (new Date(oneday)).toUTCString();
-	var dateVal = (new Date()).toUTCString();
-
-	// Set HTTP response headers to be cache-friendly
-	channel.setResponseHeader("Age", "", false);
-	channel.setResponseHeader("Cache-Control", "", false);
-	channel.setResponseHeader("ETag", "", false);
-	channel.setResponseHeader("Pragma", pragmaVal, false);
-	channel.setResponseHeader("Vary", "", false);
-	channel.setResponseHeader("Last-Modified", "", false);
-	channel.setResponseHeader("Expires", expiresVal, false);
-	channel.setResponseHeader("Date", dateVal, false);
+	this.setCacheFriendlyHeaders(channel);
 
 	var mimetype = this.getMimetype(channel);	
 
@@ -222,7 +269,7 @@ RequestObserver.prototype = {
 	    subject.QueryInterface(Ci.nsITraceableChannel);
 	    dlistener.originalListener = subject.setNewListener(dlistener);
 
-	} else {
+	} else if (this.isHTML(mimetype)) {
 	    // Upload content to the server if the file is interesting HTML
 	    
 	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
