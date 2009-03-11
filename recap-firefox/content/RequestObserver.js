@@ -152,6 +152,20 @@ RequestObserver.prototype = {
 	// If this is a /doc1/.. HTML document, return metadata
 	if (this.isDocPath(path)) {
 
+	    var referrer = channel.referrer;
+	    try {
+		var refhost = referrer.asciiHost;
+		var refpath = referrer.path;	   
+	    } catch(e) {
+		return false;
+	    }
+	    
+	    if (this.isDocPath(refpath)) {
+		return false;
+	    }
+
+	    log("Refpath: " + refpath);
+
 	    var court = getCourtFromHost(channel.URI.asciiHost);
 
 	    log("DocHTMLmeta: " + mimetype + " " + court + 
