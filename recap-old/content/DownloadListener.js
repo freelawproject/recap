@@ -12,16 +12,23 @@
 */
 
 function DownloadListener(filemeta) {
-    // metadata for a PDF file, which should have the following properties:
+    // metadata for a PDF file, should have the following properties:
     //    filemeta.mimetype ('application/pdf')
     //    filemeta.court ('cacd')
-    //    filemeta.url ('/doc1/1234567890')
     //    filemeta.name ('1234567890.pdf')
+    //    filemeta.url ('/doc1/1234567890')
+
     
-    // metadata for an HTML file, which should have the following properties:
+    // metadata for an .pl HTML file, should have the following properties:
     //    filemeta.mimetype
-    //    fimemeta.court
+    //    filemeta.court
+    //    filemeta.name
     //    filemeta.casenum
+
+
+    // metadata for a /doc1/ HTML file, should have the following properties:
+    //    filemeta.mimetype
+    //    filemeta.court
     //    filemeta.name
 
     this.filemeta = filemeta;
