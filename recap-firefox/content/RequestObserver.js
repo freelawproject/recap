@@ -261,6 +261,13 @@ RequestObserver.prototype = {
 	}	
     },
 
+    // Intercept the channel, and upload the data with metadata
+    uploadChannelData: function(subject, metadata) {
+	var dlistener = new DownloadListener(metadata);
+	subject.QueryInterface(Ci.nsITraceableChannel);
+	dlistener.originalListener = subject.setNewListener(dlistener);
+    },
+
     // Called on every HTTP response
     observe: function(subject, topic, data) {
         if (topic != "http-on-examine-response")
@@ -292,9 +299,7 @@ RequestObserver.prototype = {
 					     PDFmeta.name, 
 					     PDFmeta.court);
 
-	    var dlistener = new DownloadListener(PDFmeta);
-	    subject.QueryInterface(Ci.nsITraceableChannel);
-	    dlistener.originalListener = subject.setNewListener(dlistener);
+	    this.uploadChannelData(subject, PDFmeta);
 
 	} else if (this.isHTML(mimetype)) {
 	    // Upload content to the server if the file is interesting HTML
@@ -302,9 +307,7 @@ RequestObserver.prototype = {
 	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
 
 	    if (HTMLmeta) {	    	    
-		var dlistener = new DownloadListener(HTMLmeta);
-		subject.QueryInterface(Ci.nsITraceableChannel);
-		dlistener.originalListener = subject.setNewListener(dlistener);
+		this.uploadChannelData(subject, HTMLmeta);
 	    }
 	}
     },

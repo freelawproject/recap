@@ -80,7 +80,7 @@ RecapService.prototype = {
 
     // properties required for XPCOM registration:
     classDescription: "Recap",
-    classID:          Components.ID("{dffa98a7-dd57-4859-a3f8-0a4288c43ede}"),
+    classID:          Components.ID("{2ada744a-7368-4399-9321-f342637bca76}"),
     contractID:       "@cs.princeton.edu/recap;1",
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
 					   Ci.nsISupports]),

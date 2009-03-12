@@ -39,13 +39,13 @@ ContentListener.prototype = {
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(court, document, show_subdocs) {
-
-//not sure if we need the subModal.css here or not
-		this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.css','css');
-		this.loadjscssfile(document,'http://outpacer.com/recap/submodal/common.js','js');
+	
+	//not sure if we need the subModal.css here or not
+	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.css','css');
+	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/common.js','js');
 	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.js','js');
-		
-
+	
+	
 	// Construct the JSON object parameter
 	var jsonout = { "show_subdocs": show_subdocs,
 			"court": court, 
@@ -53,20 +53,24 @@ ContentListener.prototype = {
 	var links = document.getElementsByTagName("a");
 	// Save pointers to the HTML elements for each "a" tag, keyed by URL
 	var elements = {};
-
+	
 	for (var i = 0; i < links.length; i++) {
 	    var link = links[i];
 	    var docURL = this.getDocURL(link.href);
 	    
 	    if (docURL) {
 		jsonout.urls.push(docURL);
-		elements[docURL] = link;
+		try {
+		    elements[docURL].push(link);
+		} catch(e) {
+		    elements[docURL] = [link];
+		}
 	    }
 	}
 
 	// if no linked docs, don't bother sending docCheck
 	if (jsonout.urls.length == 0) {
-		return;
+	    return;
 	}
 
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
@@ -92,28 +96,34 @@ ContentListener.prototype = {
 		for (var docURL in jsonin) {
 		    var filename = jsonin[docURL]["filename"];
 		    var timestamp = jsonin[docURL]["timestamp"];
-		    var element = elements[docURL];
+		    var url_elements = elements[docURL];
 		    
-		    log("  File found: " + filename);
+		    log("  File found: " + filename + " " + docURL);
 		    // Ensure that the element isn't already modified
-		    if (element.previousSibling) {
-			previousElement = element.previousSibling;
-			previousClass = previousElement.className;
+		    
+		    for (var i = 0; i < url_elements.length; i++) {
 
-			if (previousClass == "recap") 
-			    continue;
-		    }
+			element = url_elements[i];
 
-		    // Insert our link to the left of the PACER link
-		    var newLink = document.createElement("a");
+			if (element.previousSibling) {
+			    previousElement = element.previousSibling;
+			    previousClass = previousElement.className;
+			    
+			    if (previousClass == "recap") 
+				continue;
+			}
+
+			// Insert our link to the left of the PACER link
+			var newLink = document.createElement("a");
 		   	newLink.href = filename; 
-		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
-		    newLink.setAttribute("class", "recap");
-		    newLink.setAttribute("onclick", "showPopWin('http://outpacer.com/recap/submodal/modalContent.html', 400, 200);");
-		    var newText = document.createTextNode("[RECAP " + 
-							  timestamp + "]");
-		    newLink.appendChild(newText);
-		    element.parentNode.insertBefore(newLink, element);
+			newLink.setAttribute("style", "margin: 0 10px 0 0;");
+			newLink.setAttribute("class", "recap");
+			newLink.setAttribute("onclick", "showPopWin('http://outpacer.com/recap/submodal/modalContent.html', 400, 200);");
+			var newText = document.createTextNode("[RECAP " + 
+							      timestamp + "]");
+			newLink.appendChild(newText);
+			element.parentNode.insertBefore(newLink, element);
+		    }
 		}
 	    }
 	};
