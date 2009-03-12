@@ -4,7 +4,7 @@ function ContentListener() {
 }
 
 ContentListener.prototype = {
-    
+
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
 	const WPL = Ci.nsIWebProgressListener;
@@ -29,27 +29,29 @@ ContentListener.prototype = {
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;	
-	var show_subdocs = this.hasDocPath(URIpath);
+	var showSubdocs = this.hasDocPath(URIpath);
 
 	if (court && document) {
-	    this.docCheckAndModify(court, document, show_subdocs);
+	    this.docCheckAndModify(document, court, showSubdocs);
 	}
     },
 
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
-    docCheckAndModify: function(court, document, show_subdocs) {
+    docCheckAndModify: function(document, court, showSubdocs) {
+
+	var loaded = document.getElementsByClassName("recaploaded");
+	if (loaded.length) {
+	    return;
+	}
 	
-	//not sure if we need the subModal.css here or not
-	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.css','css');
-	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/common.js','js');
-	this.loadjscssfile(document,'http://outpacer.com/recap/submodal/subModal.js','js');
-	
+	this.loadjs(document);
 	
 	// Construct the JSON object parameter
-	var jsonout = { "show_subdocs": show_subdocs,
-			"court": court, 
-			"urls": [] };
+	var jsonout = { showSubdocs: showSubdocs,
+			court: court, 
+			urls: [] };
+	
 	var links = document.getElementsByTagName("a");
 	// Save pointers to the HTML elements for each "a" tag, keyed by URL
 	var elements = {};
@@ -67,7 +69,7 @@ ContentListener.prototype = {
 		}
 	    }
 	}
-
+	
 	// if no linked docs, don't bother sending docCheck
 	if (jsonout.urls.length == 0) {
 	    return;
@@ -83,54 +85,84 @@ ContentListener.prototype = {
 		       "nsIXMLHttpRequest");
 	
 	var params = "json=" + jsonouts;
-
+	
 	req.open("POST", 
 		 "http://monocle.princeton.edu/recap/document/",
 		 true);
 
+	var that = this;
 	req.onreadystatechange = function() {
-	    
-	    if (req.readyState == 4 && req.status == 200) {
-		var jsonin = nativeJSON.decode(req.responseText);
-
-		for (var docURL in jsonin) {
-		    var filename = jsonin[docURL]["filename"];
-		    var timestamp = jsonin[docURL]["timestamp"];
-		    var url_elements = elements[docURL];
-		    
-		    log("  File found: " + filename + " " + docURL);
-		    // Ensure that the element isn't already modified
-		    
-		    for (var i = 0; i < url_elements.length; i++) {
-
-			element = url_elements[i];
-
-			if (element.previousSibling) {
-			    previousElement = element.previousSibling;
-			    previousClass = previousElement.className;
-			    
-			    if (previousClass == "recap") 
-				continue;
-			}
-
-			// Insert our link to the left of the PACER link
-			var newLink = document.createElement("a");
-		   	newLink.href = filename; 
-			newLink.setAttribute("style", "margin: 0 10px 0 0;");
-			newLink.setAttribute("class", "recap");
-			newLink.setAttribute("onclick", "showPopWin('http://outpacer.com/recap/submodal/modalContent.html', 400, 200);");
-			var newText = document.createTextNode("[RECAP " + 
-							      timestamp + "]");
-			newLink.appendChild(newText);
-			element.parentNode.insertBefore(newLink, element);
-		    }
-		}
-	    }
+	    that.handleResponse(req, document, elements);
 	};
-	
+
 	req.send(params);
 
     },
+
+    handleResponse: function(req, document, elements) { 
+	
+	if (req.readyState == 4 && req.status == 200) {
+
+	    var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	    var jsonin = nativeJSON.decode(req.responseText);
+	    
+	    var count = 0;
+
+	    for (var docURL in jsonin) {
+		count++;
+
+		var filename = jsonin[docURL]["filename"];
+		var timestamp = jsonin[docURL]["timestamp"];
+		var urlElements = elements[docURL];
+
+		// create the dialogdiv
+		var dialogDiv = document.createElement("div");
+		dialogDiv.setAttribute("id", "recapdialog" + count);
+		dialogDiv.setAttribute("class", "jqmWindow");
+		
+		var dialogText = "This is a RECAP document.  " +
+		    "We cached this copy on " + timestamp;
+		var dialogTextNode = document.createTextNode(dialogText);
+		
+		var dialogLinkElement = document.createElement("a");
+		dialogLinkElement.href = filename;
+		var dialogLinkText = document.createTextNode("[Download]");
+		dialogLinkElement.appendChild(dialogLinkText);
+		
+		dialogDiv.appendChild(dialogTextNode);
+		dialogDiv.appendChild(dialogLinkElement);
+		document.documentElement.appendChild(dialogDiv);
+		
+		log("  File found: " + filename + " " + docURL);
+		// Ensure that the element isn't already modified
+		
+		for (var i = 0; i < urlElements.length; i++) {
+		    
+		    element = urlElements[i];
+		    
+		    if (element.previousSibling) {
+			previousElement = element.previousSibling;
+			previousClass = previousElement.className;
+			
+			if (previousClass == "recaptrigger") 
+			    continue;
+		    }
+		    
+		    // Insert our link to the left of the PACER link
+		    var newLink = document.createElement("a");
+		    newLink.href = "#";
+		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
+		    newLink.setAttribute("class", "recaptrigger");
+		    newLink.setAttribute("onClick", "addModal(" + count + ");");
+		    var newText = document.createTextNode("[RECAP]");
+		    // TK: tooltip with timestamp?
+		    newLink.appendChild(newText);
+		    element.parentNode.insertBefore(newLink, element);
+		}
+	    }
+	}
+    },    
+    
 
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
@@ -204,22 +236,55 @@ ContentListener.prototype = {
 	this._webProgressService.removeProgressListener(this);
     },
     
-    loadjscssfile: function(document, filename, filetype){
-		if (filetype=="js"){ //if filename is a external JavaScript file
-			var fileref=document.createElement('script')
-			fileref.setAttribute("type","text/javascript")
-			fileref.setAttribute("src", filename)
-		}
-		else if (filetype=="css"){ //if filename is an external CSS file
-			var fileref=document.createElement("link")
-			fileref.setAttribute("rel", "stylesheet")
-			fileref.setAttribute("type", "text/css")
-			fileref.setAttribute("href", filename)
-		}
-		if (typeof fileref!="undefined")
-			document.getElementsByTagName("head")[0].appendChild(fileref)
-		log("loadjscssfile: " + filename);
-		}
+    loadjs: function(document) {
 
+	var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
+	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
+	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
+
+	var csstext = this.localFileToString(RECAP_PATH + "jqModal.css");
+
+	this.jscssLoadString(document, csstext, "css");
+	this.jscssLoadString(document, jstext, "js");
+
+    },
+
+    localFileToString: function(localFile) {
+	var ioService = Cc["@mozilla.org/network/io-service;1"]
+                         .getService(Ci.nsIIOService);
+	var scriptableStream = Cc["@mozilla.org/scriptableinputstream;1"]
+                         .getService(Ci.nsIScriptableInputStream);
+
+	var channel = ioService.newChannel(localFile, null, null);
+	var input=channel.open();
+	scriptableStream.init(input);
+	var str = scriptableStream.read(input.available());
+	scriptableStream.close();
+	input.close();
+
+	return str;
+    },
+
+    jscssLoadString: function(document, str, filetype) {
+
+	if (filetype=="js") { //if filename is a external JavaScript file
+	    var element = document.createElement("script");
+	    element.setAttribute("type", "text/javascript");
+	    element.setAttribute("class", "recaploaded");
+	    var strNode = document.createTextNode(str);
+	    element.appendChild(strNode);
+	}
+	else if (filetype=="css") { //if filename is an external CSS file
+	    var element = document.createElement("style");
+	    element.setAttribute("type", "text/css");
+	    var strNode = document.createTextNode(str);
+	    element.appendChild(strNode);
+	}
+
+	if (typeof element != "undefined") {
+	    document.getElementsByTagName("head")[0].appendChild(element);
+	    log("jscssLoadString: " + filetype);
+	}
+    },
 
 }
