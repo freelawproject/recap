@@ -5,6 +5,7 @@
     <em:id>recapextension@cs.princeton.edu</em:id>
     <em:name>RECAP: Turning PACER Inside Out</em:name>
     <em:version>0.1</em:version>
+     <em:optionsURL>chrome://recap/content/options.xul</em:optionsURL>
     <em:creator>Harlan Yu and Tim Lee</em:creator>
     <em:targetApplication>
       <Description>

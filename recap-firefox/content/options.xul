@@ -1,0 +1,19 @@
+<?xml version="1.0"?>
+<?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
+ 
+<prefwindow id="recap-prefs"
+     title="Recap Options"
+     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+ 
+<prefpane id="recap-pref-pane" label="RECAP Settings">
+  <preferences>
+    <preference id="pref_cache_time_ms" name="recap.cache_time_ms" type="int"/>
+  </preferences>
+ 
+  <hbox align="center">
+    <label control="cache_time_ms" value="Cache Time (ms): "/>
+    <textbox preference="pref_cache_time_ms" id="cache_time_ms" maxlength="8"/>
+  </hbox>
+</prefpane>
+ 
+</prefwindow>

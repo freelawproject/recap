@@ -41,9 +41,17 @@ RequestObserver.prototype = {
     setCacheFriendlyHeaders: function(channel) {
 
 	var pragmaVal = this.getPragmaValue(channel);
-	// expiration arbitrarily set to one day
-	var oneday = (new Date()).getTime() + 24*60*60*1000;
-	var expiresVal = (new Date(oneday)).toUTCString();
+        var prefs = Components.classes["@mozilla.org/preferences-service;1"]
+				.getService(Components.interfaces.nsIPrefService)
+				.getBranch("recap.");
+        
+        var cache_time_ms = prefs.getIntPref("cache_time_ms");
+        //log("cache_time_ms = " + cache_time_ms);
+
+        var temp = (new Date()).getTime() + cache_time_ms;
+        var expiresVal = (new Date(temp)).toUTCString();
+
+	//var expiresVal = (new Date(oneday)).toUTCString();
 	var dateVal = (new Date()).toUTCString();
 
 	channel.setResponseHeader("Age", "", false);
