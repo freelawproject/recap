@@ -138,24 +138,21 @@ ContentListener.prototype = {
 		    }
 		    
 		    // Insert our link to the left of the PACER link
-		    var newLink = document.createElement("a");
-		    newLink.setAttribute("href", "#");
-		    newLink.setAttribute("class", "recapIconLink");
-		    newLink.setAttribute("onClick", 
-					 "addModal(" + count + ");");
+		    var iconLink = document.createElement("a");
+		    iconLink.setAttribute("href", "#");
+		    iconLink.setAttribute("class", "recapIconLink");
+		    iconLink.setAttribute("onClick", 
+					  "addModal(" + count + ");");
+		    iconLink.setAttribute("title",
+					  "This document is available " +
+					  "from RECAP");
 
-		    var imageFile = "chrome://recap/skin/recap-icon-blue.png";
-		    var embeddedImageSrc = "data:image/png;base64,";
-		    embeddedImageSrc += this.localFileToBase64(imageFile);
-
-		    var newImage = document.createElement("img");
-		    newImage.setAttribute("src", embeddedImageSrc);
-		    newImage.setAttribute("class", "recapIconImg");
-		    newImage.setAttribute("alt", "[RECAP]");
+		    var iconImage = this.addImage(document, iconLink,
+						  "recap-icon.png");
+		    iconImage.setAttribute("class", "recapIconImage");
+		    iconImage.setAttribute("alt", "[RECAP]");
 		    
-		    // TK: tooltip with timestamp?
-		    newLink.appendChild(newImage);
-		    element.parentNode.insertBefore(newLink, 
+		    element.parentNode.insertBefore(iconLink, 
 						    element.nextSibling);
 		}
 	    }
@@ -170,9 +167,9 @@ ContentListener.prototype = {
 	div.setAttribute("class", "jqmWindow recapdiv");
 
 	this.addP(document, div);
-	this.addImage(document, div, "skin/recap-logo-blue.png");
+	this.addImage(document, div, "recap-logo.png");
 	this.addBr(document, div);
-	this.addLink(document, div, "http://www.pacerrecap.org", 
+	this.addTextLink(document, div, "http://www.pacerrecap.org", 
 		     "http://www.pacerrecap.org");
 	this.addP(document, div);
 	this.addText(document, div, "This document is available for free.");
@@ -181,7 +178,7 @@ ContentListener.prototype = {
 		     "RECAP cached this document on " + timestamp + ".");
 	this.addP(document, div);
 	this.addBr(document, div);
-	var a = this.addLink(document, div, "Download", filename);
+	var a = this.addTextLink(document, div, "Download", filename);
 	a.setAttribute("class", "recapDownloadButton");
 	this.addP(document, div);
 
@@ -206,7 +203,7 @@ ContentListener.prototype = {
 	return br;
     },
 
-    addLink: function(document, div, text, href) {
+    addTextLink: function(document, div, text, href) {
 	var a = document.createElement("a");
 	a.href = href;
 	this.addText(document, a, text);
@@ -218,7 +215,7 @@ ContentListener.prototype = {
 	var img = document.createElement("img");
 
 	var embeddedImageSrc = "data:image/png;base64,";
-	embeddedImageSrc += this.localFileToBase64("chrome://recap/" + src);
+	embeddedImageSrc += this.localFileToBase64(RECAP_SKIN_PATH + src);
 
 	img.setAttribute("src", embeddedImageSrc);
 	div.appendChild(img);
@@ -268,8 +265,8 @@ ContentListener.prototype = {
 	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
 	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
 
-	var csstext = this.localFileToString(RECAP_PATH + "jqModal.css");
-	csstext += this.localFileToString(RECAP_PATH + "recap.css");
+	var csstext = this.localFileToString(RECAP_SKIN_PATH + "jqModal.css");
+	csstext += this.localFileToString(RECAP_SKIN_PATH + "recap.css");
 
 	this.jscssLoadString(document, csstext, "css");
 	this.jscssLoadString(document, jstext, "js");
