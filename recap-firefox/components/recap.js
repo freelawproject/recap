@@ -2,6 +2,7 @@ const Cc = Components.classes;
 const Ci = Components.interfaces;
 const Cr = Components.results;
 const RECAP_PATH = "chrome://recap/content/";
+const RECAP_SKIN_PATH = "chrome://recap/skin/";
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
