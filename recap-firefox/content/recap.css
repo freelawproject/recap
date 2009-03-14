@@ -1,0 +1,22 @@
+
+.recapIconLink { margin: 0 0 0 0.3em;
+	       }
+
+a.recapIconLink:link img { border: 0px; }
+a.recapIconLink:visited img { border: 0px; }
+a.recapIconLink:hover img { border: 0px; }
+a.recapIconLink:active img { border: 0px; }
+
+.recapdiv { text-align: center; }
+
+.recapIconImg { vertical-align: middle; }
+
+.recapDownloadButton { font-weight: bold;
+		       border-style: solid;
+		       border: 2px solid #888888;
+		       padding: 3px;
+		       text-decoration: none;
+		       background-color: #DDDDDD;
+		       color: black;
+		     }
+

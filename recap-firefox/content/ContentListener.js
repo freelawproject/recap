@@ -7,6 +7,7 @@ ContentListener.prototype = {
 
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
+
 	const WPL = Ci.nsIWebProgressListener;
 
 	// Ensure that the document is done loading
@@ -40,11 +41,13 @@ ContentListener.prototype = {
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(document, court, showSubdocs) {
 
-	var loaded = document.getElementsByClassName("recaploaded");
+	// Don't modify if RECAP js libs have already been loaded
+	var loaded = document.getElementsByClassName("recapjs");
 	if (loaded.length) {
 	    return;
 	}
 	
+	// Write the necessary js libraries into the document
 	this.loadjs(document);
 	
 	// Construct the JSON object parameter
@@ -99,13 +102,15 @@ ContentListener.prototype = {
 
     },
 
+    // Handle the AJAX response
     handleResponse: function(req, document, elements) { 
 	
 	if (req.readyState == 4 && req.status == 200) {
 
 	    var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	    var jsonin = nativeJSON.decode(req.responseText);
-	    
+
+	    // a unique number for each dialog div
 	    var count = 0;
 
 	    for (var docURL in jsonin) {
@@ -115,54 +120,110 @@ ContentListener.prototype = {
 		var timestamp = jsonin[docURL]["timestamp"];
 		var urlElements = elements[docURL];
 
-		// create the dialogdiv
-		var dialogDiv = document.createElement("div");
-		dialogDiv.setAttribute("id", "recapdialog" + count);
-		dialogDiv.setAttribute("class", "jqmWindow");
-		
-		var dialogText = "This is a RECAP document.  " +
-		    "We cached this copy on " + timestamp;
-		var dialogTextNode = document.createTextNode(dialogText);
-		
-		var dialogLinkElement = document.createElement("a");
-		dialogLinkElement.href = filename;
-		var dialogLinkText = document.createTextNode("[Download]");
-		dialogLinkElement.appendChild(dialogLinkText);
-		
-		dialogDiv.appendChild(dialogTextNode);
-		dialogDiv.appendChild(dialogLinkElement);
-		document.documentElement.appendChild(dialogDiv);
-		
+		// Create a dialogDiv for each RECAP document on the server
+		this.makeDialogDiv(document, filename,  timestamp, count);
+ 
 		log("  File found: " + filename + " " + docURL);
-		// Ensure that the element isn't already modified
-		
+
 		for (var i = 0; i < urlElements.length; i++) {
 		    
 		    element = urlElements[i];
 		    
-		    if (element.previousSibling) {
-			previousElement = element.previousSibling;
-			previousClass = previousElement.className;
-			
-			if (previousClass == "recaptrigger") 
+		    // Ensure that the element isn't already modified
+		    if (element.nextSibling) {
+			nextElement = element.nextSibling;
+			nextClass = nextElement.className;		
+			if (nextClass == "recapIcon") 
 			    continue;
 		    }
 		    
 		    // Insert our link to the left of the PACER link
 		    var newLink = document.createElement("a");
-		    newLink.href = "#";
-		    newLink.setAttribute("style", "margin: 0 10px 0 0;");
-		    newLink.setAttribute("class", "recaptrigger");
-		    newLink.setAttribute("onClick", "addModal(" + count + ");");
-		    var newText = document.createTextNode("[RECAP]");
+		    newLink.setAttribute("href", "#");
+		    newLink.setAttribute("class", "recapIconLink");
+		    newLink.setAttribute("onClick", 
+					 "addModal(" + count + ");");
+
+		    var imageFile = "chrome://recap/skin/recap-icon-blue.png";
+		    var embeddedImageSrc = "data:image/png;base64,";
+		    embeddedImageSrc += this.localFileToBase64(imageFile);
+
+		    var newImage = document.createElement("img");
+		    newImage.setAttribute("src", embeddedImageSrc);
+		    newImage.setAttribute("class", "recapIconImg");
+		    newImage.setAttribute("alt", "[RECAP]");
+		    
 		    // TK: tooltip with timestamp?
-		    newLink.appendChild(newText);
-		    element.parentNode.insertBefore(newLink, element);
+		    newLink.appendChild(newImage);
+		    element.parentNode.insertBefore(newLink, 
+						    element.nextSibling);
 		}
 	    }
 	}
     },    
-    
+   
+    // Make a dialog div and append it to the bottom of the document body
+    makeDialogDiv: function(document, filename, timestamp, count) {
+
+	var div = document.createElement("div");
+	div.setAttribute("id", "recapdialog" + count);
+	div.setAttribute("class", "jqmWindow recapdiv");
+
+	this.addP(document, div);
+	this.addImage(document, div, "skin/recap-logo-blue.png");
+	this.addBr(document, div);
+	this.addLink(document, div, "http://www.pacerrecap.org", 
+		     "http://www.pacerrecap.org");
+	this.addP(document, div);
+	this.addText(document, div, "This document is available for free.");
+	this.addP(document, div);
+	this.addText(document, div, 
+		     "RECAP cached this document on " + timestamp + ".");
+	this.addP(document, div);
+	this.addBr(document, div);
+	var a = this.addLink(document, div, "Download", filename);
+	a.setAttribute("class", "recapDownloadButton");
+	this.addP(document, div);
+
+	document.documentElement.appendChild(div);	
+    },
+
+    addText: function(document, div, text) {
+	var textNode = document.createTextNode(text);
+	div.appendChild(textNode);
+	return textNode;
+    },
+
+    addP: function(document, div) {
+	var p = document.createElement("p");
+	div.appendChild(p);
+	return p;
+    },
+
+    addBr: function(document, div) {
+	var br = document.createElement("br");
+	div.appendChild(br);
+	return br;
+    },
+
+    addLink: function(document, div, text, href) {
+	var a = document.createElement("a");
+	a.href = href;
+	this.addText(document, a, text);
+	div.appendChild(a);
+	return a;
+    },
+
+    addImage: function(document, div, src) {
+	var img = document.createElement("img");
+
+	var embeddedImageSrc = "data:image/png;base64,";
+	embeddedImageSrc += this.localFileToBase64("chrome://recap/" + src);
+
+	img.setAttribute("src", embeddedImageSrc);
+	div.appendChild(img);
+	return img;
+    },
 
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
@@ -201,6 +262,76 @@ ContentListener.prototype = {
 		this.hasDocPath(path)) ? true : false;
     },
 
+    loadjs: function(document) {
+
+	var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
+	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
+	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
+
+	var csstext = this.localFileToString(RECAP_PATH + "jqModal.css");
+	csstext += this.localFileToString(RECAP_PATH + "recap.css");
+
+	this.jscssLoadString(document, csstext, "css");
+	this.jscssLoadString(document, jstext, "js");
+
+    },
+
+    localFileToBase64: function(localFile) {
+	var ioService = Cc["@mozilla.org/network/io-service;1"]
+                         .getService(Ci.nsIIOService);
+	var binaryStream = CCIN("@mozilla.org/binaryinputstream;1",
+				"nsIBinaryInputStream");
+
+	var channel = ioService.newChannel(localFile, null, null);
+	var input = channel.open();
+	binaryStream.setInputStream(input);
+	var bytes = binaryStream.readBytes(input.available());
+	binaryStream.close();
+	input.close();
+
+	var base64 = btoa(bytes);
+
+	return base64;
+    },
+
+    localFileToString: function(localFile) {
+	var ioService = Cc["@mozilla.org/network/io-service;1"]
+                         .getService(Ci.nsIIOService);
+	var scriptableStream = Cc["@mozilla.org/scriptableinputstream;1"]
+                         .getService(Ci.nsIScriptableInputStream);
+
+	var channel = ioService.newChannel(localFile, null, null);
+	var input = channel.open();
+	scriptableStream.init(input);
+	var str = scriptableStream.read(input.available());
+	scriptableStream.close();
+	input.close();
+
+	return str;
+    },
+
+    jscssLoadString: function(document, str, filetype) {
+
+	if (filetype=="js") { //if filename is a external JavaScript file
+	    var element = document.createElement("script");
+	    element.setAttribute("type", "text/javascript");
+	    element.setAttribute("class", "recapjs");
+	    var strNode = document.createTextNode(str);
+	    element.appendChild(strNode);
+	}
+	else if (filetype=="css") { //if filename is an external CSS file
+	    var element = document.createElement("style");
+	    element.setAttribute("type", "text/css");
+	    var strNode = document.createTextNode(str);
+	    element.appendChild(strNode);
+	}
+
+	if (typeof element != "undefined") {
+	    document.getElementsByTagName("head")[0].appendChild(element);
+	    log("jscssLoadString: " + filetype);
+	}
+    },
+
     // implementing nsIWebProgressListener, unnecessary functions.
     onLocationChange: function(webProgress, request, location) {},
     onProgressChange: function(webProgress, request, 
@@ -236,55 +367,4 @@ ContentListener.prototype = {
 	this._webProgressService.removeProgressListener(this);
     },
     
-    loadjs: function(document) {
-
-	var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
-	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
-	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
-
-	var csstext = this.localFileToString(RECAP_PATH + "jqModal.css");
-
-	this.jscssLoadString(document, csstext, "css");
-	this.jscssLoadString(document, jstext, "js");
-
-    },
-
-    localFileToString: function(localFile) {
-	var ioService = Cc["@mozilla.org/network/io-service;1"]
-                         .getService(Ci.nsIIOService);
-	var scriptableStream = Cc["@mozilla.org/scriptableinputstream;1"]
-                         .getService(Ci.nsIScriptableInputStream);
-
-	var channel = ioService.newChannel(localFile, null, null);
-	var input=channel.open();
-	scriptableStream.init(input);
-	var str = scriptableStream.read(input.available());
-	scriptableStream.close();
-	input.close();
-
-	return str;
-    },
-
-    jscssLoadString: function(document, str, filetype) {
-
-	if (filetype=="js") { //if filename is a external JavaScript file
-	    var element = document.createElement("script");
-	    element.setAttribute("type", "text/javascript");
-	    element.setAttribute("class", "recaploaded");
-	    var strNode = document.createTextNode(str);
-	    element.appendChild(strNode);
-	}
-	else if (filetype=="css") { //if filename is an external CSS file
-	    var element = document.createElement("style");
-	    element.setAttribute("type", "text/css");
-	    var strNode = document.createTextNode(str);
-	    element.appendChild(strNode);
-	}
-
-	if (typeof element != "undefined") {
-	    document.getElementsByTagName("head")[0].appendChild(element);
-	    log("jscssLoadString: " + filetype);
-	}
-    },
-
 }
