@@ -1,15 +1,10 @@
 
-.recapIconLink { margin: 0 0 0 0.3em;
-	       }
+.recapIconLink { margin: 0 0 0 0.3em; }
+.recapIconImage { border: 0px;
+		  vertical-align: middle; }
 
-a.recapIconLink:link img { border: 0px; }
-a.recapIconLink:visited img { border: 0px; }
-a.recapIconLink:hover img { border: 0px; }
-a.recapIconLink:active img { border: 0px; }
-
-.recapdiv { text-align: center; }
-
-.recapIconImage { vertical-align: middle; }
+.recapOuterDiv { text-align: right; }
+.recapInnerDiv { text-align: center; }
 
 .recapDownloadButton { font-weight: bold;
 		       border-style: solid;
@@ -20,3 +15,7 @@ a.recapIconLink:active img { border: 0px; }
 		       color: black;
 		     }
 
+.recapCloseButton { border: 0px;
+		    width: 1em;
+		    height: 1em;
+		  }

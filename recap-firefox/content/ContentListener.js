@@ -162,27 +162,43 @@ ContentListener.prototype = {
     // Make a dialog div and append it to the bottom of the document body
     makeDialogDiv: function(document, filename, timestamp, count) {
 
-	var div = document.createElement("div");
-	div.setAttribute("id", "recapdialog" + count);
-	div.setAttribute("class", "jqmWindow recapdiv");
+	var outerdiv = document.createElement("div");
+	outerdiv.setAttribute("id", "recapdialog" + count);
+	outerdiv.setAttribute("class", "jqmWindow recapOuterDiv");
 
-	this.addP(document, div);
-	this.addImage(document, div, "recap-logo.png");
-	this.addBr(document, div);
-	this.addTextLink(document, div, "http://www.pacerrecap.org", 
+	// add X to close the dialog
+	var closeLink = document.createElement("a");
+	closeLink.setAttribute("href", "#");
+	closeLink.setAttribute("class", "jqmClose");
+	var closeIcon = this.addImage(document, closeLink, 
+				      "close-x-button.png");
+	closeIcon.setAttribute("alt", "[Close]");
+	closeIcon.setAttribute("class", "recapCloseButton");
+	closeLink.appendChild(closeIcon);
+	outerdiv.appendChild(closeLink);
+	
+	var innerdiv = document.createElement("div");
+	innerdiv.setAttribute("class", "recapInnerDiv");
+
+	this.addP(document, innerdiv);
+	this.addImage(document, innerdiv, "recap-logo.png");
+	this.addBr(document, innerdiv);
+	this.addTextLink(document, innerdiv, "http://www.pacerrecap.org", 
 		     "http://www.pacerrecap.org");
-	this.addP(document, div);
-	this.addText(document, div, "This document is available for free.");
-	this.addP(document, div);
-	this.addText(document, div, 
+	this.addP(document, innerdiv);
+	this.addText(document, innerdiv, 
+		     "This document is available for free.");
+	this.addP(document, innerdiv);
+	this.addText(document, innerdiv, 
 		     "RECAP cached this document on " + timestamp + ".");
-	this.addP(document, div);
-	this.addBr(document, div);
-	var a = this.addTextLink(document, div, "Download", filename);
+	this.addP(document, innerdiv);
+	this.addBr(document, innerdiv);
+	var a = this.addTextLink(document, innerdiv, "Download", filename);
 	a.setAttribute("class", "recapDownloadButton");
-	this.addP(document, div);
+	this.addP(document, innerdiv);
 
-	document.documentElement.appendChild(div);	
+	outerdiv.appendChild(innerdiv);
+	document.documentElement.appendChild(outerdiv);	
     },
 
     addText: function(document, div, text) {
