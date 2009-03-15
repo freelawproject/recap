@@ -41,14 +41,12 @@ ContentListener.prototype = {
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(document, court, showSubdocs) {
 
-	// Don't modify if RECAP js libs have already been loaded
+	// Don't add js libs they have already been loaded
 	var loaded = document.getElementsByClassName("recapjs");
-	if (loaded.length) {
-	    return;
+	if (!loaded.length) {
+		// Write the necessary js libraries into the document
+		this.loadjs(document);
 	}
-	
-	// Write the necessary js libraries into the document
-	this.loadjs(document);
 	
 	// Construct the JSON object parameter
 	var jsonout = { showSubdocs: showSubdocs,
