@@ -144,21 +144,18 @@ ContentListener.prototype = {
 		    }
 		    
 		    // Insert our link to the left of the PACER link
-		    var iconLink = document.createElement("a");
-		    iconLink.setAttribute("href", "#");
-		    iconLink.setAttribute("class", "recapIconLink");
-		    iconLink.setAttribute("onClick", 
-					  "addModal(" + count + ");");
-		    iconLink.setAttribute("title",
-					  "This document is available " +
-					  "from RECAP");
-
-		    var iconImage = this.addImage(document, iconLink,
+			var iconDiv = document.createElement("span");
+		    
+		    var iconImage = this.addImage(document, iconDiv,
 						  "recap-icon.png");
 		    iconImage.setAttribute("class", "recapIconImage");
 		    iconImage.setAttribute("alt", "[RECAP]");
+		    iconImage.setAttribute("style","cursor: pointer; cursor: hand;margin-left: 5px;");
+		    iconImage.setAttribute("onClick", "addModal(" + count + ");");
+		    iconImage.setAttribute("title",
+					  "Available for free from RECAP.");
 		    
-		    element.parentNode.insertBefore(iconLink, 
+		    element.parentNode.insertBefore(iconDiv, 
 						    element.nextSibling);
 		}
 	    }
