@@ -8,7 +8,7 @@ ContentListener.prototype = {
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
 
-	//var debug = true;
+	var debug = false;
 	
 	const WPL = Ci.nsIWebProgressListener;
 
@@ -190,12 +190,12 @@ ContentListener.prototype = {
 		     "This document is available for free!");
 	this.addP(document, innerdiv);
 	this.addTextLink(document, innerdiv, "RECAP", 
-		     "http://www.pacerrecap.org");
+		     "http://www.pacerrecap.org", "_blank");
 	this.addText(document, innerdiv, 
 		     " cached this document on " + timestamp + ".");
 	this.addP(document, innerdiv);
 	this.addBr(document, innerdiv);
-	var a = this.addTextLink(document, innerdiv, "Download", filename);
+	var a = this.addTextLink(document, innerdiv, "Download", filename, null);
 	a.setAttribute("class", "recapDownloadButton");
 	this.addP(document, innerdiv);
 	var disclaimerDiv = document.createElement("div");
@@ -225,9 +225,12 @@ ContentListener.prototype = {
 	return br;
     },
 
-    addTextLink: function(document, div, text, href) {
+    addTextLink: function(document, div, text, href, target) {
 	var a = document.createElement("a");
 	a.href = href;
+	if (target) {
+		a.target = target;
+	}
 	this.addText(document, a, text);
 	div.appendChild(a);
 	return a;
@@ -346,6 +349,7 @@ ContentListener.prototype = {
 	}
 
 	if (typeof element != "undefined") {
+		// Is this line bombing? - SS
 	    document.getElementsByTagName("head")[0].appendChild(element);
 	    log("jscssLoadString: " + filetype);
 	}
