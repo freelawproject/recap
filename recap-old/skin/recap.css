@@ -19,3 +19,10 @@
 		    width: 1em;
 		    height: 1em;
 		  }
+		  
+.recapDisclaimer {
+		       border-style: solid;
+		       border: 1px solid #888888;
+				color: #999999;
+				font-size: 75%;
+				}
