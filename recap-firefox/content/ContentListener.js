@@ -8,6 +8,8 @@ ContentListener.prototype = {
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
 
+	//var debug = true;
+	
 	const WPL = Ci.nsIWebProgressListener;
 
 	// Ensure that the document is done loading
@@ -24,7 +26,7 @@ ContentListener.prototype = {
 	var URIpath = navigation.currentURI.path;
 
 	// Ensure that the page is from a PACER host and warrants modification
-	if (!isPACERHost(URIhost) || !this.isModifiable(URIpath)) {
+	if ((!isPACERHost(URIhost) || !this.isModifiable(URIpath)) && !debug) {
 	    return;
 	}
 
@@ -32,6 +34,10 @@ ContentListener.prototype = {
 	var document = navigation.document;	
 	var showSubdocs = this.hasDocPath(URIpath);
 
+	if (debug) {
+		var court = 'mnd';
+	}
+	
 	if (court && document) {
 	    this.docCheckAndModify(document, court, showSubdocs);
 	}
@@ -183,20 +189,23 @@ ContentListener.prototype = {
 	this.addP(document, innerdiv);
 	this.addImage(document, innerdiv, "recap-logo.png");
 	this.addBr(document, innerdiv);
-	this.addTextLink(document, innerdiv, "http://www.pacerrecap.org", 
+	this.addText(document, innerdiv, 
+		     "This document is available for free!");
+	this.addP(document, innerdiv);
+	this.addTextLink(document, innerdiv, "RECAP", 
 		     "http://www.pacerrecap.org");
-	this.addP(document, innerdiv);
 	this.addText(document, innerdiv, 
-		     "This document is available for free.");
-	this.addP(document, innerdiv);
-	this.addText(document, innerdiv, 
-		     "RECAP cached this document on " + timestamp + ".");
+		     " cached this document on " + timestamp + ".");
 	this.addP(document, innerdiv);
 	this.addBr(document, innerdiv);
 	var a = this.addTextLink(document, innerdiv, "Download", filename);
 	a.setAttribute("class", "recapDownloadButton");
 	this.addP(document, innerdiv);
+	var disclaimerDiv = document.createElement("div");
+	disclaimerDiv.setAttribute("class","recapDisclaimer");
+	this.addText(document, disclaimerDiv, "RECAP is not affiliated with the US Courts. The documents it makes available are voluntarily uploaded by PACER users.  RECAP cannot guarantee the authenticity of documents because the courts themselves have not implemented a document signing and authentication system.");
 
+	innerdiv.appendChild(disclaimerDiv);
 	outerdiv.appendChild(innerdiv);
 	document.documentElement.appendChild(outerdiv);	
     },
