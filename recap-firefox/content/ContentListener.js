@@ -8,8 +8,6 @@ ContentListener.prototype = {
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
 
-	var debug = false;
-	
 	const WPL = Ci.nsIWebProgressListener;
 
 	// Ensure that the document is done loading
@@ -26,7 +24,7 @@ ContentListener.prototype = {
 	var URIpath = navigation.currentURI.path;
 
 	// Ensure that the page is from a PACER host and warrants modification
-	if ((!isPACERHost(URIhost) || !this.isModifiable(URIpath)) && !debug) {
+	if (!isPACERHost(URIhost) || !this.isModifiable(URIpath)) {
 	    return;
 	}
 
@@ -34,10 +32,6 @@ ContentListener.prototype = {
 	var document = navigation.document;	
 	var showSubdocs = this.hasDocPath(URIpath);
 
-	if (debug) {
-		var court = 'mnd';
-	}
-	
 	if (court && document) {
 	    this.docCheckAndModify(document, court, showSubdocs);
 	}
