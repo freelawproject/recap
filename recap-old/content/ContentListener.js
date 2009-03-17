@@ -22,6 +22,18 @@ ContentListener.prototype = {
 
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
+	
+	var cservice = Components.classes["@mozilla.org/cookieService;1"].getService().QueryInterface(Components.interfaces.nsICookieService);
+	
+	var cookieString = cservice.getCookieString(navigation.currentURI, request);
+	
+	if (!cookieString || !cookieString.match("PacerUser")) {
+		log("No PACER cookie found.");
+		return;
+	} else {
+		log("PACER cookie found.");
+	}
+
 
 	// Ensure that the page is from a PACER host and warrants modification
 	if (!isPACERHost(URIhost) || !this.isModifiable(URIpath)) {
