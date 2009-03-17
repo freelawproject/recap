@@ -137,6 +137,7 @@ RequestObserver.prototype = {
 	//    (2) the page name is the same as the referrer's page name.
 	//   i.e. we want to upload the docket results HTML page
 	//         and not the docket search form page.
+	// SS: I think we could do #2 more intelligently by looking at POST vars
 	if (pageName && refPageName &&
 	    pageName == refPageName &&
 	    downloadablePages.indexOf(pageName) >= 0) {
@@ -181,6 +182,7 @@ RequestObserver.prototype = {
 	    //     (2) when clicking on a subdocument from a disambiguation 
 	    //          page-- in this case, the page will be a solo receipt 
 	    //          page anyway, so just ignore it.
+	    // SS: again maybe we could do #2 more intelligently by looking at POST vars -- also, does this not already get caught because the page isn't a PDF?
 	    if (this.isDocPath(refpath)) {
 		return false;
 	    }
@@ -287,8 +289,8 @@ RequestObserver.prototype = {
 	var URIhost = channel.URI.asciiHost;
 	var URIpath = channel.URI.path;
 
-	// Ignore everything on non-PACER domains and some PACER pages
-	if (!isPACERHost(URIhost) || this.ignorePage(URIpath)) {
+	// Ignore non-PACER domains, or if no PACER cookie, or some PACER pages
+	if (!isPACERHost(URIhost) || !havePACERCookie(channel.URI, channel) || this.ignorePage(URIpath)) {
 	    //log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}

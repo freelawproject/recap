@@ -16,3 +16,22 @@ function getCourtFromHost(hostname) {
 
     return court;
 }
+
+// Checks whether we have a PACER cookie
+function havePACERCookie(URI, request) {
+	var cservice = Components.classes["@mozilla.org/cookieService;1"].getService().QueryInterface(Components.interfaces.nsICookieService);
+	
+	var cookieString = cservice.getCookieString(URI, request);
+	
+	if (!cookieString || !cookieString.match("PacerUser")) {
+		log("No PACER cookie found.");
+		return false;
+	// We should never get here, but let's be paranoid
+	} else if (cookieString.match("KEY")) {
+		log("CM/ECF cookie found.");
+		return false;
+	} else {
+		log("PACER cookie found.");
+		return true;
+	}
+}
