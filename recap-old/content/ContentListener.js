@@ -23,14 +23,37 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 	
-	if (isPACERHost(URIhost) && havePACERCookie(navigation.currentURI, request)) {
-		xuldom.src = "chrome://recap/skin/recap-icon.png";
-	} else if (isPACERHost(URIhost) && !havePACERCookie(navigation.currentURI, request)) {
-		xuldom.src = "chrome://recap/skin/recap-icon-grey.png";
+	if (isPACERHost(URIhost) && 
+	    havePACERCookie(navigation.currentURI, request)) {
+
+	    if (statusXUL.src != ICON_LOGGED_IN) {
+		var alertsService = CCGS("@mozilla.org/alerts-service;1",
+					 "nsIAlertsService");
+		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+                   "RECAP enabled.", "You are logged into PACER.");
+		
+	    }
+	    statusXUL.src = ICON_LOGGED_IN;
+
+	} else if (isPACERHost(URIhost) && 
+		   !havePACERCookie(navigation.currentURI, request)) {
+
+	    if (statusXUL.src != ICON_LOGGED_OUT) {
+		var alertsService = CCGS("@mozilla.org/alerts-service;1",
+					 "nsIAlertsService");
+		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+                   "RECAP disabled.", "You are logged out of PACER.");
+
+	    }
+	    statusXUL.src = ICON_LOGGED_OUT;
+
 	}
 
 	// Ensure that the page warrants modification
-	if (!isPACERHost(URIhost) || !havePACERCookie(navigation.currentURI, request) || !this.isModifiable(URIpath)) {
+	if (!isPACERHost(URIhost) || 
+	    !havePACERCookie(navigation.currentURI, request) || 
+	    !this.isModifiable(URIpath)) {
+
 	    return;
 	}
 
@@ -99,7 +122,9 @@ ContentListener.prototype = {
 
 	var that = this;
 	req.onreadystatechange = function() {
-	    that.handleResponse(req, document, elements);
+	    if (req.readyState == 4 && req.status == 200) {
+		that.handleResponse(req, document, elements);
+	    }
 	};
 
 	req.send(params);
@@ -109,54 +134,51 @@ ContentListener.prototype = {
     // Handle the AJAX response
     handleResponse: function(req, document, elements) { 
 	
-	if (req.readyState == 4 && req.status == 200) {
-
-	    var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	    var jsonin = nativeJSON.decode(req.responseText);
-
-	    // a unique number for each dialog div
-	    var count = 0;
-
-	    for (var docURL in jsonin) {
-		count++;
-
-		var filename = jsonin[docURL]["filename"];
-		var timestamp = jsonin[docURL]["timestamp"];
-		var urlElements = elements[docURL];
-
-		// Create a dialogDiv for each RECAP document on the server
-		this.makeDialogDiv(document, filename,  timestamp, count);
- 
-		log("  File found: " + filename + " " + docURL);
-
-		for (var i = 0; i < urlElements.length; i++) {
-		    
-		    element = urlElements[i];
-		    
-		    // Ensure that the element isn't already modified
-		    if (element.nextSibling) {
-			nextElement = element.nextSibling;
-			nextClass = nextElement.className;		
-			if (nextClass == "recapIcon") 
-			    continue;
-		    }
-		    
-		    // Insert our link to the left of the PACER link
-		    var iconSpan = document.createElement("span");
-		    iconSpan.setAttribute("class", "recapIcon");
-		    
-		    var iconImage = this.addImage(document, iconSpan,
-						  "recap-icon.png");
-		    iconImage.setAttribute("class", "recapIconImage");
-		    iconImage.setAttribute("alt", "[RECAP]");
-		    iconImage.setAttribute("onClick", 
-					   "addModal(" + count + ");");
-		    iconImage.setAttribute("title",
-					  "Available for free from RECAP.");
-		    
-		    element.parentNode.insertBefore(iconSpan, 
-						    element.nextSibling);
+	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	var jsonin = nativeJSON.decode(req.responseText);
+	
+	// a unique number for each dialog div
+	var count = 0;
+	
+	for (var docURL in jsonin) {
+	    count++;
+	    
+	    var filename = jsonin[docURL]["filename"];
+	    var timestamp = jsonin[docURL]["timestamp"];
+	    var urlElements = elements[docURL];
+	    
+	    // Create a dialogDiv for each RECAP document on the server
+	    this.makeDialogDiv(document, filename,  timestamp, count);
+	    
+	    log("  File found: " + filename + " " + docURL);
+	    
+	    for (var i = 0; i < urlElements.length; i++) {
+		
+		element = urlElements[i];
+		
+		// Ensure that the element isn't already modified
+		if (element.nextSibling) {
+		    nextElement = element.nextSibling;
+		    nextClass = nextElement.className;		
+		    if (nextClass == "recapIcon") 
+			continue;
 		}
+		
+		// Insert our link to the left of the PACER link
+		var iconSpan = document.createElement("span");
+		iconSpan.setAttribute("class", "recapIcon");
+		
+		var iconImage = this.addImage(document, iconSpan,
+					      "recap-icon.png");
+		iconImage.setAttribute("class", "recapIconImage");
+		iconImage.setAttribute("alt", "[RECAP]");
+		iconImage.setAttribute("onClick", 
+				       "addModal(" + count + ");");
+		iconImage.setAttribute("title",
+				       "Available for free from RECAP.");
+		
+		element.parentNode.insertBefore(iconSpan, 
+						element.nextSibling);
 	    }
 	}
     },    
@@ -298,8 +320,8 @@ ContentListener.prototype = {
     },
 
     localFileToBase64: function(localFile) {
-	var ioService = Cc["@mozilla.org/network/io-service;1"]
-                         .getService(Ci.nsIIOService);
+	var ioService = CCGS("@mozilla.org/network/io-service;1",
+                             "nsIIOService");
 	var binaryStream = CCIN("@mozilla.org/binaryinputstream;1",
 				"nsIBinaryInputStream");
 
@@ -316,10 +338,10 @@ ContentListener.prototype = {
     },
 
     localFileToString: function(localFile) {
-	var ioService = Cc["@mozilla.org/network/io-service;1"]
-                         .getService(Ci.nsIIOService);
-	var scriptableStream = Cc["@mozilla.org/scriptableinputstream;1"]
-                         .getService(Ci.nsIScriptableInputStream);
+	var ioService = CCGS("@mozilla.org/network/io-service;1",
+			     "nsIIOService");
+	var scriptableStream = CCGS("@mozilla.org/scriptableinputstream;1",
+				    "nsIScriptableInputStream");
 
 	var channel = ioService.newChannel(localFile, null, null);
 	var input = channel.open();
@@ -373,8 +395,7 @@ ContentListener.prototype = {
     },
 
     get _webProgressService() {
-	return Cc["@mozilla.org/docloaderservice;1"]
-	         .getService(Ci.nsIWebProgress);
+	return CCGS("@mozilla.org/docloaderservice;1", "nsIWebProgress");
     },
     
     _register: function() {
