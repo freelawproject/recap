@@ -38,6 +38,7 @@ ROOT_DIRS=         # ...and these directories       (space separated list)
 BEFORE_BUILD=      # run this before building       (bash command)
 AFTER_BUILD=       # ...and this after the build    (bash command)
 
+
 if [ -z $1 ]; then
   . ./config_build.sh
 else
@@ -60,8 +61,12 @@ TMP_DIR=build
 rm -f $APP_NAME.jar $APP_NAME.xpi files
 rm -rf $TMP_DIR
 
+# SS: Remove annoying OS X turds
+find ./ -name .DS_Store -print | rm
+
 $BEFORE_BUILD
 
+# SS: changed mkdir args to work on OS X
 mkdir -p -v $TMP_DIR/chrome
 
 # generate the JAR file, excluding CVS and temporary files
@@ -78,10 +83,8 @@ zip -0 -r $JAR_FILE `cat files`
 # prepare components and defaults
 echo "Copying various files to $TMP_DIR folder..."
 for DIR in $ROOT_DIRS; do
-  mkdir $TMP_DIR/$DIR
-  FILES="`find $DIR -path '*CVS*' -prune -o -type f -print | grep -v \~`"
-  echo $FILES >> files
-  cp -v -p $FILES $TMP_DIR
+  # SS: simplified this because the cp flags didn't work on OS X
+  cp -v -R $DIR $TMP_DIR
 done
 
 # Copy other files to the root of future XPI.
@@ -101,10 +104,16 @@ if [ -f "chrome.manifest" ]; then
   #s/^(skin|locale)(\s+\S*\s+\S*\s+)(.*\/)$/\1\2jar:chrome\/$APP_NAME\.jar!\/\3/
   #
   # Then try this! (Same, but with characters escaped for bash :)
-  sed -i -r s/^\(content\\s+\\S*\\s+\)\(\\S*\\/\)$/\\1jar:chrome\\/$APP_NAME\\.jar!\\/\\2/ chrome.manifest
-  sed -i -r s/^\(skin\|locale\)\(\\s+\\S*\\s+\\S*\\s+\)\(.*\\/\)$/\\1\\2jar:chrome\\/$APP_NAME\\.jar!\\/\\3/ chrome.manifest
+  #sed -i -r s/^\(content\\s+\\S*\\s+\)\(\\S*\\/\)$/\\1jar:chrome\\/$APP_NAME\\.jar!\\/\\2/ chrome.manifest
+  #sed -i -r s/^\(skin\|locale\)\(\\s+\\S*\\s+\\S*\\s+\)\(.*\\/\)$/\\1\\2jar:chrome\\/$APP_NAME\\.jar!\\/\\3/ chrome.manifest
+  
+   # (it simply adds jar:chrome/whatever.jar!/ at appropriate positions of chrome.manifest)
+    
+   # SS: I commented out the above two sed lines and replaced
+   #     with this perl, because the sed on OS X was crashing out
+   #     I hope you have perl installed
+   perl -p -i -e "s/(\t|[ ])(content|locale|skin)/\1jar:chrome\/recap.jar\!\/\2/g;" chrome.manifest
 
-  # (it simply adds jar:chrome/whatever.jar!/ at appropriate positions of chrome.manifest)
 fi
 
 # generate the XPI file
