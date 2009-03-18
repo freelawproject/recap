@@ -24,14 +24,16 @@ function havePACERCookie(URI, request) {
 	var cookieString = cservice.getCookieString(URI, request);
 	
 	if (!cookieString || !cookieString.match("PacerUser")) {
-		log("No PACER cookie found.");
+		//log("No PACER cookie found.");
 		return false;
 	// We should never get here, but let's be paranoid
 	} else if (cookieString.match("KEY")) {
 		log("CM/ECF cookie found.");
 		return false;
 	} else {
-		log("PACER cookie found.");
+		//log("PACER cookie found.");
 		return true;
 	}
 }
+
+var xuldom = null;

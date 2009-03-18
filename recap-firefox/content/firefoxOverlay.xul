@@ -6,15 +6,9 @@
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <statusbar id="status-bar">
-    <statusbarpanel id="recap-panel" label="RECAP installed."  />
+    <statusbarpanel id="recap-panel" class="statusbarpanel-iconic" src="chrome://recap/skin/recap-icon-grey.png" onclick="window.open('http://recappacer.org');" style="cursor: pointer;" />
   </statusbar>
 
   <script src="overlay.js"/>
-
-  <stringbundleset id="stringbundleset">
-    <stringbundle id="recap-strings" src="chrome://recap/locale/en-US/recap.properties"/>
-  </stringbundleset>
-
-
 
 </overlay>

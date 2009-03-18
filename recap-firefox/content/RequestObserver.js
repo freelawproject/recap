@@ -284,6 +284,8 @@ RequestObserver.prototype = {
         if (topic != "http-on-examine-response")
             return;
 
+
+
 	var channel = subject.QueryInterface(Ci.nsIHttpChannel);
 	var URIscheme = channel.URI.scheme;
 	var URIhost = channel.URI.asciiHost;
