@@ -25,10 +25,8 @@ ContentListener.prototype = {
 	
 	if (isPACERHost(URIhost) && havePACERCookie(navigation.currentURI, request)) {
 		xuldom.src = "chrome://recap/skin/recap-icon.png";
-		xuldom.tooltip = "Recap active"
 	} else if (isPACERHost(URIhost) && !havePACERCookie(navigation.currentURI, request)) {
 		xuldom.src = "chrome://recap/skin/recap-icon-grey.png";
-		xuldom.tooltip = "Recap active"
 	}
 
 	// Ensure that the page warrants modification
