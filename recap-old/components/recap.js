@@ -39,9 +39,15 @@ log("recap.js loaded");
  */
 function RecapService() {
 	// constructor
+	this.wrappedJSObject = this;
 }
 
 RecapService.prototype = {
+
+setXULDOM: function(element) {
+	Recap.xuldom = element;
+},
+
     initialized: false,
 	
     _init: function() {
