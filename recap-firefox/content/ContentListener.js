@@ -41,7 +41,7 @@ ContentListener.prototype = {
 	    if (statusXUL.src != ICON_LOGGED_OUT) {
 		var alertsService = CCGS("@mozilla.org/alerts-service;1",
 					 "nsIAlertsService");
-		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+		alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
                    "RECAP disabled.", "You are logged out of PACER.");
 
 	    }
