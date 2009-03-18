@@ -4,22 +4,27 @@ const Cr = Components.results;
 const RECAP_PATH = "chrome://recap/content/";
 const RECAP_SKIN_PATH = "chrome://recap/skin/";
 
+// Helper function to create XPCOM instances
+function CCIN(contractID, interfaceName) {
+    return Cc[contractID].createInstance(Ci[interfaceName]);
+}
+
+function CCGS(contractID, interfaceName) {
+    return Cc[contractID].getService(Ci[interfaceName]);
+}
+
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var Recap = {}; // New empty extension namespace
 	
-var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"]
-                .getService(Ci.mozIJSSubScriptLoader);
+var jsLoader = CCGS("@mozilla.org/moz/jssubscript-loader;1",
+		    "mozIJSSubScriptLoader");
 
 jsLoader.loadSubScript(RECAP_PATH + "common.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 
-// Helper function to create XPCOM instances
-function CCIN(contractID, interfaceName) {
-    return Cc[contractID].createInstance(Ci[interfaceName]);
-}
 
 // Helper function to log to both stdout and Error Console
 function log(text) {
@@ -27,8 +32,8 @@ function log(text) {
     
     dump(msg);
     
-    var consoleService = Cc["@mozilla.org/consoleservice;1"]
-                          .getService(Ci.nsIConsoleService);
+    var consoleService = CCGS("@mozilla.org/consoleservice;1",
+			      "nsIConsoleService");
     consoleService.logStringMessage(msg);
 }
 
@@ -38,22 +43,22 @@ log("recap.js loaded");
  *    Mostly boilerplate code to set up the new service component.
  */
 function RecapService() {
-	// constructor
-	this.wrappedJSObject = this;
+    // constructor
+    this.wrappedJSObject = this;
 }
 
 RecapService.prototype = {
 
-setXULDOM: function(element) {
-	Recap.xuldom = element;
-},
-
     initialized: false,
 	
+    setStatusXUL: function(element) {
+	Recap.statusXUL = element;
+    },
+
     _init: function() {
 	if(!this.initialized) {
-	    var os = Cc["@mozilla.org/observer-service;1"].
-	    getService(Ci.nsIObserverService);
+	    var os = CCGS("@mozilla.org/observer-service;1",
+			  "nsIObserverService");
 	    os.addObserver(this, "xpcom-shutdown", false);
 	    os.addObserver(this, "quit-application", false);
 	    
@@ -96,8 +101,8 @@ setXULDOM: function(element) {
      * See nsIObserver
      */
     observe: function Recap_observe(subject, topic, data) {
-	var os = Cc["@mozilla.org/observer-service;1"].
-	getService(Ci.nsIObserverService);
+	var os = CCGS("@mozilla.org/observer-service;1", 
+		      "nsIObserverService");
 	
 	switch (topic) {
 	case "app-startup":

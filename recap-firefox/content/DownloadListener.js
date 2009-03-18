@@ -123,14 +123,46 @@ DownloadListener.prototype = {
 	    "; Mimetype: " + this.filemeta.mimetype +
 	    "; StreamBytes: " + this.multiplexStream.available());
 	
+	var that = this;
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
+		that.handleResponse(req);
 		log(req.responseText);
 	    }
 	};
 	
 	req.send(this.multiplexStream);
 	 
+    },
+
+    handleResponse: function(req) {
+		
+	var alertsService = CCGS("@mozilla.org/alerts-service;1",
+				 "nsIAlertsService");
+	
+	if (isPDF(this.filemeta.mimetype)) {
+	    // PDF upload notification
+
+	    alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+		"RECAP File Upload", "Document '" + 
+		this.filemeta.court + "-" + this.filemeta.name 
+		+ "' was uploaded to RECAP.");
+
+	} else if (isHTML(this.filemeta.mimetype)) {
+	    if (!isDocPath(this.filemeta.name)) {
+		// not a doc1 file, therefore is a docket file
+
+		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+		   "RECAP File Upload", "This docket was uploaded to RECAP.");
+
+	    }
+	    // no alert for doc1 files, they don't get saved on the server
+	}
+
+
+
+
+
     },
     
     originalListener: null,

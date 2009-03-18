@@ -42,9 +42,8 @@ RequestObserver.prototype = {
 
 	var pragmaVal = this.getPragmaValue(channel);
 
-        var prefs = Cc["@mozilla.org/preferences-service;1"]
-	               .getService(Ci.nsIPrefService)
-	               .getBranch("recap.");
+        var prefs = CCGS("@mozilla.org/preferences-service;1",
+			 "nsIPrefService").getBranch("recap.");
         
         var cache_time_ms = prefs.getIntPref("cache_time_ms");
         //log("cache_time_ms = " + cache_time_ms);
@@ -138,6 +137,7 @@ RequestObserver.prototype = {
 	//   i.e. we want to upload the docket results HTML page
 	//         and not the docket search form page.
 	// SS: I think we could do #2 more intelligently by looking at POST vars
+	// HY:  We would need to monitor outbound requests
 	if (pageName && refPageName &&
 	    pageName == refPageName &&
 	    downloadablePages.indexOf(pageName) >= 0) {
@@ -166,7 +166,7 @@ RequestObserver.prototype = {
     //   Otherwise, return false.
     tryDocHTMLmeta: function(channel, path, mimetype) {
 
-	if (this.isDocPath(path)) {
+	if (isDocPath(path)) {
 
 	    var referrer = channel.referrer;
 	    try {
@@ -183,7 +183,7 @@ RequestObserver.prototype = {
 	    //          page-- in this case, the page will be a solo receipt 
 	    //          page anyway, so just ignore it.
 	    // SS: again maybe we could do #2 more intelligently by looking at POST vars -- also, does this not already get caught because the page isn't a PDF?
-	    if (this.isDocPath(refpath)) {
+	    if (isDocPath(refpath)) {
 		return false;
 	    }
 
@@ -225,14 +225,6 @@ RequestObserver.prototype = {
 	}
     },
 
-    isPDF: function(mimetype) {
-	return (mimetype == "application/pdf") ? true: false;
-    },
-
-    isHTML: function(mimetype) {
-	return (mimetype.indexOf("text/html") >= 0) ? true: false;
-    },
-
     // Returns the specified Content-type from the HTTP response header
     getMimetype: function(channel) {
         try {
@@ -259,17 +251,6 @@ RequestObserver.prototype = {
 	} catch(e) {}
 
 	return pageName;
-    },
-
-    // Returns true if path matches "/doc1/<docnum>"
-    isDocPath: function(path) {
-
-	try {
-	    var docMatch = path.match(/^\/doc1\/(\d+)$/i);
-	    return docMatch ? true : false;
-	} catch(e) {
-	    return false;
-	}	
     },
 
     // Intercept the channel, and upload the data with metadata
@@ -303,7 +284,7 @@ RequestObserver.prototype = {
 	var mimetype = this.getMimetype(channel);	
 
 	// Upload content to the server if the file is a PDF
-	if (this.isPDF(mimetype)) {
+	if (isPDF(mimetype)) {
 
 	    var PDFmeta = this.getPDFmeta(channel, mimetype);
 
@@ -314,7 +295,7 @@ RequestObserver.prototype = {
 
 	    this.uploadChannelData(subject, PDFmeta);
 
-	} else if (this.isHTML(mimetype)) {
+	} else if (isHTML(mimetype)) {
 	    // Upload content to the server if the file is interesting HTML
 	    
 	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
@@ -326,8 +307,7 @@ RequestObserver.prototype = {
     },
 
     get _observerService() {
-        return Cc["@mozilla.org/observer-service;1"]
-	         .getService(Ci.nsIObserverService);
+        return CCGS("@mozilla.org/observer-service;1", "nsIObserverService");
     },
     
     _register: function() {

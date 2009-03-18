@@ -7,10 +7,10 @@ var recap = {
 	
 	var recapPanel = document.getElementById('recap-panel');
 
-	var recapService =
-Components.classes["@cs.princeton.edu/recap;1"].getService().wrappedJSObject;
+	var recapService = Cc["@cs.princeton.edu/recap;1"]
+	                    .getService().wrappedJSObject;
 	
-	recapService.setXULDOM(recapPanel);
+	recapService.setStatusXUL(recapPanel);
 	
     },
     
