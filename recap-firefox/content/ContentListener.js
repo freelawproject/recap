@@ -23,35 +23,43 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 	
-	if (isPACERHost(URIhost) && 
-	    havePACERCookie(navigation.currentURI, request)) {
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+			 "nsIPrefService").getBranch("recap.");
+        
+    
+	
+	if (havePACERCookie(navigation.currentURI, request)) {
 
-	    if (statusXUL.src != ICON_LOGGED_IN) {
-		var alertsService = CCGS("@mozilla.org/alerts-service;1",
+		for (count in statusXUL) {
+			var recapActive = prefs.getBoolPref("active");
+	    	if ((statusXUL[count].src != ICON_LOGGED_IN) && (recapActive == false)) {
+	   			prefs.setBoolPref("active",true);
+				var alertsService = CCGS("@mozilla.org/alerts-service;1",
 					 "nsIAlertsService");
-		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+				alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
                    "RECAP enabled.", "You are logged into PACER.");
-		
+	    	}
+	    statusXUL[count].src = ICON_LOGGED_IN;
 	    }
-	    statusXUL.src = ICON_LOGGED_IN;
 
-	} else if (isPACERHost(URIhost) && 
-		   !havePACERCookie(navigation.currentURI, request)) {
+	} else if (!havePACERCookie(navigation.currentURI, request)) {
 
-	    if (statusXUL.src != ICON_LOGGED_OUT) {
-		var alertsService = CCGS("@mozilla.org/alerts-service;1",
+		for (count in statusXUL) {
+			var recapActive = prefs.getBoolPref("active");
+	    	if (statusXUL[count].src != ICON_LOGGED_OUT && (recapActive == true)) {
+	   		prefs.setBoolPref("active",false);
+			var alertsService = CCGS("@mozilla.org/alerts-service;1",
 					 "nsIAlertsService");
-		alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
+			alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
                    "RECAP disabled.", "You are logged out of PACER.");
-
-	    }
-	    statusXUL.src = ICON_LOGGED_OUT;
-
+	    	}
+	    statusXUL[count].src = ICON_LOGGED_OUT;
+		}
 	}
 
 	// Ensure that the page warrants modification
-	if (!isPACERHost(URIhost) || 
-	    !havePACERCookie(navigation.currentURI, request) || 
+	if (!havePACERCookie(navigation.currentURI, request) ||
+	    !isPACERHost(URIhost) ||
 	    !this.isModifiable(URIpath)) {
 
 	    return;

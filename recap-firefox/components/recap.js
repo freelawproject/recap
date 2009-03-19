@@ -52,7 +52,7 @@ RecapService.prototype = {
     initialized: false,
 	
     setStatusXUL: function(element) {
-	Recap.statusXUL = element;
+	Recap.statusXUL.push(element);
     },
 
     _init: function() {

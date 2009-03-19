@@ -62,7 +62,7 @@ rm -f $APP_NAME.jar $APP_NAME.xpi files
 rm -rf $TMP_DIR
 
 # SS: Remove annoying OS X turds
-find ./ -name .DS_Store -print | rm
+find ./ -name .DS_Store -print | rm -f
 
 $BEFORE_BUILD
 
