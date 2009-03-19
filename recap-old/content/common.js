@@ -43,6 +43,40 @@ function getCourtFromHost(hostname) {
 
 // Checks whether we have a PACER cookie
 function havePACERCookie(URI, request) {
+
+
+	var cookieMan = Components.classes["@mozilla.org/cookiemanager;1"].getService(Components.interfaces.nsICookieManager);
+
+	var foundPacerUser = false;
+
+	var cookieEnum = cookieMan.enumerator;
+	while (cookieEnum.hasMoreElements()) {
+		var cookie = cookieEnum.getNext();
+		//log(cookie.name);
+		if (cookie instanceof Components.interfaces.nsICookie){
+			if (cookie.host.match("uscourts.gov")) {
+				if (cookie.name.match("KEY")) {
+					return false;
+				}
+				if (cookie.name.match("PacerUser")) {
+					foundPacerUser = true;
+					log("PacerUser" + cookie.value);
+				}
+				
+			}
+		}
+	}
+
+	if (foundPacerUser == true) {
+		log("havePACERCookie returning true");
+		return true;
+	} else {
+		log("havePACERCookie returning false");
+		return false;
+	}
+
+/* SS: This was the old way of checking for the cookie... 
+       ...which might have been better!
     var cservice = CCGS("@mozilla.org/cookieService;1",
 			"nsICookieService");
     
@@ -59,7 +93,9 @@ function havePACERCookie(URI, request) {
 	//log("PACER cookie found.");
 	return true;
     }
+*/
+
 }
 
-// The XUL element in the status bar for Recap
-var statusXUL = null;
+// An array of XUL elements in the status bars of each window
+var statusXUL = [];
