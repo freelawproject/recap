@@ -50,9 +50,9 @@ function RecapService() {
 RecapService.prototype = {
 
     initialized: false,
-	
-    setStatusXUL: function(element) {
-	Recap.statusXUL.push(element);
+
+    getContentListener: function() {
+	return Recap.gContentListener;
     },
 
     _init: function() {
