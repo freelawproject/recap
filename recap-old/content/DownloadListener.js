@@ -136,7 +136,7 @@ DownloadListener.prototype = {
     },
 
     handleResponse: function(req) {
-		
+	
 	var alertsService = CCGS("@mozilla.org/alerts-service;1",
 				 "nsIAlertsService");
 	
@@ -158,10 +158,6 @@ DownloadListener.prototype = {
 	    }
 	    // no alert for doc1 files, they don't get saved on the server
 	}
-
-
-
-
 
     },
     

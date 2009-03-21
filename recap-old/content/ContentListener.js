@@ -1,6 +1,15 @@
 
 function ContentListener() {
     this._register();
+    this.active = false;
+    this.winMediator = CCGS("@mozilla.org/appshell/window-mediator;1",
+			    "nsIWindowMediator");
+    this.alertsService = CCGS("@mozilla.org/alerts-service;1",
+			      "nsIAlertsService");
+    this.ioService = CCGS("@mozilla.org/network/io-service;1",
+			  "nsIIOService");
+    this.scriptableStream = CCGS("@mozilla.org/scriptableinputstream;1",
+				 "nsIScriptableInputStream");
 }
 
 ContentListener.prototype = {
@@ -23,38 +32,26 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 	
-	var prefs = CCGS("@mozilla.org/preferences-service;1",
-			 "nsIPrefService").getBranch("recap.");
-        
-    
-	
-	if (havePACERCookie(navigation.currentURI, request)) {
 
-		for (count in statusXUL) {
-			var recapActive = prefs.getBoolPref("active");
-	    	if ((statusXUL[count].src != ICON_LOGGED_IN) && (recapActive == false)) {
-	   			prefs.setBoolPref("active",true);
-				var alertsService = CCGS("@mozilla.org/alerts-service;1",
-					 "nsIAlertsService");
-				alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
-                   "RECAP enabled.", "You are logged into PACER.");
-	    	}
-	    statusXUL[count].src = ICON_LOGGED_IN;
-	    }
+	if (havePACERCookie(navigation.currentURI, request) 
+	    && !this.active) {
+	    // Just logged into PACER
 
-	} else if (!havePACERCookie(navigation.currentURI, request)) {
+	    this.alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+	       "RECAP enabled.", "You are logged into PACER.");
 
-		for (count in statusXUL) {
-			var recapActive = prefs.getBoolPref("active");
-	    	if (statusXUL[count].src != ICON_LOGGED_OUT && (recapActive == true)) {
-	   		prefs.setBoolPref("active",false);
-			var alertsService = CCGS("@mozilla.org/alerts-service;1",
-					 "nsIAlertsService");
-			alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
-                   "RECAP disabled.", "You are logged out of PACER.");
-	    	}
-	    statusXUL[count].src = ICON_LOGGED_OUT;
-		}
+	    this.active = true;
+	    this.updateAllWindowIcons(webProgress);
+
+	} else if (!havePACERCookie(navigation.currentURI, request)
+		   && this.active) {
+	    // Just logged out of PACER
+	    
+	    this.alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
+	       "RECAP disabled.", "You are logged out of PACER.");
+
+	    this.active = false;
+	    this.updateAllWindowIcons(webProgress);	    
 	}
 
 	// Ensure that the page warrants modification
@@ -292,7 +289,7 @@ ContentListener.prototype = {
     hasDocPath: function(path) {
 
 	try {
-	    var docMatch = path.match(/\/doc1\/(\d+)$/i);
+	    var docMatch = path.match(/\/doc1\/(\d+)/i);
 	    return docMatch ? true : false;
 	} catch(e) {
 	    return false;
@@ -328,12 +325,10 @@ ContentListener.prototype = {
     },
 
     localFileToBase64: function(localFile) {
-	var ioService = CCGS("@mozilla.org/network/io-service;1",
-                             "nsIIOService");
 	var binaryStream = CCIN("@mozilla.org/binaryinputstream;1",
 				"nsIBinaryInputStream");
 
-	var channel = ioService.newChannel(localFile, null, null);
+	var channel = this.ioService.newChannel(localFile, null, null);
 	var input = channel.open();
 	binaryStream.setInputStream(input);
 	var bytes = binaryStream.readBytes(input.available());
@@ -346,16 +341,12 @@ ContentListener.prototype = {
     },
 
     localFileToString: function(localFile) {
-	var ioService = CCGS("@mozilla.org/network/io-service;1",
-			     "nsIIOService");
-	var scriptableStream = CCGS("@mozilla.org/scriptableinputstream;1",
-				    "nsIScriptableInputStream");
 
-	var channel = ioService.newChannel(localFile, null, null);
+	var channel = this.ioService.newChannel(localFile, null, null);
 	var input = channel.open();
-	scriptableStream.init(input);
-	var str = scriptableStream.read(input.available());
-	scriptableStream.close();
+	this.scriptableStream.init(input);
+	var str = this.scriptableStream.read(input.available());
+	this.scriptableStream.close();
 	input.close();
 
 	return str;
@@ -378,14 +369,53 @@ ContentListener.prototype = {
 	}
 
 	if (typeof element != "undefined") {
-		// Is this line bombing? - SS
 	    document.getElementsByTagName("head")[0].appendChild(element);
 	    log("jscssLoadString: " + filetype);
 	}
     },
 
+
+    onLocationChange: function(webProgress, request, location) {
+
+	var window = this.winMediator.getMostRecentWindow("navigator:browser");
+	var windowXUL = window.document;
+
+	var navigation = webProgress.QueryInterface(Ci.nsIWebNavigation);
+	//var URIhost = navigation.currentURI.asciiHost;
+
+	this.updateWindowIcon(windowXUL);
+
+    },
+
+
+    updateAllWindowIcons: function() {
+
+	var winEnum = this.winMediator.getEnumerator("navigator:browser");
+
+	while (winEnum.hasMoreElements()) {
+	    var window = winEnum.getNext();
+	    var windowXUL = window.document;
+	    //var URIhost = window.content.document.location.hostname;
+		
+	    this.updateWindowIcon(windowXUL);
+	}
+    },
+
+    updateWindowIcon: function(windowXUL) {
+
+	var panel = windowXUL.getElementById('recap-panel');
+
+	if (panel) {
+
+	    if (this.active) {
+		panel.src = ICON_LOGGED_IN;
+	    } else {
+		panel.src = ICON_LOGGED_OUT;
+	    }
+	}
+    },
+
     // implementing nsIWebProgressListener, unnecessary functions.
-    onLocationChange: function(webProgress, request, location) {},
     onProgressChange: function(webProgress, request, 
 			       curSelfProgress, maxSelfProgress, 
 			       curTotalProgress, maxTotalProgress) {},
@@ -411,6 +441,7 @@ ContentListener.prototype = {
 	// add listener, only listen for document loading start/stop events
 	this._webProgressService
 	    .addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_NETWORK);
+
     },
 
     unregister: function() {
