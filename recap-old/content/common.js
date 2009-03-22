@@ -41,7 +41,9 @@ function getCourtFromHost(hostname) {
 	court = hostname.match(/(\w*)\.uscourts.gov/i)[1];
     } catch(e) {}
 
-    return court;
+	var westCourt = PACER_TO_WEST_COURT[court];
+	
+    return westCourt;
 }
 
 // Checks whether we have a PACER cookie
