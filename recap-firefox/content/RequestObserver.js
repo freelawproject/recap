@@ -81,7 +81,7 @@ RequestObserver.prototype = {
 
 	if (filename != null && court != null) {
 
-	    var cdVal = "inline; filename=\"" + court + 
+	    var cdVal = "inline; filename=\"" + PACER_TO_WEST_COURT[court] + 
 	                 "-" + filename + "\"";	
 
 	    log("Setting Content-Disposition to: " + cdVal);
