@@ -102,6 +102,18 @@ ContentListener.prototype = {
 		} catch(e) {
 		    elements[docURL] = [link];
 		}
+		
+		// rewrite onClick DLS links to force PDF headers on
+		var onClickText = link.getAttribute("onclick");
+		//log(onClickText);
+		if (onClickText) {
+			var DLSargs = [];
+			DLSargs = onClickText.split(",");
+			DLSargs[4] = "'1'";
+			newOnClick = DLSargs.join(",");
+			log(newOnClick);
+			link.setAttribute("onclick",newOnClick);
+		}
 	    }
 	}
 	
@@ -370,7 +382,7 @@ ContentListener.prototype = {
 
 	if (typeof element != "undefined") {
 	    document.getElementsByTagName("head")[0].appendChild(element);
-	    log("jscssLoadString: " + filetype);
+	    //log("jscssLoadString: " + filetype);
 	}
     },
 
