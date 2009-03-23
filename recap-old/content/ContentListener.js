@@ -63,8 +63,8 @@ ContentListener.prototype = {
 	}
 
 	var court = getCourtFromHost(URIhost);	
-	var document = navigation.document;	
-	var showSubdocs = this.hasDocPath(URIpath);
+	var document = navigation.document;
+	var showSubdocs = isDocPath(URIpath);
 
 	if (court && document) {
 	    this.docCheckAndModify(document, court, showSubdocs);
@@ -86,8 +86,14 @@ ContentListener.prototype = {
 	var jsonout = { showSubdocs: showSubdocs,
 			court: court, 
 			urls: [] };
+
+	try {
+	    var body = document.getElementsByTagName("body")[0];
+	} catch(e) {
+	    return;
+	}
 	
-	var links = document.getElementsByTagName("a");
+	var links = body.getElementsByTagName("a");
 	// Save pointers to the HTML elements for each "a" tag, keyed by URL
 	var elements = {};
 	
@@ -107,10 +113,9 @@ ContentListener.prototype = {
 		var onClickText = link.getAttribute("onclick");
 		//log(onClickText);
 		if (onClickText) {
-			var DLSargs = [];
-			DLSargs = onClickText.split(",");
+			var DLSargs = onClickText.split(",");
 			DLSargs[4] = "'1'";
-			newOnClick = DLSargs.join(",");
+			var newOnClick = DLSargs.join(",");
 			log(newOnClick);
 			link.setAttribute("onclick",newOnClick);
 		}
@@ -181,7 +186,7 @@ ContentListener.prototype = {
 			continue;
 		}
 		
-		// Insert our link to the left of the PACER link
+		// Insert our link to the right of the PACER link
 		var iconSpan = document.createElement("span");
 		iconSpan.setAttribute("class", "recapIcon");
 		
@@ -319,7 +324,7 @@ ContentListener.prototype = {
 	} catch(e) {}
 
 	return (modifiablePages.indexOf(pageName) >= 0 ||
-		this.hasDocPath(path)) ? true : false;
+		isDocPath(path)) ? true : false;
     },
 
     loadjs: function(document) {
