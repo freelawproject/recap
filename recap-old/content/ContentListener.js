@@ -418,16 +418,27 @@ ContentListener.prototype = {
 	}
     },
 
+    setPanelIcon: function(panel, on) {
+	if (on) {
+	    panel.src = ICON_LOGGED_IN;
+	    panel.tooltipText = "You are logged into PACER.";
+
+	} else {
+	    panel.src= ICON_LOGGED_OUT;
+	    panel.tooltipText = "You are logged out of PACER.";
+	}
+    },
+
     updateWindowIcon: function(windowXUL) {
 
-	var panel = windowXUL.getElementById('recap-panel');
+	var panel = windowXUL.getElementById('recap-panel-image');
 
 	if (panel) {
 
 	    if (this.active) {
-		panel.src = ICON_LOGGED_IN;
+		this.setPanelIcon(panel, true);
 	    } else {
-		panel.src = ICON_LOGGED_OUT;
+		this.setPanelIcon(panel, false);
 	    }
 	}
     },
