@@ -151,6 +151,7 @@ DownloadListener.prototype = {
 	} else if (isHTML(this.filemeta.mimetype)) {
 	    if (!isDocPath(this.filemeta.name)) {
 		// not a doc1 file, therefore is a docket file
+		// SS - the above line excludes multidoc page notifications, which is probably unintended.  Can't we just rely on isHTML and remove this conditional?
 
 		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
 		   "RECAP File Upload", "This docket was uploaded to RECAP.");
