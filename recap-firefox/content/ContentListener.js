@@ -4,8 +4,7 @@ function ContentListener() {
     this.active = false;
     this.winMediator = CCGS("@mozilla.org/appshell/window-mediator;1",
 			    "nsIWindowMediator");
-    this.alertsService = CCGS("@mozilla.org/alerts-service;1",
-			      "nsIAlertsService");
+    
     this.ioService = CCGS("@mozilla.org/network/io-service;1",
 			  "nsIIOService");
     this.scriptableStream = CCGS("@mozilla.org/scriptableinputstream;1",
@@ -33,30 +32,29 @@ ContentListener.prototype = {
 	var URIpath = navigation.currentURI.path;
 	
 
-	if (havePACERCookie(navigation.currentURI, request) 
+	if (isPACERHost(URIhost) && havePACERCookie() 
 	    && !this.active) {
 	    // Just logged into PACER
 
-	    this.alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+	    showAlert(ICON_LOGGED_IN_32, 
 	       "RECAP enabled.", "You are logged into PACER.");
 
 	    this.active = true;
-	    this.updateAllWindowIcons(webProgress);
 
-	} else if (!havePACERCookie(navigation.currentURI, request)
+	} else if (isPACERHost(URIhost) && !havePACERCookie()
 		   && this.active) {
 	    // Just logged out of PACER
 	    
-	    this.alertsService.showAlertNotification(ICON_LOGGED_OUT_32, 
+	    showAlert(ICON_LOGGED_OUT_32, 
 	       "RECAP disabled.", "You are logged out of PACER.");
 
-	    this.active = false;
-	    this.updateAllWindowIcons(webProgress);	    
+	    this.active = false;    
 	}
+	this.updateAllWindowIcons();
 
 	// Ensure that the page warrants modification
-	if (!havePACERCookie(navigation.currentURI, request) ||
-	    !isPACERHost(URIhost) ||
+	if (!isPACERHost(URIhost) ||
+		!havePACERCookie() ||
 	    !this.isModifiable(URIpath)) {
 
 	    return;
@@ -109,16 +107,6 @@ ContentListener.prototype = {
 		    elements[docURL] = [link];
 		}
 		
-		// rewrite onClick DLS links to force PDF headers on
-		var onClickText = link.getAttribute("onclick");
-		//log(onClickText);
-		if (onClickText) {
-			var DLSargs = onClickText.split(",");
-			DLSargs[4] = "'1'";
-			var newOnClick = DLSargs.join(",");
-			log(newOnClick);
-			link.setAttribute("onclick",newOnClick);
-		}
 	    }
 	}
 	
@@ -391,57 +379,23 @@ ContentListener.prototype = {
 	}
     },
 
-
-    onLocationChange: function(webProgress, request, location) {
-
-	var window = this.winMediator.getMostRecentWindow("navigator:browser");
-	var windowXUL = window.document;
-
-	var navigation = webProgress.QueryInterface(Ci.nsIWebNavigation);
-	//var URIhost = navigation.currentURI.asciiHost;
-
-	this.updateWindowIcon(windowXUL);
-
-    },
-
-
     updateAllWindowIcons: function() {
 
 	var winEnum = this.winMediator.getEnumerator("navigator:browser");
 
 	while (winEnum.hasMoreElements()) {
 	    var window = winEnum.getNext();
-	    var windowXUL = window.document;
-	    //var URIhost = window.content.document.location.hostname;
-		
-	    this.updateWindowIcon(windowXUL);
+
+		try {
+			window.updateStatusIcon();
+		} catch(e) {
+			log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
+		}
+
+	    
 	}
     },
-
-    setPanelIcon: function(panel, on) {
-	if (on) {
-	    panel.src = ICON_LOGGED_IN;
-	    panel.tooltipText = "You are logged into PACER.";
-
-	} else {
-	    panel.src= ICON_LOGGED_OUT;
-	    panel.tooltipText = "You are logged out of PACER.";
-	}
-    },
-
-    updateWindowIcon: function(windowXUL) {
-
-	var panel = windowXUL.getElementById('recap-panel-image');
-
-	if (panel) {
-
-	    if (this.active) {
-		this.setPanelIcon(panel, true);
-	    } else {
-		this.setPanelIcon(panel, false);
-	    }
-	}
-    },
+  
 
     // implementing nsIWebProgressListener, unnecessary functions.
     onProgressChange: function(webProgress, request, 

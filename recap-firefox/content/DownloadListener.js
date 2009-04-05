@@ -137,13 +137,11 @@ DownloadListener.prototype = {
 
     handleResponse: function(req) {
 	
-	var alertsService = CCGS("@mozilla.org/alerts-service;1",
-				 "nsIAlertsService");
 	
 	if (isPDF(this.filemeta.mimetype)) {
 	    // PDF upload notification
 
-	    alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+	    showAlert(ICON_LOGGED_IN_32, 
 		"RECAP File Upload", "Document '" + 
 		this.filemeta.court + "-" + this.filemeta.name 
 		+ "' was uploaded to RECAP.");
@@ -153,7 +151,7 @@ DownloadListener.prototype = {
 		// not a doc1 file, therefore is a docket file
 		// SS - the above line excludes multidoc page notifications, which is probably unintended.  Can't we just rely on isHTML and remove this conditional?
 
-		alertsService.showAlertNotification(ICON_LOGGED_IN_32, 
+		showAlert(ICON_LOGGED_IN_32, 
 		   "RECAP File Upload", "This docket was uploaded to RECAP.");
 
 	    }
