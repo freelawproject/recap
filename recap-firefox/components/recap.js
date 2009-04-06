@@ -9,33 +9,22 @@ function CCIN(contractID, interfaceName) {
     return Cc[contractID].createInstance(Ci[interfaceName]);
 }
 
-function CCGS(contractID, interfaceName) {
-    return Cc[contractID].getService(Ci[interfaceName]);
-}
+
 
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var Recap = {}; // New empty extension namespace
 	
-var jsLoader = CCGS("@mozilla.org/moz/jssubscript-loader;1",
-		    "mozIJSSubScriptLoader");
+//var jsLoader = CCGS("@mozilla.org/moz/jssubscript-loader;1",
+//		    "mozIJSSubScriptLoader");
 
-jsLoader.loadSubScript(RECAP_PATH + "common.js", Recap);
+var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci["mozIJSSubScriptLoader"]);
+
+jsLoader.loadSubScript(RECAP_PATH + "common.js", this);
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 
-
-// Helper function to log to both stdout and Error Console
-function log(text) {
-    var msg = "Recap: " + text + "\n";
-    
-    dump(msg);
-    
-    var consoleService = CCGS("@mozilla.org/consoleservice;1",
-			      "nsIConsoleService");
-    consoleService.logStringMessage(msg);
-}
 
 log("recap.js loaded");
 
@@ -62,7 +51,14 @@ RecapService.prototype = {
 	    os.addObserver(this, "xpcom-shutdown", false);
 	    os.addObserver(this, "quit-application", false);
 	    
-            Recap.gRequestObserver = new Recap.RequestObserver();
+	    try {
+    	alertsService = CCGS("@mozilla.org/alerts-service;1",
+			      "nsIAlertsService");
+	} catch (e) {
+		log("couldn't start up alert service (are we on OSX without Growl installed?");
+		}
+	    
+	    Recap.gRequestObserver = new Recap.RequestObserver();
 	    Recap.gContentListener = new Recap.ContentListener();
 	    
 	    this.initialized = true;
@@ -96,6 +92,7 @@ RecapService.prototype = {
     contractID:       "@cs.princeton.edu/recap;1",
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
 					   Ci.nsISupports]),
+					 
 		 
     /**
      * See nsIObserver

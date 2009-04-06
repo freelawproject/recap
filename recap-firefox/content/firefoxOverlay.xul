@@ -12,5 +12,6 @@
   </statusbar>
 
   <script src="overlay.js"/>
+  <script src="common.js"/>
 
 </overlay>

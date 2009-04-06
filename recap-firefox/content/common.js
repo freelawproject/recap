@@ -1,3 +1,4 @@
+log("loaded common.js");
 
 var ICON_LOGGED_IN = "chrome://recap/skin/recap-icon.png";
 var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
@@ -49,7 +50,7 @@ function getCourtFromHost(hostname) {
 }
 
 // Checks whether we have a PACER cookie
-function havePACERCookie(URI, request) {
+function havePACERCookie() {
 
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
 			 "nsICookieManager");
@@ -62,9 +63,9 @@ function havePACERCookie(URI, request) {
 	//log(cookie.name);
 	if (cookie instanceof Components.interfaces.nsICookie){
 	    if (cookie.host.match("uscourts.gov")) {
-		if (cookie.name.match("KEY")) {
-		    return false;
-		}
+			if (cookie.name.match("KEY")) {
+			    return false;
+			}
 		if (cookie.name.match("PacerUser")) {
 		    foundPacerUser = true;
 		    //log("PacerUser" + cookie.value);
@@ -82,25 +83,35 @@ function havePACERCookie(URI, request) {
 	return false;
     }
 
-/* SS: This was the old way of checking for the cookie... 
-       ...which might have been better!
-    var cservice = CCGS("@mozilla.org/cookieService;1",
-			"nsICookieService");
-    
-    var cookieString = cservice.getCookieString(URI, request);
-    
-    if (!cookieString || !cookieString.match("PacerUser")) {
-	//log("No PACER cookie found.");
-	return false;
-    } else if (cookieString.match("KEY")) {
-	// We should never get here, but let's be paranoid
-	log("CM/ECF cookie found.");
-	return false;
-    } else {
-	//log("PACER cookie found.");
-	return true;
-    }
-*/
-
 }
 
+// Helper function to get interfaces
+function CCGS(contractID, interfaceName) {
+	
+	if (interfaceName != "nsIConsoleService") {
+		//log("CCGS called with: " + contractID + " " + interfaceName);
+	}
+    return Cc[contractID].getService(Ci[interfaceName]);
+}
+
+
+// Helper function to log to both stdout and Error Console
+function log(text) {
+    var msg = "Recap: " + text + "\n";
+    
+    dump(msg);
+    
+    var consoleService = CCGS("@mozilla.org/consoleservice;1",
+			      "nsIConsoleService");
+    consoleService.logStringMessage(msg);
+}
+
+function showAlert(icon, headline, message) {
+		try {
+			alertsService.showAlertNotification(icon, 
+	       headline, message);
+		} catch (e) {
+			log("couldn't start up alert service (are we on OSX without Growl installed?)");
+		}
+
+}

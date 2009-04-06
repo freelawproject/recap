@@ -305,7 +305,7 @@ RequestObserver.prototype = {
 	var URIpath = channel.URI.path;
 
 	// Ignore non-PACER domains, or if no PACER cookie, or some PACER pages
-	if (!isPACERHost(URIhost) || !havePACERCookie(channel.URI, channel) || this.ignorePage(URIpath)) {
+	if (!isPACERHost(URIhost) || !havePACERCookie() || this.ignorePage(URIpath)) {
 	    //log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}
