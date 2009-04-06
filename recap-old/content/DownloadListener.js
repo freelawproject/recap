@@ -109,7 +109,7 @@ DownloadListener.prototype = {
 		       "nsIXMLHttpRequest");
 	
 	req.open("POST", 
-		 "http://monocle.princeton.edu/recap/doupload/", 
+		 SERVER_URL + "doupload/", 
 		 true);
 	
 	req.setRequestHeader("Content-Type", 
@@ -129,6 +129,7 @@ DownloadListener.prototype = {
 		that.handleResponse(req);
 		log(req.responseText);
 	    }
+	    
 	};
 	
 	req.send(this.multiplexStream);
