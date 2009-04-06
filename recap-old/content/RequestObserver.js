@@ -214,7 +214,12 @@ RequestObserver.prototype = {
 	    //     (2) when clicking on a subdocument from a disambiguation 
 	    //          page-- in this case, the page will be a solo receipt 
 	    //          page anyway, so just ignore it.
-	    // SS: again maybe we could do #2 more intelligently by looking at POST vars -- also, does this not already get caught because the page isn't a PDF?
+	    // SS: This does not deal with the most common case: doc1/ page 
+	    //     which is linked to from the docket page (non multidoc)
+	    //     in this case, we are triggering an upload and getting an
+	    //     error from Django (500) because index_soup isn't defined:
+	    //           links = index_soup.findAll('a')
+	    
 	    if (isDocPath(refpath)) {
 		return false;
 	    }
