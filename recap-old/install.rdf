@@ -5,7 +5,7 @@
     <em:id>recapextension@cs.princeton.edu</em:id>
     <em:name>RECAP</em:name>
     <em:description>Turning PACER Around.</em:description>
-    <em:version>0.1.1</em:version>
+    <em:version>0.1.2</em:version>
     <em:iconURL>chrome://recap/skin/recap-icon-32.png</em:iconURL>
     <em:optionsURL>chrome://recap/content/options.xul</em:optionsURL>
     <em:updateURL>https://www.princeton.edu/~harlanyu/recap/update.rdf</em:updateURL>
