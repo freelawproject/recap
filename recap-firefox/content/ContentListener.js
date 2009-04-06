@@ -116,7 +116,7 @@ ContentListener.prototype = {
 			var DLSargs = onClickText.split(",");
 			DLSargs[4] = "'1'";
 			var newOnClick = DLSargs.join(",");
-			log(newOnClick);
+			// log(newOnClick);
 			link.setAttribute("onclick",newOnClick);
 		}
 	    }
@@ -139,7 +139,7 @@ ContentListener.prototype = {
 	var params = "json=" + jsonouts;
 	
 	req.open("POST", 
-		 "http://monocle.princeton.edu/recap/document/",
+		 SERVER_URL + "document/",
 		 true);
 
 	var that = this;
