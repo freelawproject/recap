@@ -9,13 +9,34 @@ function ContentListener() {
 			  "nsIIOService");
     this.scriptableStream = CCGS("@mozilla.org/scriptableinputstream;1",
 				 "nsIScriptableInputStream");
+    this.images = this.initImages();
 }
 
 ContentListener.prototype = {
 
+    initImages: function() {
+
+	var retdict = {};
+	
+	var srcs = new Array("recap-icon.png", 
+			     "close-x-button.png", 
+			     "recap-logo.png");
+	
+	for (var i in srcs) {
+	    var src = srcs[i];
+	    var embeddedImageSrc = "data:image/png;base64,";
+	    embeddedImageSrc += this.localFileToBase64(RECAP_SKIN_PATH + src);
+	    retdict[src] = embeddedImageSrc;
+
+	    log(src + " initialized.");
+	}
+	
+	return retdict;
+    },
+
     // Implementing nsIWebProgressListener
     onStateChange: function(webProgress, request, stateFlags, status) {
-
+	
 	const WPL = Ci.nsIWebProgressListener;
 
 	// Ensure that the document is done loading
@@ -269,11 +290,8 @@ ContentListener.prototype = {
 
     addImage: function(document, div, src) {
 	var img = document.createElement("img");
-
-	var embeddedImageSrc = "data:image/png;base64,";
-	embeddedImageSrc += this.localFileToBase64(RECAP_SKIN_PATH + src);
-
-	img.setAttribute("src", embeddedImageSrc);
+	
+	img.setAttribute("src", this.images[src]);
 	div.appendChild(img);
 	return img;
     },
