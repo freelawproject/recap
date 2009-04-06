@@ -5,8 +5,8 @@ function addModal(num) {
 }
 
 var pdfHeadersCheckbox;
-if (pdfHeadersCheckbox = document.getElementsByName("pdf_header")) {
-	
+pdfHeadersCheckbox = document.getElementsByName("pdf_header");
+if (pdfHeadersCheckbox.length > 0) {	
 	pdfHeadersCheckbox[0].checked=true;
 }
 

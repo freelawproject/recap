@@ -148,15 +148,10 @@ DownloadListener.prototype = {
 		+ "' was uploaded to RECAP.");
 
 	} else if (isHTML(this.filemeta.mimetype)) {
-	    if (!isDocPath(this.filemeta.name)) {
-		// not a doc1 file, therefore is a docket file
-		// SS - the above line excludes multidoc page notifications, which is probably unintended.  Can't we just rely on isHTML and remove this conditional?
 
 		showAlert(ICON_LOGGED_IN_32, 
-		   "RECAP File Upload", "This docket was uploaded to RECAP.");
+		   "RECAP File Upload", "This page was uploaded to RECAP.");
 
-	    }
-	    // no alert for doc1 files, they don't get saved on the server
 	}
 
     },
