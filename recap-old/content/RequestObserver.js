@@ -275,7 +275,14 @@ RequestObserver.prototype = {
     ignorePage: function(path) {
 	var ignorePages = ["login.pl", "iquery.pl", "BillingRpt.pl"];
 	
+	var sometimesFormPages = ["HistDocQry.pl", "DktRpt.pl"];
+	
 	var pageName = this.perlPathMatch(path);
+	
+	// don't cache pages which are sometimes forms, if they are forms
+	if (sometimesFormPages.indexOf(pageName) >= 0 && this.perlArgsJustDigits(path)) {
+		return true;
+	}
 
 	return (pageName && ignorePages.indexOf(pageName) >= 0) ? true : false;
     },
@@ -289,6 +296,21 @@ RequestObserver.prototype = {
 
 	return pageName;
     },
+    
+    // are the arguments digits only?  If so, this is a form.
+    perlArgsJustDigits: function(path) {
+	var pageName = null;
+	try {
+	    args = path.match(/\?\d*/i)[0];
+	} catch(e) {}
+	
+	if (args.length > 0) {
+		log("digits only");
+	}
+
+	return (args && args.length > 0) ? true : false;
+    },
+    
 
     // Intercept the channel, and upload the data with metadata
     uploadChannelData: function(subject, metadata) {
