@@ -299,13 +299,13 @@ RequestObserver.prototype = {
     
     // are the arguments digits only?  If so, this is a form.
     perlArgsJustDigits: function(path) {
-	var pageName = null;
+	var args = null;
 	try {
-	    args = path.match(/\?\d*/i)[0];
+	    args = path.match(/\?\d*$/i)[0];
 	} catch(e) {}
 	
-	if (args.length > 0) {
-		log("digits only");
+	if (args && args.length > 0) {
+		//log("digits only");
 	}
 
 	return (args && args.length > 0) ? true : false;
