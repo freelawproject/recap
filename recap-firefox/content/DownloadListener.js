@@ -11,7 +11,7 @@
  *
 */
 
-function DownloadListener(filemeta) {
+function DownloadListener(filemeta, metacache) {
     // metadata for a PDF file, should have the following properties:
     //    filemeta.mimetype ('application/pdf')
     //    filemeta.court ('cacd')
@@ -32,6 +32,9 @@ function DownloadListener(filemeta) {
     //    filemeta.name
 
     this.filemeta = filemeta;
+    
+    // cache of document and case metadata from Recap namespace
+    this.metacache = metacache;
 }
 
 DownloadListener.prototype = {
@@ -126,8 +129,9 @@ DownloadListener.prototype = {
 	var that = this;
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
-		that.handleResponse(req);
-		log(req.responseText);
+	    var message;
+		message = that.handleResponse(req) || req.responseText;
+		log(message);
 	    }
 	    
 	};
@@ -151,7 +155,42 @@ DownloadListener.prototype = {
 
 		showAlert(ICON_LOGGED_IN_32, 
 		   "RECAP File Upload", "This page was uploaded to RECAP.");
-
+		   
+		   
+		// handle json object and update metadata cache
+		var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+		try {
+			var jsonin = nativeJSON.decode(req.responseText);
+		} catch (e) {
+			//return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
+		}
+		
+		if (jsonin) {
+			for (var caseid in jsonin.cases) {
+				if(typeof(this.metacache.cases[caseid]) == "undefined"){ 
+						this.metacache.cases[caseid] = {};
+				}
+				this.metacache.cases[caseid]["casedocket"] = caseid["casedocket"];
+				this.metacache.cases[caseid]["casename"] = caseid["casename"];
+			}
+	
+			for (var docnum in jsonin.documents) {
+				var thedocument = jsonin.documents[docnum];
+				for (var docvar in thedocument) {
+					if(typeof(this.metacache.documents[docnum]) == "undefined"){ 
+						this.metacache.documents[docnum] = {};
+					}
+					this.metacache.documents[docnum][docvar] = thedocument[docvar];
+					
+				}
+			}
+			return jsonin.message;
+		}
+		//log("metacache as json:" + nativeJSON.encode(this.metacache));
+		return jsonin;
+		
+		
+		
 	}
 
     },
