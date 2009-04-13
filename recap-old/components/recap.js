@@ -38,7 +38,10 @@ function RecapService() {
 
 RecapService.prototype = {
 
+	
     initialized: false,
+    
+    metacache: {"documents":{},"cases":{}},
 
     getContentListener: function() {
 	return Recap.gContentListener;
@@ -58,7 +61,7 @@ RecapService.prototype = {
 		log("couldn't start up alert service (are we on OSX without Growl installed?");
 		}
 	    
-	    Recap.gRequestObserver = new Recap.RequestObserver();
+	    Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
 	    Recap.gContentListener = new Recap.ContentListener();
 	    
 	    this.initialized = true;

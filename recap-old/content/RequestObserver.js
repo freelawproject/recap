@@ -10,8 +10,8 @@
  *
  */
 
-function RequestObserver() {
-    this._register();
+function RequestObserver(metacache) {
+    this._register(metacache);
 }
 
 RequestObserver.prototype = {
@@ -78,13 +78,57 @@ RequestObserver.prototype = {
 
     // Sets a better filename in the Content-Disposition header
     setContentDispositionHeader: function(channel, filename, court) {
+     
+	
+	
+	// try to build a pretty filename - SS: need to add a pref for this
+	var prettyFilename;
+	var filenameSplit = filename.split(".");
+	var docid = filenameSplit[0];
+	
+
+	try {
+			var docnum;
+			var subdocnum;
+			var casenum;
+			docnum = this.metacache.documents[docid]["docnum"];
+			subdocnum = this.metacache.documents[docid]["subdocnum"];
+			casenum = this.metacache.documents[docid]["casenum"];
+			
+			// TK - waiting on server to have this data
+			//lastdate = this.metacache.documents[docid]["lastdate"];
+			//docname = this.metacache.documents[docid]["docname"];
+			//case_name = this.metacache.cases[casenum]["case_name"];
+	} catch (e) {}
+	
+	
+	if ((typeof docnum != 'undefined') && (typeof subdocnum != 'undefined') && (typeof casenum != 'undefined')) {
+		var prettyFilename;
+		prettyFilename = PACER_TO_WEST_COURT[court];
+		if (casenum) {
+			prettyFilename = prettyFilename + "-" + casenum;
+		}
+		prettyFilename = prettyFilename + "-" + docid;
+		if (docnum) {
+			prettyFilename = prettyFilename + "-" + docnum;
+		}
+		if (subdocnum && subdocnum != 0) {
+			prettyFilename = prettyFilename + "-" + subdocnum;
+		}
+		prettyFilename = prettyFilename + ".pdf";
+	}
+	
+	if (prettyFilename) {
+		filename = prettyFilename;
+	} else {
+		filename = PACER_TO_WEST_COURT[court] + "-" + filename;
+	}
 
 	if (filename != null && court != null) {
 
-	    var cdVal = "attachment; filename=\"" + PACER_TO_WEST_COURT[court] + 
-	                 "-" + filename + "\"";	
+	    var cdVal = "attachment; filename=\"" + filename + "\"";
 
-	    log("Setting Content-Disposition to: " + cdVal);
+	    //log("Setting Content-Disposition to: " + cdVal);
 	    channel.setResponseHeader("Content-Disposition", cdVal, false);
 	}
 
@@ -281,6 +325,7 @@ RequestObserver.prototype = {
 	
 	// don't cache pages which are sometimes forms, if they are forms
 	if (sometimesFormPages.indexOf(pageName) >= 0 && this.perlArgsJustDigits(path)) {
+		//log("ignoring because just digits");
 		return true;
 	}
 
@@ -314,7 +359,7 @@ RequestObserver.prototype = {
 
     // Intercept the channel, and upload the data with metadata
     uploadChannelData: function(subject, metadata) {
-	var dlistener = new DownloadListener(metadata);
+	var dlistener = new DownloadListener(metadata,this.metacache);
 	subject.QueryInterface(Ci.nsITraceableChannel);
 	dlistener.originalListener = subject.setNewListener(dlistener);
     },
@@ -366,8 +411,12 @@ RequestObserver.prototype = {
         return CCGS("@mozilla.org/observer-service;1", "nsIObserverService");
     },
     
-    _register: function() {
+    _register: function(metacache) {
         log("register RequestObserver");
+        
+        // cache of document and case metadata from Recap namespace
+        this.metacache = metacache;
+        
         this._observerService.addObserver(this, 
 					  "http-on-examine-response", 
 					  false);
