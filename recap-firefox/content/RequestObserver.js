@@ -94,21 +94,23 @@ RequestObserver.prototype = {
 			docnum = this.metacache.documents[docid]["docnum"];
 			subdocnum = this.metacache.documents[docid]["subdocnum"];
 			casenum = this.metacache.documents[docid]["casenum"];
+			officialcasenum = this.metacache.cases[casenum]["officialcasenum"];
+			officialcasenum = officialcasenum.replace(/:/g, "_");
 			
 			// TK - waiting on server to have this data
 			//lastdate = this.metacache.documents[docid]["lastdate"];
 			//docname = this.metacache.documents[docid]["docname"];
 			//case_name = this.metacache.cases[casenum]["case_name"];
-	} catch (e) {}
+	} catch (e) {
+	}
 	
-	
-	if ((typeof docnum != 'undefined') && (typeof subdocnum != 'undefined') && (typeof casenum != 'undefined')) {
+	if ((typeof subdocnum != 'undefined') && (typeof casenum != 'undefined') && (typeof officialcasenum != 'undefined')) {
 		var prettyFilename;
 		prettyFilename = PACER_TO_WEST_COURT[court];
 		if (casenum) {
-			prettyFilename = prettyFilename + "-" + casenum;
+			prettyFilename = prettyFilename + "-" + officialcasenum;
 		}
-		prettyFilename = prettyFilename + "-" + docid;
+		//prettyFilename = prettyFilename + "-" + docid;
 		if (docnum) {
 			prettyFilename = prettyFilename + "-" + docnum;
 		}
