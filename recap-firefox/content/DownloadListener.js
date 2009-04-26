@@ -131,7 +131,7 @@ DownloadListener.prototype = {
 	    if (req.readyState == 4 && req.status == 200) {
 	    var message;
 		message = that.handleResponse(req) || req.responseText;
-		log(message);
+		//log(message);
 	    }
 	    
 	};
@@ -165,12 +165,14 @@ DownloadListener.prototype = {
 			//return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
 		}
 		
+		//log("req.responseText: " + req.responseText);
 		if (jsonin) {
 			for (var caseid in jsonin.cases) {
 				if(typeof(this.metacache.cases[caseid]) == "undefined"){ 
 						this.metacache.cases[caseid] = {};
 				}
-				this.metacache.cases[caseid]["casedocket"] = caseid["casedocket"];
+				officialcasenum = jsonin.cases[caseid]["officialcasenum"];
+				this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
 				this.metacache.cases[caseid]["casename"] = caseid["casename"];
 			}
 	
