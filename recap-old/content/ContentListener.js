@@ -118,9 +118,13 @@ ContentListener.prototype = {
 	
 	for (var i = 0; i < links.length; i++) {
 	    var link = links[i];
+	    
 	    var docURL = this.getDocURL(link.href);
 	    
+	   
+	    
 	    if (docURL) {
+	    docURL = escape(docURL);
 		jsonout.urls.push(docURL);
 		try {
 		    elements[docURL].push(link);
@@ -299,13 +303,18 @@ ContentListener.prototype = {
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
 	var docURL = null;
-	try {
-	    docURL = url.match(/\/doc1\/(\d*)/i)[0];
-	} catch(e) {
-	    return null;
+	try { docURL = url.match(/\/doc1\/(\d*)/i)[0]; } catch (e) {}
+	if (docURL) {
+		return docURL;
 	}
 	
-	return docURL;
+	try { docURL = url.match(/\/cgi-bin\/show_doc.*/i)[0]; } catch (e) {}
+	if (docURL) {
+		return docURL;
+	}
+	
+	return null;
+	
     },
 
     // Returns true if path matches ".../doc1/<docnum>"
