@@ -371,15 +371,26 @@ RequestObserver.prototype = {
         if (topic != "http-on-examine-response")
             return;
 
-
-
 	var channel = subject.QueryInterface(Ci.nsIHttpChannel);
 	var URIscheme = channel.URI.scheme;
 	var URIhost = channel.URI.asciiHost;
 	var URIpath = channel.URI.path;
+	
+	// Ignore non-PACER domains, or if no PACER cookie
+	if (!isPACERHost(URIhost) || !havePACERCookie()) {
+		return;
+	}
+	
+	// catch and handle DocLink requests made from bankruptcy pages
+	if (URIpath.match(/document_link/)) {
+		var court = getCourtFromHost(URIhost);
+		var doclinklistener = new DocLinkListener(court, URIpath);
+		subject.QueryInterface(Ci.nsITraceableChannel);
+		doclinklistener.originalListener = subject.setNewListener(doclinklistener);
+	}
 
-	// Ignore non-PACER domains, or if no PACER cookie, or some PACER pages
-	if (!isPACERHost(URIhost) || !havePACERCookie() || this.ignorePage(URIpath)) {
+	// ignore some PACER pages
+	if (this.ignorePage(URIpath)) {
 	    //log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}

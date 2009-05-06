@@ -124,8 +124,7 @@ ContentListener.prototype = {
 	   
 	    
 	    if (docURL) {
-	    docURL = escape(docURL);
-		jsonout.urls.push(docURL);
+		jsonout.urls.push(escape(docURL));
 		try {
 		    elements[docURL].push(link);
 		} catch(e) {
