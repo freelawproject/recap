@@ -24,6 +24,7 @@ jsLoader.loadSubScript(RECAP_PATH + "common.js", this);
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
+jsLoader.loadSubScript(RECAP_PATH + "DocLinkListener.js", Recap);
 
 
 log("recap.js loaded");
