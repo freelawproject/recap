@@ -186,6 +186,7 @@ DownloadListener.prototype = {
 					
 				}
 			}
+			//log("metacache as json:" + nativeJSON.encode(this.metacache));
 			return jsonin.message;
 		}
 		//log("metacache as json:" + nativeJSON.encode(this.metacache));

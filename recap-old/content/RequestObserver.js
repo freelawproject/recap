@@ -64,6 +64,10 @@ RequestObserver.prototype = {
 	channel.setResponseHeader("Date", dateVal, false);
 
     },
+    
+    coerceDocid: function(docid) {
+    	return docid.substr(0,3) + "0" + docid.substr(4);
+    },
 
     // Removes 'no-cache' from the Pragma response header if it exists
     getPragmaValue: function(channel) {
@@ -79,7 +83,7 @@ RequestObserver.prototype = {
     // Sets a better filename in the Content-Disposition header
     setContentDispositionHeader: function(channel, filename, court) {
      
-	
+	filename = this.coerceDocid(filename);
 	
 	// try to build a pretty filename - SS: need to add a pref for this
 	var prettyFilename;
@@ -91,11 +95,15 @@ RequestObserver.prototype = {
 			var docnum;
 			var subdocnum;
 			var casenum;
-			docnum = this.metacache.documents[docid]["docnum"];
-			subdocnum = this.metacache.documents[docid]["subdocnum"];
+
 			casenum = this.metacache.documents[docid]["casenum"];
 			officialcasenum = this.metacache.cases[casenum]["officialcasenum"];
-			officialcasenum = officialcasenum.replace(/:/g, "_");
+			officialcasenum = officialcasenum.replace(/:/g, "-");
+			docnum = this.metacache.documents[docid]["docnum"];
+			
+			// might fail if this wasn't in the db, so do essential
+			// stuff before this
+			subdocnum = this.metacache.documents[docid]["subdocnum"];
 			
 			// TK - waiting on server to have this data
 			//lastdate = this.metacache.documents[docid]["lastdate"];
@@ -104,18 +112,18 @@ RequestObserver.prototype = {
 	} catch (e) {
 	}
 	
-	if ((typeof subdocnum != 'undefined') && (typeof casenum != 'undefined') && (typeof officialcasenum != 'undefined')) {
+	if ((typeof casenum != 'undefined') && (typeof officialcasenum != 'undefined')) {
 		var prettyFilename;
 		prettyFilename = PACER_TO_WEST_COURT[court];
 		if (casenum) {
-			prettyFilename = prettyFilename + "-" + officialcasenum;
+			prettyFilename = prettyFilename + "_" + officialcasenum;
 		}
-		//prettyFilename = prettyFilename + "-" + docid;
+		//prettyFilename = prettyFilename + "_" + docid;
 		if (docnum) {
-			prettyFilename = prettyFilename + "-" + docnum;
+			prettyFilename = prettyFilename + "_" + docnum;
 		}
-		if (subdocnum && subdocnum != 0) {
-			prettyFilename = prettyFilename + "-" + subdocnum;
+		if ((typeof subdocnum != 'undefined') && subdocnum && subdocnum != 0) {
+			prettyFilename = prettyFilename + "_" + subdocnum;
 		}
 		prettyFilename = prettyFilename + ".pdf";
 	}
@@ -169,7 +177,7 @@ RequestObserver.prototype = {
 	    //  for now we'll just use "[de_seq_num]-merged"
 	    //   NOT uploading these pdfs (return false)
 
-	    log("REF: " + refpath);
+	    //log("REF: " + refpath);
 
 	    var de_seq_num = null;
 
