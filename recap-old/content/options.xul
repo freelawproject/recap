@@ -2,18 +2,36 @@
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?>
  
 <prefwindow id="recap-prefs"
-     title="Recap Options"
-     xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
+	title="Recap Preferences"
+	xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  
-<prefpane id="recap-pref-pane" label="RECAP Settings">
-  <preferences>
-    <preference id="pref_cache_time_ms" name="recap.cache_time_ms" type="int"/>
-  </preferences>
+	<prefpane id="recap-pref-pane" label="Recap Preferences">
+
+		<preferences>
+			<preference id="pref_pretty_filenames" name="recap.pretty_filenames" type="bool"/>
+			<preference id="pref_auto_check_pdf_headers" name="recap.auto_check_pdf_headers" type="bool"/>
+		</preferences>
+  
+		<groupbox>
+			<caption label="PDF Filenames"/>
  
-  <hbox align="center">
-    <label control="cache_time_ms" value="Cache Time (ms): "/>
-    <textbox preference="pref_cache_time_ms" id="cache_time_ms" maxlength="8"/>
-  </hbox>
-</prefpane>
+			<hbox align="center">
+				<checkbox preference="pref_pretty_filenames"  id="pretty_filenames" label="Force 'pretty' filenames (side-effect: prevents in-browser viewing)"/>
+				
+			</hbox>
+  
+		</groupbox>
+		
+		<groupbox>
+			<caption label="PDF Headers"/>
+ 
+			<hbox align="center">
+				<checkbox preference="pref_auto_check_pdf_headers" id="auto_check_pdf_headers" label="Auto-check 'PDF Headers' option, when available"/>
+				
+			</hbox>
+  
+		</groupbox>
+  
+	</prefpane>
  
 </prefwindow>

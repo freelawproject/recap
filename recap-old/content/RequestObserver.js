@@ -82,7 +82,15 @@ RequestObserver.prototype = {
 
     // Sets a better filename in the Content-Disposition header
     setContentDispositionHeader: function(channel, filename, court) {
-     
+    
+    
+    var prefs = CCGS("@mozilla.org/preferences-service;1",
+					"nsIPrefService").getBranch("recap.");
+		
+	if (prefs.getBoolPref("pretty_filenames") == false) {
+		return;
+	}
+    
 	filename = this.coerceDocid(filename);
 	
 	// try to build a pretty filename - SS: need to add a pref for this
@@ -127,7 +135,7 @@ RequestObserver.prototype = {
 		}
 		prettyFilename = prettyFilename + ".pdf";
 	}
-	
+			 
 	if (prettyFilename) {
 		filename = prettyFilename;
 	} else {
