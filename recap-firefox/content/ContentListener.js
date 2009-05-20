@@ -199,10 +199,12 @@ ContentListener.prototype = {
 		}
 		
 		// Insert our link to the right of the PACER link
-		var iconSpan = document.createElement("span");
-		iconSpan.setAttribute("class", "recapIcon");
+		var iconLink = document.createElement("a");
+		iconLink.setAttribute("class", "recapIcon");
+		iconLink.setAttribute("href", filename);
+		iconLink.setAttribute("onClick", "return false;");
 		
-		var iconImage = this.addImage(document, iconSpan,
+		var iconImage = this.addImage(document, iconLink,
 					      "recap-icon.png");
 		iconImage.setAttribute("class", "recapIconImage");
 		iconImage.setAttribute("alt", "[RECAP]");
@@ -211,7 +213,7 @@ ContentListener.prototype = {
 		iconImage.setAttribute("title",
 				       "Available for free from RECAP.");
 		
-		element.parentNode.insertBefore(iconSpan, 
+		element.parentNode.insertBefore(iconLink, 
 						element.nextSibling);
 	    }
 	}
@@ -245,7 +247,7 @@ ContentListener.prototype = {
 		     "This document is available for free!");
 	this.addP(document, innerdiv);
 	this.addTextLink(document, innerdiv, "RECAP", 
-		     "http://www.pacerrecap.org", "_blank");
+		     "http://www.recapextension.org", "_blank");
 	this.addText(document, innerdiv, 
 		     " cached this document on " + timestamp + ".");
 	this.addP(document, innerdiv);
@@ -415,7 +417,7 @@ ContentListener.prototype = {
 		try {
 			window.updateStatusIcon();
 		} catch(e) {
-			log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
+			//log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
 		}
 
 	    

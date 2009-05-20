@@ -7,7 +7,7 @@
 
   <statusbar id="status-bar">
     <statusbarpanel id="recap-panel">
-      <image id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="window.open('http://recappacer.org');" style="cursor: pointer;"/>
+      <image id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="window.open('http://recapextension.org');" style="cursor: pointer;"/>
     </statusbarpanel>
   </statusbar>
 
