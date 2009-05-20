@@ -348,6 +348,13 @@ ContentListener.prototype = {
 	var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
 	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
 	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
+	
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+				"nsIPrefService").getBranch("recap.");
+		
+	if (prefs.getBoolPref("auto_check_pdf_headers") == true) {
+		jstext += this.localFileToString(RECAP_PATH + "recapPDFHeaders.js");
+	}
 
 	var csstext = this.localFileToString(RECAP_SKIN_PATH + "jqModal.css");
 	csstext += this.localFileToString(RECAP_SKIN_PATH + "recap.css");
