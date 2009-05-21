@@ -141,16 +141,13 @@ DownloadListener.prototype = {
     },
 
     handleResponse: function(req) {
-	
-	
+
 	if (isPDF(this.filemeta.mimetype)) {
 	    // PDF upload notification
 
-	    showAlert(ICON_LOGGED_IN_32, 
-		"RECAP File Upload", "Document '" + 
-		this.filemeta.court + "-" + this.filemeta.name 
-		+ "' was uploaded to RECAP.");
-
+	   showAlert(ICON_LOGGED_IN_32, 
+			"RECAP File Upload", "PDF was uploaded to RECAP.");
+		
 	} else if (isHTML(this.filemeta.mimetype)) {
 
 		showAlert(ICON_LOGGED_IN_32, 
