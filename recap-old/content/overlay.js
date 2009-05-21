@@ -35,5 +35,9 @@ function updateStatusIcon() {
 	}
 }
 
+function openPrefs() {
+	window.openDialog("chrome://recap/content/options.xul", "Preferences", "chrome=yes,titlebar=yes,toolbar=yes,centerscreen");
+}
+
 
 
