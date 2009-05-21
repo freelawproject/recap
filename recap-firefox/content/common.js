@@ -114,11 +114,18 @@ function log(text) {
 }
 
 function showAlert(icon, headline, message) {
-		try {
-			alertsService.showAlertNotification(icon, 
-	       headline, message);
-		} catch (e) {
-			log("couldn't start up alert service (are we on OSX without Growl installed?)");
-		}
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+		"nsIPrefService").getBranch("recap.");
+		
+	if (prefs.getBoolPref("display_notifications") == false) {
+		return
+	}
+	
+	try {
+		alertsService.showAlertNotification(icon, 
+			headline, message);
+	} catch (e) {
+		log("couldn't start up alert service (are we on OSX without Growl installed?)");
+	}
 
 }
