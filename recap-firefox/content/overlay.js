@@ -5,7 +5,7 @@ var recap = {
 	this.initialized = true;
 				     
 	var container = gBrowser.tabContainer;
-	container.addEventListener("TabSelect", exampleTabSelected, false);
+	container.addEventListener("TabSelect", tabSelected, false);
 
     },
     
@@ -15,7 +15,7 @@ var recap = {
 window.addEventListener("load", function(e) { recap.onLoad(e); }, false);
 
 
-function exampleTabSelected(event)
+function tabSelected(event)
 {
   updateStatusIcon(); 
 }
