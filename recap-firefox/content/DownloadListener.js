@@ -157,12 +157,12 @@ DownloadListener.prototype = {
 				// PDF upload notification
 		
 			   showAlert(ICON_LOGGED_IN_32, 
-					"Recap File Upload", "PDF was uploaded to Recap.");
+					"Recap File Upload", "PDF uploaded to the public archive.");
 				
 			} else if (isHTML(this.filemeta.mimetype)) {
 		
 				showAlert(ICON_LOGGED_IN_32, 
-				   "Recap File Upload", "This page was uploaded to Recap.");  
+				   "Recap File Upload", "Docket uploaded to the public archive.");  
 		
 				for (var caseid in jsonin.cases) {
 					if(typeof(this.metacache.cases[caseid]) == "undefined"){ 
