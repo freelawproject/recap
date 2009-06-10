@@ -118,10 +118,13 @@ ContentListener.prototype = {
 	
 	for (var i = 0; i < links.length; i++) {
 	    var link = links[i];
+	    
 	    var docURL = this.getDocURL(link.href);
 	    
+	   
+	    
 	    if (docURL) {
-		jsonout.urls.push(docURL);
+		jsonout.urls.push(escape(docURL));
 		try {
 		    elements[docURL].push(link);
 		} catch(e) {
@@ -194,10 +197,12 @@ ContentListener.prototype = {
 		}
 		
 		// Insert our link to the right of the PACER link
-		var iconSpan = document.createElement("span");
-		iconSpan.setAttribute("class", "recapIcon");
+		var iconLink = document.createElement("a");
+		iconLink.setAttribute("class", "recapIcon");
+		iconLink.setAttribute("href", filename);
+		iconLink.setAttribute("onClick", "return false;");
 		
-		var iconImage = this.addImage(document, iconSpan,
+		var iconImage = this.addImage(document, iconLink,
 					      "recap-icon.png");
 		iconImage.setAttribute("class", "recapIconImage");
 		iconImage.setAttribute("alt", "[RECAP]");
@@ -206,7 +211,7 @@ ContentListener.prototype = {
 		iconImage.setAttribute("title",
 				       "Available for free from RECAP.");
 		
-		element.parentNode.insertBefore(iconSpan, 
+		element.parentNode.insertBefore(iconLink, 
 						element.nextSibling);
 	    }
 	}
@@ -240,7 +245,7 @@ ContentListener.prototype = {
 		     "This document is available for free!");
 	this.addP(document, innerdiv);
 	this.addTextLink(document, innerdiv, "RECAP", 
-		     "http://www.pacerrecap.org", "_blank");
+		     "http://www.recapextension.org", "_blank");
 	this.addText(document, innerdiv, 
 		     " cached this document on " + timestamp + ".");
 	this.addP(document, innerdiv);
@@ -297,13 +302,18 @@ ContentListener.prototype = {
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
 	var docURL = null;
-	try {
-	    docURL = url.match(/\/doc1\/(\d*)/i)[0];
-	} catch(e) {
-	    return null;
+	try { docURL = url.match(/\/doc1\/(\d*)/i)[0]; } catch (e) {}
+	if (docURL) {
+		return docURL;
 	}
 	
-	return docURL;
+	try { docURL = url.match(/\/cgi-bin\/show_doc.*/i)[0]; } catch (e) {}
+	if (docURL) {
+		return docURL;
+	}
+	
+	return null;
+	
     },
 
     // Returns true if path matches ".../doc1/<docnum>"
@@ -336,6 +346,13 @@ ContentListener.prototype = {
 	var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
 	jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
 	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
+	
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+				"nsIPrefService").getBranch("recap.");
+		
+	if (prefs.getBoolPref("auto_check_pdf_headers") == true) {
+		jstext += this.localFileToString(RECAP_PATH + "recapPDFHeaders.js");
+	}
 
 	var csstext = this.localFileToString(RECAP_SKIN_PATH + "jqModal.css");
 	csstext += this.localFileToString(RECAP_SKIN_PATH + "recap.css");
@@ -405,7 +422,7 @@ ContentListener.prototype = {
 		try {
 			window.updateStatusIcon();
 		} catch(e) {
-			log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
+			//log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
 		}
 
 	    

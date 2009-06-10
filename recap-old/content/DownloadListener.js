@@ -139,22 +139,7 @@ DownloadListener.prototype = {
     },
 
     handleResponse: function(req) {
-	
-	
-	if (isPDF(this.filemeta.mimetype)) {
-	    // PDF upload notification
-
-	    showAlert(ICON_LOGGED_IN_32, 
-		"RECAP File Upload", "Document '" + 
-		this.filemeta.court + "-" + this.filemeta.name 
-		+ "' was uploaded to RECAP.");
-
-	} else if (isHTML(this.filemeta.mimetype)) {
-
-		showAlert(ICON_LOGGED_IN_32, 
-		   "RECAP File Upload", "This page was uploaded to RECAP.");
-		   
-		   
+    	
 		// handle json object and update metadata cache
 		var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 		try {
@@ -164,35 +149,45 @@ DownloadListener.prototype = {
 		}
 		
 		//log("req.responseText: " + req.responseText);
-		if (jsonin) {
-			for (var caseid in jsonin.cases) {
-				if(typeof(this.metacache.cases[caseid]) == "undefined"){ 
-						this.metacache.cases[caseid] = {};
-				}
-				officialcasenum = jsonin.cases[caseid]["officialcasenum"];
-				this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
-				this.metacache.cases[caseid]["casename"] = caseid["casename"];
-			}
-	
-			for (var docnum in jsonin.documents) {
-				var thedocument = jsonin.documents[docnum];
-				for (var docvar in thedocument) {
-					if(typeof(this.metacache.documents[docnum]) == "undefined"){ 
-						this.metacache.documents[docnum] = {};
+		if (jsonin && typeof(jsonin.error) == "undefined") {
+
+			if (isPDF(this.filemeta.mimetype)) {
+				// PDF upload notification
+		
+			   showAlert(ICON_LOGGED_IN_32, 
+					"Recap File Upload", "PDF uploaded to the public archive.");
+				
+			} else if (isHTML(this.filemeta.mimetype)) {
+		
+				showAlert(ICON_LOGGED_IN_32, 
+				   "Recap File Upload", "Docket uploaded to the public archive.");  
+		
+				for (var caseid in jsonin.cases) {
+					if(typeof(this.metacache.cases[caseid]) == "undefined"){ 
+							this.metacache.cases[caseid] = {};
 					}
-					this.metacache.documents[docnum][docvar] = thedocument[docvar];
-					
+					officialcasenum = jsonin.cases[caseid]["officialcasenum"];
+					this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
+					this.metacache.cases[caseid]["casename"] = caseid["casename"];
 				}
+		
+				for (var docnum in jsonin.documents) {
+					var thedocument = jsonin.documents[docnum];
+					for (var docvar in thedocument) {
+						if(typeof(this.metacache.documents[docnum]) == "undefined"){ 
+							this.metacache.documents[docnum] = {};
+						}
+						this.metacache.documents[docnum][docvar] = thedocument[docvar];
+						
+					}
+				}
+				//log("metacache as json:" + nativeJSON.encode(this.metacache));
+				return jsonin.message;
 			}
-			return jsonin.message;
 		}
 		//log("metacache as json:" + nativeJSON.encode(this.metacache));
 		return jsonin;
-		
-		
-		
-	}
-
+	
     },
     
     originalListener: null,
