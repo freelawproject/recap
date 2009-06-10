@@ -147,9 +147,7 @@ ContentListener.prototype = {
 	
 	var params = "json=" + jsonouts;
 	
-	req.open("POST", 
-		 SERVER_URL + "document/",
-		 true);
+	req.open("POST", QUERY_URL, true)
 
 	var that = this;
 	req.onreadystatechange = function() {
