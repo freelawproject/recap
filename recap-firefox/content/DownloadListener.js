@@ -111,9 +111,7 @@ DownloadListener.prototype = {
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
 		       "nsIXMLHttpRequest");
 	
-	req.open("POST", 
-		 SERVER_URL + "doupload/", 
-		 true);
+	req.open("POST", UPLOAD_URL, true);
 	
 	req.setRequestHeader("Content-Type", 
 			     "multipart/form-data; boundary=" + 
