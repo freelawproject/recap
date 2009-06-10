@@ -5,8 +5,11 @@ var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
 var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
 var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
 
+//var SERVER_URL = "http://recapextension.appspot.com/"
 //var SERVER_URL = "http://recapdev.appspot.com/";
 //var SERVER_URL = "http://localhost:8080/";
+
+//var SERVER_URL = "http://monocle.princeton.edu/recap/";
 var SERVER_URL = "http://monocle.princeton.edu/recap_ia/";
 
 var UPLOAD_URL = SERVER_URL + "upload/"
@@ -117,11 +120,18 @@ function log(text) {
 }
 
 function showAlert(icon, headline, message) {
-		try {
-			alertsService.showAlertNotification(icon, 
-	       headline, message);
-		} catch (e) {
-			log("couldn't start up alert service (are we on OSX without Growl installed?)");
-		}
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+		"nsIPrefService").getBranch("recap.");
+		
+	if (prefs.getBoolPref("display_notifications") == false) {
+		return
+	}
+	
+	try {
+		alertsService.showAlertNotification(icon, 
+			headline, message);
+	} catch (e) {
+		log("couldn't start up alert service (are we on OSX without Growl installed?)");
+	}
 
 }
