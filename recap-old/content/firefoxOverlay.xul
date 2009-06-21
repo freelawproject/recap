@@ -13,10 +13,10 @@
 
   <script src="overlay.js"/>
   <script src="common.js"/>
-
-<menupopup id="menu_ToolsPopup">
-  <menuitem label="Recap Preferences..." oncommand="openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
-</menupopup>
+  
+  <menupopup id="menu_ToolsPopup">
+    <menuitem label="Recap Preferences..." oncommand="openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
+  </menupopup>
 
 
 </overlay>

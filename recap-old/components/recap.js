@@ -9,12 +9,10 @@ function CCIN(contractID, interfaceName) {
     return Cc[contractID].createInstance(Ci[interfaceName]);
 }
 
-
-
 Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 
 var Recap = {}; // New empty extension namespace
-	
+
 //var jsLoader = CCGS("@mozilla.org/moz/jssubscript-loader;1",
 //		    "mozIJSSubScriptLoader");
 
@@ -25,7 +23,6 @@ jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DocLinkListener.js", Recap);
-
 
 log("recap.js loaded");
 
@@ -39,10 +36,9 @@ function RecapService() {
 
 RecapService.prototype = {
 
-	
     initialized: false,
     
-    metacache: {"documents":{},"cases":{}},
+    metacache: {"documents": {},"cases": {}},
 
     getContentListener: function() {
 	return Recap.gContentListener;
@@ -56,11 +52,11 @@ RecapService.prototype = {
 	    os.addObserver(this, "quit-application", false);
 	    
 	    try {
-    	alertsService = CCGS("@mozilla.org/alerts-service;1",
-			      "nsIAlertsService");
-	} catch (e) {
+		alertsService = CCGS("@mozilla.org/alerts-service;1",
+				     "nsIAlertsService");
+	    } catch (e) {
 		log("couldn't start up alert service (are we on OSX without Growl installed?");
-		}
+	    }
 	    
 	    Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
 	    Recap.gContentListener = new Recap.ContentListener();

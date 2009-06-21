@@ -75,7 +75,7 @@ ContentListener.prototype = {
 
 	// Ensure that the page warrants modification
 	if (!isPACERHost(URIhost) ||
-		!havePACERCookie() ||
+	    !havePACERCookie() ||
 	    !this.isModifiable(URIpath)) {
 
 	    return;
@@ -150,7 +150,7 @@ ContentListener.prototype = {
 	
 	var params = "json=" + jsonouts;
 	
-	req.open("POST", QUERY_URL, true)
+	req.open("POST", QUERY_URL, true);
 
 	var that = this;
 	req.onreadystatechange = function() {
@@ -465,3 +465,4 @@ ContentListener.prototype = {
     },
     
 }
+
