@@ -9,7 +9,9 @@ var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
 //var SERVER_URL = "http://localhost:8080/";
 //var SERVER_URL = "http://monocle.princeton.edu/recap/";
 
-var SERVER_URL = "http://monocle.princeton.edu/recap_ia/";
+//var SERVER_URL = "http://monocle.princeton.edu/recap_beta/";
+var SERVER_URL = "http://monocle.princeton.edu/recap_dev/";
+
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";

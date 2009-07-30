@@ -130,7 +130,7 @@ DownloadListener.prototype = {
 	    if (req.readyState == 4 && req.status == 200) {
 		var message;
 		message = that.handleResponse(req) || req.responseText;
-		log(message);
+		//log(message);
 	    }
 	    
 	};
@@ -146,7 +146,7 @@ DownloadListener.prototype = {
 	try {
 	    var jsonin = nativeJSON.decode(req.responseText);
 	} catch (e) {
-	    //return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
+	    return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
 	}
 	
 	//log("req.responseText: " + req.responseText);

@@ -105,6 +105,7 @@ RequestObserver.prototype = {
 	    casenum = this.metacache.documents[docid]["casenum"];
 	    officialcasenum = this.metacache.cases[casenum]["officialcasenum"];
 	    officialcasenum = officialcasenum.replace(/:/g, "-");
+	    //log("officialcasenum: " + officialcasenum);
 	    docnum = this.metacache.documents[docid]["docnum"];
 			
 	    // might fail if this wasn't in the db, so do essential
@@ -123,12 +124,12 @@ RequestObserver.prototype = {
 
 	    var prettyFilename;
 	    prettyFilename = PACER_TO_WEST_COURT[court];
-	    if (casenum) {
+	    if (officialcasenum) {
 		prettyFilename = prettyFilename + "_" + officialcasenum;
 	    }
 
 	    //prettyFilename = prettyFilename + "_" + docid;
-	    if (docnum) {
+	    if (typeof docnum != 'undefined') {
 		prettyFilename = prettyFilename + "_" + docnum;
 	    }
 	    if ((typeof subdocnum != 'undefined') && 
@@ -138,11 +139,21 @@ RequestObserver.prototype = {
 	    
 	    prettyFilename = prettyFilename + ".pdf";
 	}
+	
+	
+	if ((typeof casenum != 'undefined') && casenum !='' && (typeof court != 'undefined') && (typeof docnum != 'undefined') && (typeof subdocnum != 'undefined')) {
+	
+		var IAFilename;
+		IAFilename = "gov.uscourts." + court + "." + casenum + "." + docnum + "." + subdocnum + ".pdf";
+			
+	}
+
 			 
-	if (prettyFilename) {
-	    filename = prettyFilename;
+	if (IAFilename) {
+	    filename = IAFilename;
 	} else {
-	    filename = PACER_TO_WEST_COURT[court] + "-" + filename;
+	    //filename = PACER_TO_WEST_COURT[court] + "-" + filename;
+	    filename = court + "-" + filename;
 	}
 
 	if (filename != null && court != null) {
