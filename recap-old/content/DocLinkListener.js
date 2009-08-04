@@ -40,13 +40,11 @@ DocLinkListener.prototype = {
 		log("didn't all necessary args to build addocmeta query: " + this.responsetext + this.URIpath);
 		return;
 	}
-	
-	req.open("GET", 
-		 SERVER_URL + "adddocmeta/?docid=" + docid + "&casenum=" + casenum + "&de_seq_num=" + de_seq_num + "&dm_id=" + dm_id + "&docnum=" + docnum + "&court=" + this.court, 
-		 true);
-		
 
-	
+        params = "docid=" + docid + "&casenum=" + casenum + "&de_seq_num=" + de_seq_num + "&dm_id=" + dm_id + "&docnum=" + docnum + "&court=" + this.court;
+
+    	req.open("POST", ADDDOCMETA_URL, true)
+
 	var that = this;
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
@@ -56,7 +54,7 @@ DocLinkListener.prototype = {
 	    }	    
 	};	
 	
-	req.send("");
+	req.send(params);
 	 
     },
     

@@ -121,8 +121,6 @@ ContentListener.prototype = {
 	    
 	    var docURL = this.getDocURL(link.href);
 	    
-	   
-	    
 	    if (docURL) {
 		jsonout.urls.push(escape(docURL));
 		try {
