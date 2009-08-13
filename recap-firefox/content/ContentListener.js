@@ -1,3 +1,25 @@
+/* 
+ *  This file is part of the RECAP Firefox Extension.
+ *
+ *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
+ *  Website: http://www.recapthelaw.org
+ *  E-mail: info@recapthelaw.org
+ *
+ *  The RECAP Firefox Extension is free software: you can redistribute it 
+ *  and/or modify it under the terms of the GNU General Public License as
+ *  published by the Free Software Foundation, either version 3 of the 
+ *  License, or (at your option) any later version.
+ *
+ *  The RECAP Firefox Extension is distributed in the hope that it will be
+ *  useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the RECAP Firefox Extension.  If not, see 
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
 
 function ContentListener() {
     this._register();
@@ -28,7 +50,6 @@ ContentListener.prototype = {
 	    embeddedImageSrc += this.localFileToBase64(RECAP_SKIN_PATH + src);
 	    retdict[src] = embeddedImageSrc;
 
-	    log(src + " initialized.");
 	}
 	
 	return retdict;
@@ -180,7 +201,7 @@ ContentListener.prototype = {
 	    // Create a dialogDiv for each RECAP document on the server
 	    this.makeDialogDiv(document, filename,  timestamp, count);
 	    
-	    log("  File found: " + filename + " " + docURL);
+	    //log("  File found: " + filename + " " + docURL);
 	    
 	    for (var i = 0; i < urlElements.length; i++) {
 		
@@ -406,7 +427,6 @@ ContentListener.prototype = {
 
 	if (typeof element != "undefined") {
 	    document.getElementsByTagName("head")[0].appendChild(element);
-	    //log("jscssLoadString: " + filetype);
 	}
     },
 
@@ -420,7 +440,6 @@ ContentListener.prototype = {
 		try {
 			window.updateStatusIcon();
 		} catch(e) {
-			//log("tried to update status icon but no panel found (window probably wasn't yet fully initialized)");
 		}
 
 	    
@@ -450,7 +469,7 @@ ContentListener.prototype = {
     },
     
     _register: function() {
-	log("register ContentListener");
+	//log("register ContentListener");
 	// add listener, only listen for document loading start/stop events
 	this._webProgressService
 	    .addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_NETWORK);
@@ -458,7 +477,7 @@ ContentListener.prototype = {
     },
 
     unregister: function() {
-	log("unregister ContentListener");
+	//log("unregister ContentListener");
 	this._webProgressService.removeProgressListener(this);
     },
     

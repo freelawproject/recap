@@ -1,3 +1,25 @@
+/* 
+ *  This file is part of the RECAP Firefox Extension.
+ *
+ *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
+ *  Website: http://www.recapthelaw.org
+ *  E-mail: info@recapthelaw.org
+ *
+ *  The RECAP Firefox Extension is free software: you can redistribute it 
+ *  and/or modify it under the terms of the GNU General Public License as
+ *  published by the Free Software Foundation, either version 3 of the 
+ *  License, or (at your option) any later version.
+ *
+ *  The RECAP Firefox Extension is distributed in the hope that it will be
+ *  useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the RECAP Firefox Extension.  If not, see 
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
 
 /** RequestObserver:
  *    implements nsIObserver
@@ -34,7 +56,6 @@ RequestObserver.prototype = {
 	    output += "'" + headers[i] + "': " + "'" + hvalue + "'; ";
 	}
 
-	log(output);
     },
 
     // Set the HTTP response headers to be cache-friendly
@@ -46,7 +67,6 @@ RequestObserver.prototype = {
 			 "nsIPrefService").getBranch("recap.");
         
         var cache_time_ms = prefs.getIntPref("cache_time_ms");
-        //log("cache_time_ms = " + cache_time_ms);
 
         var expireTime = (new Date()).getTime() + cache_time_ms;
         var expiresVal = (new Date(expireTime)).toUTCString();
@@ -105,7 +125,6 @@ RequestObserver.prototype = {
 	    casenum = this.metacache.documents[docid]["casenum"];
 	    officialcasenum = this.metacache.cases[casenum]["officialcasenum"];
 	    officialcasenum = officialcasenum.replace(/:/g, "-");
-	    //log("officialcasenum: " + officialcasenum);
 	    docnum = this.metacache.documents[docid]["docnum"];
 			
 	    // might fail if this wasn't in the db, so do essential
@@ -160,7 +179,6 @@ RequestObserver.prototype = {
 	    
 	    var cdVal = "attachment; filename=\"" + filename + "\"";
 	    
-	    //log("Setting Content-Disposition to: " + cdVal);
 	    channel.setResponseHeader("Content-Disposition", cdVal, false);
 	}
 
@@ -198,8 +216,6 @@ RequestObserver.prototype = {
 	    // don't know how best to handle with multidocs yet.
 	    //  for now we'll just use "[de_seq_num]-merged"
 	    //   NOT uploading these pdfs (return false)
-
-	    //log("REF: " + refpath);
 
 	    var de_seq_num = null;
 
@@ -259,9 +275,6 @@ RequestObserver.prototype = {
 	    
 	    var court = getCourtFromHost(refhost);
 	    
-	    log("PerlHTMLmeta: " + mimetype + " " + court + 
-		" " + name + " " + casenum);
-
 	    return {mimetype: mimetype, court: court,
 		    name: name, casenum: casenum };
 	}
@@ -301,9 +314,6 @@ RequestObserver.prototype = {
 	    }
 
 	    var court = getCourtFromHost(channel.URI.asciiHost);
-
-	    log("DocHTMLmeta: " + mimetype + " " + court + 
-		" " + path );
 
 	    return {mimetype: mimetype, court: court,
 		    name: path };
@@ -357,7 +367,6 @@ RequestObserver.prototype = {
 	
 	// don't cache pages which are sometimes forms, if they are forms
 	if (sometimesFormPages.indexOf(pageName) >= 0 && this.perlArgsJustDigits(path)) {
-		//log("ignoring because just digits");
 		return true;
 	}
 
@@ -421,11 +430,9 @@ RequestObserver.prototype = {
 
 	// ignore some PACER pages
 	if (this.ignorePage(URIpath)) {
-	    //log("Ignored: " + URIhost + " " + URIpath)
 	    return;
 	}
 
-	//this.logHeaders(channel);
 	this.setCacheFriendlyHeaders(channel);
 
 	var mimetype = this.getMimetype(channel);	
@@ -455,7 +462,7 @@ RequestObserver.prototype = {
     },
     
     _register: function(metacache) {
-        log("register RequestObserver");
+        //log("register RequestObserver");
         
         // cache of document and case metadata from Recap namespace
         this.metacache = metacache;
@@ -466,7 +473,7 @@ RequestObserver.prototype = {
     },
     
     unregister: function() {
-        log("unregister RequestObserver");
+        //log("unregister RequestObserver");
         this._observerService.removeObserver(this, 
 					     "http-on-examine-response");
     }
