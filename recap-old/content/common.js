@@ -26,7 +26,7 @@ var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
 var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
 var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
 
-var SERVER_URL = "http://recapextension.org/recap_dev/";
+var SERVER_URL = "http://recapextension.org/recap/";
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";
