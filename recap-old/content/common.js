@@ -1,11 +1,32 @@
+/* 
+ *  This file is part of the RECAP Firefox Extension.
+ *
+ *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
+ *  Website: http://www.recapthelaw.org
+ *  E-mail: info@recapthelaw.org
+ *
+ *  The RECAP Firefox Extension is free software: you can redistribute it 
+ *  and/or modify it under the terms of the GNU General Public License as
+ *  published by the Free Software Foundation, either version 3 of the 
+ *  License, or (at your option) any later version.
+ *
+ *  The RECAP Firefox Extension is distributed in the hope that it will be
+ *  useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *  GNU General Public License for more details.
+ *
+ *  You should have received a copy of the GNU General Public License
+ *  along with the RECAP Firefox Extension.  If not, see 
+ *  <http://www.gnu.org/licenses/>.
+ *
+ */
 
 var ICON_LOGGED_IN = "chrome://recap/skin/recap-icon.png";
 var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
 var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
 var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
 
-//var SERVER_URL = "http://monocle.princeton.edu/recap_beta/";
-var SERVER_URL = "http://monocle.princeton.edu/recap_dev/";
+var SERVER_URL = "http://recapextension.org/recap_dev/";
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";
@@ -26,7 +47,6 @@ function isPDF(mimetype) {
 
 function isHTML(mimetype) {
     if (typeof mimetype == 'undefined' || mimetype == null) {
-	log("mimetype null");
 	return false;
     }
     return (mimetype.indexOf("text/html") >= 0) ? true: false;
@@ -68,7 +88,6 @@ function havePACERCookie() {
     var cookieEnum = cookieMan.enumerator;
     while (cookieEnum.hasMoreElements()) {
 	var cookie = cookieEnum.getNext();
-	//log(cookie.name);
 	if (cookie instanceof Components.interfaces.nsICookie){
 	    if (cookie.host.match("uscourts.gov")) {
 			if (cookie.name.match("KEY")) {
@@ -76,17 +95,14 @@ function havePACERCookie() {
 			}
 		if (cookie.name.match("PacerUser")) {
 		    foundPacerUser = true;
-		    //log("PacerUser" + cookie.value);
 		}
 	    }
 	}
     }
 
     if (foundPacerUser == true) {
-	//log("havePACERCookie returning true");
 	return true;
     } else {
-	//log("havePACERCookie returning false");
 	return false;
     }
 
@@ -96,7 +112,6 @@ function havePACERCookie() {
 function CCGS(contractID, interfaceName) {
 	
 	if (interfaceName != "nsIConsoleService") {
-	    //log("CCGS called with: " + contractID + " " + interfaceName);
 	}
     return Cc[contractID].getService(Ci[interfaceName]);
 }
@@ -130,4 +145,3 @@ function showAlert(icon, headline, message) {
     }
 }
 
-log("loaded common.js");
