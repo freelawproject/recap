@@ -27,13 +27,14 @@
 <prefwindow id="recap-prefs"
 	    title="Recap Preferences"
 	    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  
+
   <prefpane id="recap-pref-pane" label="Recap Preferences">
 
     <preferences>
       <preference id="pref_pretty_filenames" name="recap.pretty_filenames" type="bool"/>
       <preference id="pref_auto_check_pdf_headers" name="recap.auto_check_pdf_headers" type="bool"/>
       <preference id="pref_display_notifications" name="recap.display_notifications" type="bool"/>
+      <preference id="pref_temp_disable" name="recap.temp_disable" type="bool" />
     </preferences>
 
     <groupbox>
@@ -63,6 +64,14 @@
       
     </groupbox>
     
-  </prefpane>
+    <groupbox>
+      <caption label="Deactivate RECAP"/>
+      
+      <hbox align="center">
+	<checkbox preference="pref_temp_disable" id="temp_disable" label="Temporarily force RECAP to stay deactivated even when logged in to PACER"/>
+      </hbox>
+      
+    </groupbox>
+</prefpane>
   
 </prefwindow>

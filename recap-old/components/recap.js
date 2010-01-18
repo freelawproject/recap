@@ -46,6 +46,7 @@ jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DocLinkListener.js", Recap);
+jsLoader.loadSubScript(RECAP_PATH + "PrefListener.js", Recap);
 
 log("recap.js loaded");
 
@@ -74,15 +75,21 @@ RecapService.prototype = {
 	    os.addObserver(this, "xpcom-shutdown", false);
 	    os.addObserver(this, "quit-application", false);
 	    
-	    try {
-		alertsService = CCGS("@mozilla.org/alerts-service;1",
-				     "nsIAlertsService");
-	    } catch (e) {
-		log("couldn't start up alert service (are we on OSX without Growl installed?");
-	    }
-	    
 	    Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
 	    Recap.gContentListener = new Recap.ContentListener();
+	
+	    var myListener = new Recap.PrefListener("recap.",
+                                  function(branch, name)
+                                  {
+                                      switch (name) 
+                                      {
+                                          case "temp_disable":
+						handlePrefDisable();
+                                                break;
+                                      }
+                                  });
+
+	    myListener.register();
 	    
 	    this.initialized = true;
 	    
