@@ -25,6 +25,8 @@ var ICON_LOGGED_IN = "chrome://recap/skin/recap-icon.png";
 var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
 var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
 var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
+var ICON_DISABLED = "chrome://recap/skin/recap-icon-disabled.png";
+var ICON_DISABLED_32 = "chrome://recap/skin/recap-icon-disabled-32.png";
 
 var SERVER_URL = "http://recapextension.org/recap/";
 
@@ -137,6 +139,8 @@ function showAlert(icon, headline, message) {
     }
     
     try {
+	alertsService = CCGS("@mozilla.org/alerts-service;1",
+				     "nsIAlertsService");
 	alertsService.showAlertNotification(icon, headline, message);
 					    
     } catch (e) {
@@ -145,3 +149,67 @@ function showAlert(icon, headline, message) {
     }
 }
 
+function updateStatusIcon() {
+    //log("current domain is PACER domain? " + isPACERHost(gBrowser.selectedBrowser.contentDocument.domain));
+    //
+    var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   .getService(Components.interfaces.nsIWindowMediator);
+    var browserWindow = wm.getMostRecentWindow("navigator:browser");
+
+    var statusIcon = browserWindow.document.getElementById("recap-panel-image");
+    var hostname = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
+    
+    var prefs = CCGS("@mozilla.org/preferences-service;1",
+		     "nsIPrefService").getBranch("recap.");
+  
+    if(prefs.getBoolPref("temp_disable") == true) {
+            //make a red icon and put it here!
+	    statusIcon.src= ICON_DISABLED;
+	    statusIcon.tooltipText = "RECAP is temporarily deactivated. Click to activate.";
+	    return;
+    }
+
+    if (isPACERHost(hostname) && 
+	havePACERCookie()) {
+	    statusIcon.tooltipText = "You are logged into PACER.";
+	    statusIcon.src = ICON_LOGGED_IN;
+
+    } else {
+	statusIcon.src= ICON_LOGGED_OUT;
+	statusIcon.tooltipText = "You are logged out of PACER.";
+    }
+}
+function handlePrefDisable(){
+        var prefs = CCGS("@mozilla.org/preferences-service;1",
+		     "nsIPrefService").getBranch("recap.");
+  
+        var curr_disable = prefs.getBoolPref("temp_disable");
+    	
+	updateStatusIcon();
+        
+	if(curr_disable == true){
+		showAlert(ICON_DISABLED_32, 
+    			"RECAP deactivated.", "RECAP will stay deactivated even when logged into PACER.");
+	}
+	else{
+    		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   	.getService(Components.interfaces.nsIWindowMediator);
+    		var browserWindow = wm.getMostRecentWindow("navigator:browser");
+		var URIhost = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
+		
+		if(isPACERHost(URIhost) && havePACERCookie()){
+			
+			showAlert(ICON_LOGGED_IN_32, 
+    			    "RECAP activated.", "You are logged into PACER.");
+		
+		}
+		else{
+			showAlert(ICON_LOGGED_OUT_32, 
+    				"RECAP activated.", "RECAP will be activated when logged into PACER.");
+
+		}
+
+	}
+
+	return true;
+}

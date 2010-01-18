@@ -73,29 +73,40 @@ ContentListener.prototype = {
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
 	
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+				"nsIPrefService").getBranch("recap.");
+
+	var temp_disabled = prefs.getBoolPref("temp_disable");
 
 	if (isPACERHost(URIhost) && havePACERCookie() 
 	    && !this.active) {
 	    // Just logged into PACER
-
-	    showAlert(ICON_LOGGED_IN_32, 
-	       "RECAP enabled.", "You are logged into PACER.");
-
+            if(temp_disabled == true){
+	    		showAlert(ICON_DISABLED_32, 
+	       			"RECAP deactivated.", "Your settings forced RECAP to stay deactivated.");
+	    }
+	    else{
+	    		showAlert(ICON_LOGGED_IN_32, 
+	       		"RECAP activated.", "You are logged into PACER.");
+	    }
 	    this.active = true;
 
 	} else if (isPACERHost(URIhost) && !havePACERCookie()
 		   && this.active) {
 	    // Just logged out of PACER
-	    
-	    showAlert(ICON_LOGGED_OUT_32, 
-	       "RECAP disabled.", "You are logged out of PACER.");
+	    if(temp_disabled == false) { 
+	         // Show alert only if we are not disabled
+		 showAlert(ICON_LOGGED_OUT_32, 
+	       		"RECAP deactivated.", "You are logged out of PACER.");
+	    }
 
 	    this.active = false;    
 	}
 	this.updateAllWindowIcons();
 
 	// Ensure that the page warrants modification
-	if (!isPACERHost(URIhost) ||
+	if (temp_disabled ||
+	    !isPACERHost(URIhost) ||
 	    !havePACERCookie() ||
 	    !this.isModifiable(URIpath)) {
 

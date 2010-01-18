@@ -410,13 +410,17 @@ RequestObserver.prototype = {
         if (topic != "http-on-examine-response")
             return;
 
+	var prefs = CCGS("@mozilla.org/preferences-service;1",
+				"nsIPrefService").getBranch("recap.");
+
+	var temp_disabled = prefs.getBoolPref("temp_disable");
 	var channel = subject.QueryInterface(Ci.nsIHttpChannel);
 	var URIscheme = channel.URI.scheme;
 	var URIhost = channel.URI.asciiHost;
 	var URIpath = channel.URI.path;
 	
 	// Ignore non-PACER domains, or if no PACER cookie
-	if (!isPACERHost(URIhost) || !havePACERCookie()) {
+	if (temp_disabled || !isPACERHost(URIhost) || !havePACERCookie()) {
 	    return;
 	}
 	
