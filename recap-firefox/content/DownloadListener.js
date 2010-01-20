@@ -187,7 +187,8 @@ DownloadListener.prototype = {
 			this.metacache.cases[caseid] = {};
 		    }
 		    officialcasenum = jsonin.cases[caseid]["officialcasenum"];
-		    this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
+		    if(officialcasenum != "")  //don't replace if it's an empty string
+		   	 this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
 		    this.metacache.cases[caseid]["casename"] = caseid["casename"];
 		}
 		
