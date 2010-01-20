@@ -27,11 +27,13 @@
 <prefwindow id="recap-prefs"
 	    title="Recap Preferences"
 	    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-
+ 
+  <script src="chrome://recap/content/options.js"/>
   <prefpane id="recap-pref-pane" label="Recap Preferences">
 
     <preferences>
       <preference id="pref_pretty_filenames" name="recap.pretty_filenames" type="bool"/>
+      <preference id="pref_pretty_filenames_choice" name="recap.pretty_filenames_choice" type="string"/>
       <preference id="pref_auto_check_pdf_headers" name="recap.auto_check_pdf_headers" type="bool"/>
       <preference id="pref_display_notifications" name="recap.display_notifications" type="bool"/>
       <preference id="pref_temp_disable" name="recap.temp_disable" type="bool" />
@@ -50,8 +52,13 @@
       <caption label="PDF Filenames"/>
       
       <hbox align="center">
-	<checkbox preference="pref_pretty_filenames"  id="pretty_filenames" label="Force more descriptive filenames (side-effect: prevents in-browser viewing)"/>
+	<checkbox preference="pref_pretty_filenames"  id="pretty_filenames" label="Force more descriptive filenames (side-effect: prevents in-browser viewing)" oncommand="toggleRadioButtons();"/>
       </hbox>
+
+      <radiogroup id="pretty_filenames_choices" preference="pref_pretty_filenames_choice" class="indent">
+	      <radio id="pretty_filenames_IAFilename" value="pretty_filenames_IAFilename" label="Internet Archive style (eg: gov.uscourts.cand.204881.46.0.pdf)" />
+	      <radio id="pretty_filenames_FancyFilename" value="pretty_filenames_FancyFilename" label="Lawyer style (eg: N.D.Cal._3-08-cv-03251_46_0.pdf)" />
+      </radiogroup>
       
     </groupbox>
     

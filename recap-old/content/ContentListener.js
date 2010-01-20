@@ -275,7 +275,7 @@ ContentListener.prototype = {
 		     "This document is available for free!");
 	this.addP(document, innerdiv);
 	this.addTextLink(document, innerdiv, "RECAP", 
-		     "http://www.recapextension.org", "_blank");
+		     "http://www.recapthelaw.org", "_blank");
 	this.addText(document, innerdiv, 
 		     " cached this document on " + timestamp + ".");
 	this.addP(document, innerdiv);

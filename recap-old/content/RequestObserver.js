@@ -109,6 +109,8 @@ RequestObserver.prototype = {
 	if (prefs.getBoolPref("pretty_filenames") == false) {
 	    return;
 	}
+
+	var filename_style_choice = prefs.getCharPref("pretty_filenames_choice");
     
 	filename = this.coerceDocid(filename);
 	
@@ -141,7 +143,6 @@ RequestObserver.prototype = {
 	if ((typeof casenum != 'undefined') && 
 	    (typeof officialcasenum != 'undefined')) {
 
-	    var prettyFilename;
 	    prettyFilename = PACER_TO_WEST_COURT[court];
 	    if (officialcasenum) {
 		prettyFilename = prettyFilename + "_" + officialcasenum;
@@ -158,6 +159,7 @@ RequestObserver.prototype = {
 	    
 	    prettyFilename = prettyFilename + ".pdf";
 	}
+
 	
 	
 	if ((typeof casenum != 'undefined') && casenum !='' && (typeof court != 'undefined') && (typeof docnum != 'undefined') && (typeof subdocnum != 'undefined')) {
@@ -167,13 +169,24 @@ RequestObserver.prototype = {
 			
 	}
 
-			 
-	if (IAFilename) {
-	    filename = IAFilename;
-	} else {
-	    //filename = PACER_TO_WEST_COURT[court] + "-" + filename;
-	    filename = court + "-" + filename;
+	if (filename_style_choice == "pretty_filenames_IAFilename"){
+		if (IAFilename) {
+		    filename = IAFilename;
+		} else {
+		    //filename = PACER_TO_WEST_COURT[court] + "-" + filename;
+		    filename = court + "-" + filename;
+		}
 	}
+	else{  // PrettyFilename
+		if(prettyFilename){
+			filename = prettyFilename;
+		}
+		else{
+		        filename = PACER_TO_WEST_COURT[court] + "-" + filename;
+		}
+
+	}
+
 
 	if (filename != null && court != null) {
 	    
