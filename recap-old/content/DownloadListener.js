@@ -212,8 +212,7 @@ DownloadListener.prototype = {
     originalListener: null,
     
     // The buffer stream
-    multiplexStream: CCIN("@mozilla.org/io/multiplex-input-stream;1",
-			  "nsIMultiplexInputStream"),
+    multiplexStream : null, 
     
     // Called when data is arriving on the HTTP channel
     onDataAvailable: function(request, context, inputStream, offset, count) {
@@ -248,6 +247,9 @@ DownloadListener.prototype = {
     
     // Called when the HTTP request is beginning
     onStartRequest: function(request, context) {
+	//initialize this here so that it is not shared by other instances of DownloadListener
+        this.multiplexStream = CCIN("@mozilla.org/io/multiplex-input-stream;1",
+			  "nsIMultiplexInputStream");
 
 	// add the form prefix data before any content arrives
 	this.appendPrefixStream();
