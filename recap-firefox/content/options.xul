@@ -45,7 +45,7 @@
       <hbox align="center">
 	<checkbox preference="pref_display_notifications" id="display_notifications" label="Display notifications when Recap becomes enabled or uploads a file"/>
       </hbox>
-  
+      <description id="growlWarn" style="font-weight: bold;"/>  
     </groupbox>
     
     <groupbox>
@@ -59,7 +59,6 @@
 	      <radio id="pretty_filenames_IAFilename" value="pretty_filenames_IAFilename" label="Internet Archive style (eg: gov.uscourts.cand.204881.46.0.pdf)" />
 	      <radio id="pretty_filenames_FancyFilename" value="pretty_filenames_FancyFilename" label="Lawyer style (eg: N.D.Cal._3-08-cv-03251_46_0.pdf)" />
       </radiogroup>
-      
     </groupbox>
     
     <groupbox>
