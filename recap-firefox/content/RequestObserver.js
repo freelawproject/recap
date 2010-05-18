@@ -436,6 +436,12 @@ RequestObserver.prototype = {
 	if (temp_disabled || !isPACERHost(URIhost) || !havePACERCookie()) {
 	    return;
 	}
+
+	// Ignore any requests that result in errors
+	
+	if(channel.responseStatus != 200){
+		return;
+	}
 	
 	// catch and handle DocLink requests made from bankruptcy pages
 	if (URIpath.match(/document_link/)) {
