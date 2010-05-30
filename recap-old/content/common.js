@@ -32,6 +32,7 @@ var SERVER_URL = "http://recapextension.org/recap/";
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";
+var QUERY_CASES_URL = SERVER_URL + "query_cases/";
 var ADDDOCMETA_URL = SERVER_URL + "adddocmeta/";
 
 // List of all PACER/ECF domains
