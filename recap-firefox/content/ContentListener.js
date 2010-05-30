@@ -121,10 +121,11 @@ ContentListener.prototype = {
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;
-	var showSubdocs = isDocPath(URIpath);
+	//var showSubdocs = isDocPath(URIpath);
+	var showSubdocs = true;
 
 	var casenum = null;
-	var preDocketPage = this.isPreDocketReportPage(URIpath, refpath)
+	var preDocketPage = this.isPreDocketReportPage(URIpath)
         if (preDocketPage){
 	    //Get the casenum from the current page URI
 	    try {
@@ -193,7 +194,7 @@ ContentListener.prototype = {
 
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
-    docCheckAndModify: function(document, court, showSubdocs) {
+    docCheckAndModify: function(document, court, showSubdocs, casenum) {
 
 	// Don't add js libs they have already been loaded
 	var loaded = document.getElementsByClassName("recapjs");
@@ -277,9 +278,24 @@ ContentListener.prototype = {
 	    var filename = jsonin[docURL]["filename"];
 	    var timestamp = jsonin[docURL]["timestamp"];
 	    var urlElements = elements[docURL];
+
+	    // If a document has subdocuments, we will create a slightly different modal box
+            try{
+	       var subDocuments = jsonin[docURL]["subDocuments"];
+	    }
+	    catch(e){
+		    var subDocuments = false;
+	    }
 	    
-	    // Create a dialogDiv for each RECAP document on the server
-	    this.makeDialogDiv(document, filename,  timestamp, count);
+
+	    if(!subDocuments){
+	      // Create a dialogDiv for each RECAP document on the server
+	      this.makeDialogDiv(document, filename,  timestamp, count);
+	    }
+	    else{
+	      this.makeDialogDiv(document, filename,  timestamp, count, subDocuments);
+	    }
+	    
 	    
 	    //log("  File found: " + filename + " " + docURL);
 	    
@@ -328,6 +344,12 @@ ContentListener.prototype = {
 	catch(e){ 
 		return;
 	}
+	try{
+	    timestamp = jsonin['timestamp'] 
+	}
+	catch(e){ 
+		// continue on failure, timestamp is not crucial
+	}
 
 	if(docket_url!=null){
 		
@@ -343,13 +365,13 @@ ContentListener.prototype = {
 		//iconImage.setAttribute("onClick", 
 	        //			       "addModal(" + count + ");");
 		iconImage.setAttribute("title",
-				       "Docket available for free from RECAP.");
+				       "Docket available for free via RECAP.");
 
 		
 		var textLink= document.createElement("a");
 		textLink.setAttribute("href", docket_url);
 		textLink.setAttribute("target", "_blank");
-		textLink.innerHTML = "Docket information (not official) available on RECAP";
+		textLink.innerHTML = " Docket available for free via RECAP (unofficial and potentially incomplete, last updated: " + timestamp+ " )";
 
 		var reset_button = document.getElementsByName('reset')[0];
 		reset_button.parentNode.parentNode.appendChild(iconLink);
@@ -362,23 +384,27 @@ ContentListener.prototype = {
     
     },
     
-    isPreDocketReportPage: function(current_path, ref_path){
-	
+    isPreDocketReportPage: function(current_path){
 	var current_page_name = null;
-	var ref_page_name = null;
 	try {
 	    current_page_name = current_path.match(/(\w+)\.pl/i)[0];
-	    ref_page_name = ref_path.match(/(\w+)\.pl/i)[0];
 	} catch(e) {
 		return false;
 	}
         				   
 	var modifiablePages = ["DktRpt.pl", "HistDocQry.pl"];
+	
+	var args = null;
+	try {
+	    args = current_path.match(/\?\d*$/i)[0];
+	} catch(e) {}
+	
+	just_digits = (args && args.length > 0) ? true : false;
+
 
 	// This may screw up when back/forward? 
 	if (modifiablePages.indexOf(current_page_name) >= 0 && 
-			current_page_name && ref_page_name &&
-			current_page_name != ref_page_name){
+			args && just_digits ) {
 		return true;
 	}
 
@@ -387,8 +413,12 @@ ContentListener.prototype = {
 
    
     // Make a dialog div and append it to the bottom of the document body
-    makeDialogDiv: function(document, filename, timestamp, count) {
+    makeDialogDiv: function(document, filename, timestamp, count, subDocuments) {
 
+	if(subDocuments == undefined){
+		subDocuments = false;
+	}
+	
 	var outerdiv = document.createElement("div");
 	outerdiv.setAttribute("id", "recapdialog" + count);
 	outerdiv.setAttribute("class", "jqmWindow recapOuterDiv");
@@ -421,11 +451,37 @@ ContentListener.prototype = {
 	this.addBr(document, innerdiv);
 	var a = this.addTextLink(document, innerdiv, "Download", filename, null);
 	a.setAttribute("class", "recapDownloadButton");
+	
+	//If there are subDocuments, we want to display them here
+	if (subDocuments){
+	   var subDocDiv= document.createElement("div");
+	   subDocDiv.setAttribute("class", "recapInnerSubDocDiv");
+
+	   this.addP(document, innerdiv);
+	   this.addText(document, innerdiv, 
+			" RECAP also has some sub documents associated with this document!");
+
+	   this.addBr(document, innerdiv);
+	   for(var subDocNum in subDocuments){
+		   sub_filename = subDocuments[subDocNum]["filename"]
+		   sub_timestamp= subDocuments[subDocNum]["timestamp"]
+	           this.addText(document, subDocDiv, 
+		          "RECAP cached subdocument #" + subDocNum + " on " + sub_timestamp + " " )
+	           var a = this.addTextLink(document, subDocDiv, "Download", sub_filename, null);	  
+		   a.setAttribute("class", "recapDownloadButton");
+	           this.addBr(document, subDocDiv);
+	   }
+	}
+
+
 	this.addP(document, innerdiv);
 	var disclaimerDiv = document.createElement("div");
 	disclaimerDiv.setAttribute("class","recapDisclaimer");
 	this.addText(document, disclaimerDiv, "RECAP is not affiliated with the US Courts. The documents it makes available are voluntarily uploaded by PACER users.  RECAP cannot guarantee the authenticity of documents because the courts themselves have not implemented a document signing and authentication system.");
 
+	if (subDocuments){
+	   innerdiv.appendChild(subDocDiv);
+	}
 	innerdiv.appendChild(disclaimerDiv);
 	outerdiv.appendChild(innerdiv);
 	document.documentElement.appendChild(outerdiv);	
