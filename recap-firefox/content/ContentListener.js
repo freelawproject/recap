@@ -72,6 +72,12 @@ ContentListener.prototype = {
 
 	var URIhost = navigation.currentURI.asciiHost;
 	var URIpath = navigation.currentURI.path;
+	try{
+	var refpath = navigation.referringURI.path;
+	}catch(e){
+		//referringURI may not exist in all cases
+		refpath = "";
+	}
 	
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
 				"nsIPrefService").getBranch("recap.");
@@ -117,10 +123,73 @@ ContentListener.prototype = {
 	var document = navigation.document;
 	var showSubdocs = isDocPath(URIpath);
 
-	if (court && document) {
+	var casenum = null;
+	var preDocketPage = this.isPreDocketReportPage(URIpath, refpath)
+        if (preDocketPage){
+	    //Get the casenum from the current page URI
+	    try {
+		casenum = URIpath.match(/\?(\d+)$/i)[1];
+	    } catch (e) {
+		    log('could not find casenum! Query case failed')
+	    
+	    }
+	}
+
+	if (!preDocketPage && court && document) {
 	    this.docCheckAndModify(document, court, showSubdocs);
 	}
+	else if (preDocketPage && casenum && court && document){
+	    this.caseCheckAndModify(document, court, casenum);
+	}
+
     },
+
+    //Check our server to see if a docket page exists,
+    //   and modify the page with link to docket page
+    caseCheckAndModify: function(document, court, casenum){
+        // TODO - DK: Refactor this out? The only thing we need to do is check pdf headers, i think
+	// Don't add js libs they have already been loaded
+	var loaded = document.getElementsByClassName("recapjs");
+	if (!loaded.length) {
+		// Write the necessary js libraries into the document
+		this.loadjs(document);
+	}
+	if (casenum == undefined){
+		return
+	}
+        //Casenum is defined, so this is a pre-docket show page
+        //We will ask recap for a link to the docket page, if it exists
+	var jsonout = { court: court, 
+			showSubdocs: true,
+		         getDocketURL: true,
+			 urls: [],
+	    	        casenum: casenum};
+
+	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	
+	// Serialize the JSON object to a string
+	var jsonouts = nativeJSON.encode(jsonout);
+
+        // Send the AJAX POST request
+	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
+		       "nsIXMLHttpRequest");
+	
+	var params = "json=" + jsonouts;
+	
+	req.open("POST", QUERY_CASES_URL, true);
+
+	var that = this;
+	req.onreadystatechange = function() {
+	    if (req.readyState == 4 && req.status == 200) {
+		that.handleCaseResponse(req, document);
+	    }
+	};
+
+	req.send(params);
+
+			
+    },
+
 
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
@@ -246,6 +315,76 @@ ContentListener.prototype = {
 	    }
 	}
     },    
+
+    handleCaseResponse: function(req, document) {
+	
+	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	var jsonin = nativeJSON.decode(req.responseText);
+
+	var docket_url = null;
+	try{
+	     docket_url = jsonin['docket_url'];
+	}
+	catch(e){ 
+		return;
+	}
+
+	if(docket_url!=null){
+		
+		var iconLink = document.createElement("a");
+		iconLink.setAttribute("class", "recapIcon");
+		iconLink.setAttribute("href", docket_url);
+		iconLink.setAttribute("target", "_blank");
+
+		var iconImage = this.addImage(document, iconLink,
+					      "recap-icon.png");
+		iconImage.setAttribute("class", "recapIconImage");
+		iconImage.setAttribute("alt", "[RECAP]");
+		//iconImage.setAttribute("onClick", 
+	        //			       "addModal(" + count + ");");
+		iconImage.setAttribute("title",
+				       "Docket available for free from RECAP.");
+
+		
+		var textLink= document.createElement("a");
+		textLink.setAttribute("href", docket_url);
+		textLink.setAttribute("target", "_blank");
+		textLink.innerHTML = "Docket information (not official) available on RECAP";
+
+		var reset_button = document.getElementsByName('reset')[0];
+		reset_button.parentNode.parentNode.appendChild(iconLink);
+		reset_button.parentNode.parentNode.appendChild(textLink);
+
+		return;
+
+	}
+
+    
+    },
+    
+    isPreDocketReportPage: function(current_path, ref_path){
+	
+	var current_page_name = null;
+	var ref_page_name = null;
+	try {
+	    current_page_name = current_path.match(/(\w+)\.pl/i)[0];
+	    ref_page_name = ref_path.match(/(\w+)\.pl/i)[0];
+	} catch(e) {
+		return false;
+	}
+        				   
+	var modifiablePages = ["DktRpt.pl", "HistDocQry.pl"];
+
+	// This may screw up when back/forward? 
+	if (modifiablePages.indexOf(current_page_name) >= 0 && 
+			current_page_name && ref_page_name &&
+			current_page_name != ref_page_name){
+		return true;
+	}
+
+	return false;
+    },
+
    
     // Make a dialog div and append it to the bottom of the document body
     makeDialogDiv: function(document, filename, timestamp, count) {
