@@ -41,6 +41,7 @@ var PACER_DOMAINS = ["ecf.almd.uscourts.gov", "ecf.alnd.uscourts.gov", "ecf.alsd
 // PACER court id to West-style court cite
 var PACER_TO_WEST_COURT = {"akd":"D.Alaska", "almd":"M.D.Ala.", "alnd":"N.D.Ala.", "alsd":"S.D.Ala.", "ared":"E.D.Ark.", "arwd":"W.D.Ark.", "azd":"D.Ariz.", "cacd":"C.D.Cal.", "caed":"E.D.Cal.", "cand":"N.D.Cal.", "casd":"S.D.Cal.", "cod":"D.Colo.", "ctd":"D.Conn.", "dcd":"D.D.C.", "ded":"D.Del.", "flmd":"M.D.Fla.", "flnd":"N.D.Fla.", "flsd":"S.D.Fla.", "gamd":"M.D.Ga.", "gand":"N.D.Ga.", "gasd":"S.D.Ga.", "gud":"D.Guam", "hid":"D.Hawaii", "iand":"N.D.Iowa", "iasd":"S.D.Iowa", "idd":"D.Idaho", "ilcd":"C.D.Ill.", "ilnd":"N.D.Ill.", "ilsd":"S.D.Ill.", "innd":"N.D.Ind.", "insd":"S.D.Ind.", "ksd":"D.Kan.", "kyed":"E.D.Ky.", "kywd":"W.D.Ky.", "laed":"W.D.La.", "lamd":"M.D.La.", "lawd":"W.D.La.", "mad":"D.Mass.", "mdd":"D.Md.", "med":"D.Me.", "mied":"E.D.Mich.", "miwd":"W.D.Mich.", "mnd":"D.Minn.", "moed":"W.D.Mo.", "mowd":"W.D.Mo.", "msnd":"N.D.Miss", "mssd":"S.D.Miss.", "mtd":"D.Mont.", "nced":"E.D.N.C.", "ncmd":"M.D.N.C.", "ncwd":"W.D.N.C.", "ndd":"D.N.D.", "ned":"D.Neb.", "nhd":"D.N.H.", "njd":"D.N.J.", "nmd":"D.N.M.", "nmid":"N.MarianaIslands", "nvd":"D.Nev.", "nyed":"E.D.N.Y.", "nynd":"N.D.N.Y.", "nysd":"S.D.N.Y.", "nywd":"W.D.N.Y.", "ohnd":"N.D.Ohio", "ohsd":"S.D.Ohio", "oked":"E.D.Okla.", "oknd":"N.D.Okla.", "okwd":"W.D.Okla.", "ord":"D.Or.", "paed":"E.D.Pa.", "pamd":"M.D.Pa.", "pawd":"W.D.Pa.", "prd":"D.P.R.", "rid":"D.R.I.", "scd":"D.S.C.", "sdd":"D.S.D.", "tned":"E.D.Tenn.", "tnmd":"M.D.Tenn.", "tnwd":"W.D.Tenn.", "txed":"E.D.Tex.", "txnd":"N.D.Tex.", "txsd":"S.D.Tex.", "txwd":"W.D.Tex.", "utd":"D.Utah", "vaed":"E.D.Va.", "vawd":"W.D.Va.", "vid":"D.VirginIslands", "vtd":"D.Vt.", "waed":"E.D.Wash.", "wawd":"W.D.Wash.", "wied":"E.D.Wis.", "wiwd":"W.D.Wis", "wvnd":"N.D.W.Va.", "wvsd":"S.D.W.Va.", "wyd":"E.D.Wis.","cit":"CIT","akb":"Bankr.D.Alaska","almb":"Bankr.M.D.Ala.","alnb":"Bankr.N.D.Ala.","alsb":"Bankr.S.D.Ala.","areb":"Bankr.E.D.Ark.","arwb":"Bankr.W.D.Ark.","azb":"Bankr.D.Ariz.","cacb":"Bankr.C.D.Cal.","caeb":"Bankr.E.D.Cal.","canb":"Bankr.N.D.Cal.","casb":"Bankr.S.D.Cal.","cob":"Bankr.D.Colo.","ctb":"Bankr.D.Conn.","dcb":"Bankr.D.D.C.","deb":"Bankr.D.Del.","flmb":"Bankr.M.D.Fla.","flnb":"Bankr.N.D.Fla.","flsb":"Bankr.S.D.Fla.","gamb":"Bankr.M.D.Ga.","ganb":"Bankr.N.D.Ga.","gasb":"Bankr.S.D.Ga.","gub":"Bankr.D.Guam","hib":"Bankr.D.Hawaii","ianb":"Bankr.N.D.Iowa","iasb":"Bankr.S.D.Iowa","idb":"Bankr.D.Idaho","ilcb":"Bankr.C.D.Ill.","ilnb":"Bankr.N.D.Ill.","ilsb":"Bankr.S.D.Ill.","innb":"Bankr.N.D.Ind.","insb":"Bankr.S.D.Ind.","ksb":"Bankr.D.Kan.","kyeb":"Bankr.E.D.Ky.","kywb":"Bankr.W.D.Ky.","laeb":"Bankr.W.D.La.","lamb":"Bankr.M.D.La.","lawb":"Bankr.W.D.La.","mab":"Bankr.D.Mass.","mdb":"Bankr.D.Md.","meb":"Bankr.D.Me.","mieb":"Bankr.E.D.Mich.","miwb":"Bankr.W.D.Mich.","mnb":"Bankr.D.Minn.","moeb":"Bankr.W.D.Mo.","mowb":"Bankr.W.D.Mo.","msnb":"Bankr.N.D.Miss","mssb":"Bankr.S.D.Miss.","mtb":"Bankr.D.Mont.","nceb":"Bankr.E.D.N.C.","ncmb":"Bankr.M.D.N.C.","ncwb":"Bankr.W.D.N.C.","ndb":"Bankr.D.N.D.","neb":"Bankr.D.Neb.","nhb":"Bankr.D.N.H.","njb":"Bankr.D.N.J.","nmb":"Bankr.D.N.M.","nvb":"Bankr.D.Nev.","nyeb":"Bankr.E.D.N.Y.","nynb":"Bankr.N.D.N.Y.","nysb":"Bankr.S.D.N.Y.","nywb":"Bankr.W.D.N.Y.","ohnb":"Bankr.N.D.Ohio","ohsb":"Bankr.S.D.Ohio","okeb":"Bankr.E.D.Okla.","oknb":"Bankr.N.D.Okla.","okwb":"Bankr.W.D.Okla.","orb":"Bankr.D.Or.","paeb":"Bankr.E.D.Pa.","pamb":"Bankr.M.D.Pa.","pawb":"Bankr.W.D.Pa.","prb":"Bankr.D.P.R.","rib":"Bankr.D.R.I.","scb":"Bankr.D.S.C.","sdb":"Bankr.D.S.D.","tneb":"Bankr.E.D.Tenn.","tnmb":"Bankr.M.D.Tenn.","tnwb":"Bankr.W.D.Tenn.","txeb":"Bankr.E.D.Tex.","txnb":"Bankr.N.D.Tex.","txsb":"Bankr.S.D.Tex.","txwb":"Bankr.W.D.Tex.","utb":"Bankr.D.Utah","vaeb":"Bankr.E.D.Va.","vawb":"Bankr.W.D.Va.","vib":"Bankr.D.VirginIslands","vtb":"Bankr.D.Vt.","waeb":"Bankr.E.D.Wash.","wawb":"Bankr.W.D.Wash.","wieb":"Bankr.E.D.Wis.","wiwb":"Bankr.W.D.Wis","wvnb":"Bankr.N.D.W.Va.","wvsb":"Bankr.S.D.W.Va.","wyb":"Bankr.E.D.Wis.","nysb-mega":"Bankr.S.D.N.Y."};
 
+var UNSUPPORTED_PACER_DOMAINS = ["ecf.ca1.uscourts.gov", "ecf.ca2.uscourts.gov", "pacer.ca2.uscourts.gov", "ecf.ca3.uscourts.gov", "ecf.ca4.uscourts.gov", "ecf.ca5.uscourts.gov", "ecf.ca6.uscourts.gov", "ecf.ca7.uscourts.gov", "ecf.ca8.uscourts.gov", "ecf.ca9.uscourts.gov", "ecf.ca10.uscourts.gov", "ecf.ca11.uscourts.gov","pacer.ca11.uscourts.gov", "ecf.cadc.uscourts.gov","ecf.cafc.uscourts.gov","pacer.cafc.uscourts.gov", "pacer.login.uscourts.gov"];
 function isPDF(mimetype) {
     if (typeof mimetype == 'undefined') {
 	return false;
@@ -70,6 +71,11 @@ function isPACERHost(hostname) {
     return (PACER_DOMAINS.indexOf(hostname) >= 0) ? true : false;
 }
 
+// RECAP currently only works on District and Bankruptcy courts
+function isUnsupportedPACERHost(hostname) {
+    return (UNSUPPORTED_PACER_DOMAINS.indexOf(hostname) >= 0) ? true : false;
+}
+
 // Get court name from hostname
 function getCourtFromHost(hostname) {
     var court = null;
@@ -97,7 +103,12 @@ function havePACERCookie() {
 			    return false;
 			}
 		if (cookie.name.match("PacerUser")) {
-		    foundPacerUser = true;
+		    if(cookie.value.indexOf("unvalidated") >=0){
+			    return false;
+		    }
+		    else{
+		            foundPacerUser = true;
+		    }
 		}
 	    }
 	}
@@ -174,6 +185,11 @@ function updateStatusIcon() {
 	havePACERCookie()) {
 	    statusIcon.tooltipText = "You are logged into PACER.";
 	    statusIcon.src = ICON_LOGGED_IN;
+    }
+    else if (isUnsupportedPACERHost(hostname) && 
+	havePACERCookie()) {
+	    statusIcon.tooltipText = "RECAP does not work on Appellate Courts";
+	    statusIcon.src = ICON_DISABLED;
 
     } else {
 	statusIcon.src= ICON_LOGGED_OUT;
