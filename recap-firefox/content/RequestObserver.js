@@ -446,7 +446,7 @@ RequestObserver.prototype = {
 	// catch and handle DocLink requests made from bankruptcy pages
 	if (URIpath.match(/document_link/)) {
 		var court = getCourtFromHost(URIhost);
-		var doclinklistener = new DocLinkListener(court, URIpath);
+		var doclinklistener = new DocLinkListener(court, URIpath, this.metacache);
 		subject.QueryInterface(Ci.nsITraceableChannel);
 		doclinklistener.originalListener = subject.setNewListener(doclinklistener);
 	}

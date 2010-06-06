@@ -182,26 +182,9 @@ DownloadListener.prototype = {
 			  "Recap File Upload", 
 			  "Docket uploaded to the public archive.");  
 		
-		for (var caseid in jsonin.cases) {
-		    if (typeof(this.metacache.cases[caseid]) == "undefined") { 
-			this.metacache.cases[caseid] = {};
-		    }
-		    officialcasenum = jsonin.cases[caseid]["officialcasenum"];
-		    if(officialcasenum != "")  //don't replace if it's an empty string
-		   	 this.metacache.cases[caseid]["officialcasenum"] = officialcasenum;
-		    this.metacache.cases[caseid]["casename"] = caseid["casename"];
-		}
-		
-		for (var docnum in jsonin.documents) {
-		    var thedocument = jsonin.documents[docnum];
-		    for (var docvar in thedocument) {
-			if(typeof(this.metacache.documents[docnum]) == "undefined"){ 
-			    this.metacache.documents[docnum] = {};
-			}
-			this.metacache.documents[docnum][docvar] = thedocument[docvar];
-			
-		    }
-		}
+
+		updateMetaCache(this.metacache,jsonin.documents, jsonin.cases);
+
 		return jsonin.message;
 	    }
 	}
