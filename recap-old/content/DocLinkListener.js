@@ -33,11 +33,12 @@
  *
 */
 
-function DocLinkListener(court, URIpath) {
+function DocLinkListener(court, URIpath, metacache) {
     
     this.responsetext = "";
     this.court = court;
     this.URIpath = URIpath;
+    this.metacache = metacache;
     
 }
 
@@ -69,9 +70,18 @@ DocLinkListener.prototype = {
 	var that = this;
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
-	    	var message;
-			message = req.responseText;
-		log(message);
+		
+		var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+		try {
+			var jsonin = nativeJSON.decode(req.responseText);
+		} catch (e) {
+			log("JSON decoding failed. (req.responseText: " + req.responseText + ")");
+			return;
+		}
+
+		updateMetaCache(that.metacache, jsonin.documents);
+		
+		log(jsonin.message);
 	    }	    
 	};	
 	

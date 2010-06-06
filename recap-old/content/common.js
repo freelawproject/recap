@@ -230,3 +230,38 @@ function handlePrefDisable(){
 
 	return true;
 }
+
+// cases should be an array keyed by case id that contains metadata about a particular case
+//   Ex: cases[12345]["officialcasenum"] = "1:01-1234"
+// documents should be an array keyed by docid
+// cases is an optional parameter because adddocmeta only includes metadata about documents
+function updateMetaCache(metacache, documents, cases){
+
+	if(cases == undefined){
+		cases = [];
+	}
+	for (var caseid in cases) {
+		var thecase = cases[caseid]
+
+		if (typeof(metacache.cases[caseid]) == "undefined") { 
+			metacache.cases[caseid] = {};
+		}
+		officialcasenum = thecase["officialcasenum"];
+		if(officialcasenum != "")  //don't replace if it's an empty string
+			metacache.cases[caseid]["officialcasenum"] = officialcasenum;
+
+
+	}
+
+
+	for (var docnum in documents) {
+		var thedocument = documents[docnum];
+		for (var docvar in thedocument) {
+			if(typeof(metacache.documents[docnum]) == "undefined"){ 
+				metacache.documents[docnum] = {};
+			}
+			metacache.documents[docnum][docvar] = thedocument[docvar];
+
+		}
+	}
+}
