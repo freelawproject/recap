@@ -7,6 +7,7 @@
 .recapOuterDiv { text-align: right; }
 .recapInnerDiv { text-align: center; }
 .recapInnerSubDocDiv { height: 6em;
+			line-height: 2em;
 			overflow: auto}
 
 .recapDownloadButton { font-weight: bold;

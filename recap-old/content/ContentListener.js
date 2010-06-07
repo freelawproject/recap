@@ -330,7 +330,7 @@ ContentListener.prototype = {
 		iconImage.setAttribute("class", "recapIconImage");
 		iconImage.setAttribute("alt", "[RECAP]");
 		iconImage.setAttribute("onClick", 
-				       "addModal(" + count + ");");
+				       "addModal(" + count + ")");
 		iconImage.setAttribute("title",
 				       "Available for free from RECAP.");
 		
@@ -364,21 +364,24 @@ ContentListener.prototype = {
 		var iconLink = document.createElement("a");
 		iconLink.setAttribute("class", "recapIcon");
 		iconLink.setAttribute("href", docket_url);
-		iconLink.setAttribute("target", "_blank");
+		iconLink.setAttribute("onClick", "return false;");
 
 		var iconImage = this.addImage(document, iconLink,
 					      "recap-icon.png");
 		iconImage.setAttribute("class", "recapIconImage");
 		iconImage.setAttribute("alt", "[RECAP]");
-		//iconImage.setAttribute("onClick", 
-	        //			       "addModal(" + count + ");");
+		iconImage.setAttribute("onClick", 
+	        			       "addModal(" + 1 + ");");
 		iconImage.setAttribute("title",
 				       "Docket available for free via RECAP.");
 
 		
+	        this.makeCaseDialogDiv(document, docket_url,  timestamp);
+
 		var textLink= document.createElement("a");
 		textLink.setAttribute("href", docket_url);
-		textLink.setAttribute("target", "_blank");
+		textLink.setAttribute("onClick", 
+	        			       "addModal(" + 1 + "); return false;");
 		textLink.innerHTML = " Docket available for free via RECAP (unofficial and potentially incomplete, last updated: " + timestamp+ " )";
 
 		var reset_button = document.getElementsByName('reset')[0];
@@ -418,15 +421,8 @@ ContentListener.prototype = {
 
 	return false;
     },
-
-   
-    // Make a dialog div and append it to the bottom of the document body
-    makeDialogDiv: function(document, filename, timestamp, count, subDocuments) {
-
-	if(subDocuments == undefined){
-		subDocuments = false;
-	}
-	
+    
+    makeBasicDialogDiv: function(document, count){
 	var outerdiv = document.createElement("div");
 	outerdiv.setAttribute("id", "recapdialog" + count);
 	outerdiv.setAttribute("class", "jqmWindow recapOuterDiv");
@@ -441,6 +437,17 @@ ContentListener.prototype = {
 	closeIcon.setAttribute("class", "recapCloseButton");
 	closeLink.appendChild(closeIcon);
 	outerdiv.appendChild(closeLink);
+
+	return outerdiv;
+    },
+   
+    // Make a dialog div and append it to the bottom of the document body
+    makeDialogDiv: function(document, filename, timestamp, count, subDocuments) {
+
+	if(subDocuments == undefined){
+		subDocuments = false;
+	}
+        var outerdiv = this.makeBasicDialogDiv(document, count)
 	
 	var innerdiv = document.createElement("div");
 	innerdiv.setAttribute("class", "recapInnerDiv");
@@ -481,16 +488,42 @@ ContentListener.prototype = {
 	   }
 	}
 
-
 	this.addP(document, innerdiv);
-	var disclaimerDiv = document.createElement("div");
-	disclaimerDiv.setAttribute("class","recapDisclaimer");
-	this.addText(document, disclaimerDiv, "RECAP is not affiliated with the US Courts. The documents it makes available are voluntarily uploaded by PACER users.  RECAP cannot guarantee the authenticity of documents because the courts themselves have not implemented a document signing and authentication system.");
-
 	if (subDocuments){
 	   innerdiv.appendChild(subDocDiv);
 	}
-	innerdiv.appendChild(disclaimerDiv);
+
+	this.addDisclaimerDiv(document, innerdiv);
+	outerdiv.appendChild(innerdiv);
+	document.documentElement.appendChild(outerdiv);	
+    },
+    makeCaseDialogDiv: function(document, docket_url, timestamp){
+
+        var outerdiv = this.makeBasicDialogDiv(document, 1)
+
+	var innerdiv = document.createElement("div");
+	innerdiv.setAttribute("class", "recapInnerDiv");
+
+	this.addP(document, innerdiv);
+	this.addImage(document, innerdiv, "recap-logo.png");
+	this.addBr(document, innerdiv);
+	this.addText(document, innerdiv, 
+		     "This Docket is available for free!");
+	this.addP(document, innerdiv);
+	this.addTextLink(document, innerdiv, "RECAP", 
+		     "http://www.recapthelaw.org", "_blank");
+	this.addText(document, innerdiv, 
+		     " cached this docket on " + timestamp + ".");
+	this.addP(document, innerdiv);
+	this.addBr(document, innerdiv);
+	
+	var a = this.addTextLink(document, innerdiv, "Download", docket_url, null);
+	a.setAttribute("class", "recapDownloadButton");
+	
+	this.addP(document, innerdiv);
+	this.addBr(document, innerdiv);
+	
+	this.addDisclaimerDiv(document, innerdiv);
 	outerdiv.appendChild(innerdiv);
 	document.documentElement.appendChild(outerdiv);	
     },
@@ -531,6 +564,16 @@ ContentListener.prototype = {
 	div.appendChild(img);
 	return img;
     },
+    addDisclaimerDiv: function(document, div){
+	
+        var disclaimerDiv = document.createElement("div");
+	disclaimerDiv.setAttribute("class","recapDisclaimer");
+	this.addText(document, disclaimerDiv, "RECAP is not affiliated with the US Courts. The documents it makes available are voluntarily uploaded by PACER users.  RECAP cannot guarantee the authenticity of documents because the courts themselves have not implemented a document signing and authentication system.");
+
+	div.appendChild(disclaimerDiv);
+	return disclaimerDiv;
+    },
+
 
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
