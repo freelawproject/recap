@@ -244,7 +244,24 @@ ContentListener.prototype = {
 	
 	// if no linked docs, don't bother sending docCheck
 	if (jsonout.urls.length == 0) {
-	    return;
+	    try{
+	      // check if we are on a doc1 page where the url is found in a button, rather than a link
+	      var button= body.getElementsByTagName("form")[0];
+	      var docURL = button.getAttribute("action");
+              var onsubmit = button.getAttribute("onsubmit");
+	    } catch(e) { return;} 
+	   
+	    if(docURL && onsubmit && onsubmit.indexOf("goDLS") >= 0){
+	         jsonout.urls.push(escape(docURL));
+		 try {
+		    elements[docURL].push(button);
+		 } catch(e) {
+		    elements[docURL] = [button];
+		 }
+	    }
+	    else{
+	      return;
+	    }
 	}
 
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
@@ -308,7 +325,6 @@ ContentListener.prototype = {
 	    //log("  File found: " + filename + " " + docURL);
 	    
 	    for (var i = 0; i < urlElements.length; i++) {
-		
 		element = urlElements[i];
 		
 		// Ensure that the element isn't already modified
@@ -334,6 +350,20 @@ ContentListener.prototype = {
 		iconImage.setAttribute("title",
 				       "Available for free from RECAP.");
 		
+                //when the element is a form, this is a doc 1 page, so we'll add some more text than we would
+		// on a docket page
+		if(element.nodeName == "FORM"){ 
+		   
+		   var textLink= document.createElement("a");
+		   textLink.setAttribute("href", filename);
+		   textLink.setAttribute("onClick", 
+	        			       "addModal(" + count + "); return false;");
+		   textLink.innerHTML = " Document available for free via RECAP (unofficial and potentially incomplete, last updated: " + timestamp+ " )";
+			
+		   element.parentNode.insertBefore(textLink, 
+						element.nextSibling);
+		
+		}
 		element.parentNode.insertBefore(iconLink, 
 						element.nextSibling);
 	    }
