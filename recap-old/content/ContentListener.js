@@ -110,7 +110,7 @@ ContentListener.prototype = {
 	    if(temp_disabled == false) { 
 	         // Show alert only if we are not disabled
 		 showAlert(ICON_LOGGED_OUT_32, 
-	       		"RECAP deactivated.", "You are logged out of PACER. and that's d");
+	       		"RECAP deactivated.", "You are logged out of PACER.");
 	    }
 
 	    this.active = false;    
