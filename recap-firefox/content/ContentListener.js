@@ -519,6 +519,7 @@ ContentListener.prototype = {
 	
 	var a = this.addTextLink(document, innerdiv, "Download", docket_url, null);
 	a.setAttribute("class", "recapDownloadButton");
+	a.setAttribute("target", "_blank");
 	
 	this.addP(document, innerdiv);
 	this.addBr(document, innerdiv);
