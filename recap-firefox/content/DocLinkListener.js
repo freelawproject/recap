@@ -63,7 +63,7 @@ DocLinkListener.prototype = {
 		return;
 	}
 
-        params = "docid=" + docid + "&casenum=" + casenum + "&de_seq_num=" + de_seq_num + "&dm_id=" + dm_id + "&docnum=" + docnum + "&court=" + this.court;
+        params = "docid=" + docid + "&casenum=" + casenum + "&de_seq_num=" + de_seq_num + "&dm_id=" + dm_id + "&docnum=" + docnum + "&court=" + this.court + "&add_case_info=true";
 
     	req.open("POST", ADDDOCMETA_URL, true)
 
