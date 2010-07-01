@@ -358,14 +358,20 @@ ContentListener.prototype = {
 		   textLink.setAttribute("href", filename);
 		   textLink.setAttribute("onClick", 
 	        			       "addModal(" + count + "); return false;");
-		   textLink.innerHTML = " Document available for free via RECAP (unofficial and potentially incomplete, last updated: " + timestamp+ " )";
+		   textLink.innerHTML = " Click here to download this document for free from the RECAP archive";
 			
-		   element.parentNode.insertBefore(textLink, 
+	           var textlink_div= document.createElement("div");
+	           textlink_div.setAttribute("class", "recapTextLinkBox");
+	           textlink_div.appendChild(iconLink);
+	           textlink_div.appendChild(textLink);
+		   element.parentNode.insertBefore(textlink_div, 
 						element.nextSibling);
 		
 		}
-		element.parentNode.insertBefore(iconLink, 
+		else{
+		  element.parentNode.insertBefore(iconLink, 
 						element.nextSibling);
+		}
 	    }
 	}
     },    
@@ -391,6 +397,7 @@ ContentListener.prototype = {
 
 	if(docket_url!=null){
 		
+
 		var iconLink = document.createElement("a");
 		iconLink.setAttribute("class", "recapIcon");
 		iconLink.setAttribute("href", docket_url);
@@ -412,11 +419,17 @@ ContentListener.prototype = {
 		textLink.setAttribute("href", docket_url);
 		textLink.setAttribute("onClick", 
 	        			       "addModal(" + 1 + "); return false;");
-		textLink.innerHTML = " Docket available for free via RECAP (unofficial and potentially incomplete, last updated: " + timestamp+ " )";
+		textLink.innerHTML = " Click here to download this docket for free from the RECAP archive <br> <span class='recapSmaller'> (archived dockets may be out of date)</span>";
+
+	        var textlink_div= document.createElement("div");
+	        textlink_div.setAttribute("class", "recapTextLinkBox");
+	        textlink_div.appendChild(iconLink);
+	        textlink_div.appendChild(textLink);
+
+
 
 		var reset_button = document.getElementsByName('reset')[0];
-		reset_button.parentNode.parentNode.appendChild(iconLink);
-		reset_button.parentNode.parentNode.appendChild(textLink);
+		reset_button.parentNode.parentNode.appendChild(textlink_div);
 
 		return;
 
@@ -547,7 +560,7 @@ ContentListener.prototype = {
 	this.addP(document, innerdiv);
 	this.addBr(document, innerdiv);
 	
-	var a = this.addTextLink(document, innerdiv, "Download", docket_url, null);
+	var a = this.addTextLink(document, innerdiv, "View", docket_url, null);
 	a.setAttribute("class", "recapDownloadButton");
 	a.setAttribute("target", "_blank");
 	

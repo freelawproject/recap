@@ -24,9 +24,21 @@
 		    height: 1em;
 		  }
 		  
-.recapDisclaimer {
-		       border-style: solid;
-		       border: 1px solid #888888;
-				color: #999999;
-				font-size: 75%;
-				}
+.recapDisclaimer {  border-style: solid;
+		    border: 1px solid #888888;
+		    color: #999999;
+		    font-size: 75%;
+		}
+
+.recapTextLinkBox{  text-align: center;
+		    width: 500px;
+		    -moz-box-shadow: 10px 10px 5px #888;
+		    padding: 5px 5px 5px 15px;
+		    border-style: solid;
+		    border-width: 1px;
+		    border-color: #000000;
+		    background-color:#eeeeee;
+		    margin: 10px;
+		}
+
+.recapSmaller{ font-size: 0.7em;}
