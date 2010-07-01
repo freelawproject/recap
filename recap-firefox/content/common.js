@@ -27,6 +27,8 @@ var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
 var ICON_LOGGED_OUT_32 = "chrome://recap/skin/recap-icon-grey-32.png";
 var ICON_DISABLED = "chrome://recap/skin/recap-icon-disabled.png";
 var ICON_DISABLED_32 = "chrome://recap/skin/recap-icon-disabled-32.png";
+var ICON_EXCLAMATION = "chrome://recap/skin/recap-icon-exclamation.png";
+var ICON_EXCLAMATION_32 = "chrome://recap/skin/recap-icon-exclamation-32.png";
 
 var SERVER_URL = "http://recapextension.org/recap/";
 
@@ -189,7 +191,7 @@ function updateStatusIcon() {
     else if (isUnsupportedPACERHost(hostname) && 
 	havePACERCookie()) {
 	    statusIcon.tooltipText = "RECAP does not work on Appellate Courts";
-	    statusIcon.src = ICON_DISABLED;
+	    statusIcon.src = ICON_EXCLAMATION;
 
     } else {
 	statusIcon.src= ICON_LOGGED_OUT;

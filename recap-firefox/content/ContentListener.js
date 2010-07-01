@@ -93,7 +93,7 @@ ContentListener.prototype = {
 	       			"RECAP deactivated.", "Your settings forced RECAP to stay deactivated.");
 	    }
 	    else if (isUnsupportedPACERHost(URIhost)){
-	    		showAlert(ICON_DISABLED_32, 
+	    		showAlert(ICON_EXCLAMATION_32, 
 	       			"RECAP not supported.", "RECAP does not work on Appellate Courts");
 		    
 	    }
