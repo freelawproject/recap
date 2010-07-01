@@ -129,8 +129,6 @@ ContentListener.prototype = {
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;
-	//var showSubdocs = isDocPath(URIpath);
-	var showSubdocs = true;
 
 	var casenum = null;
 	var preDocketPage = this.isPreDocketReportPage(URIpath)
@@ -145,7 +143,7 @@ ContentListener.prototype = {
 	}
 
 	if (!preDocketPage && court && document) {
-	    this.docCheckAndModify(document, court, showSubdocs);
+	    this.docCheckAndModify(document, court);
 	}
 	else if (preDocketPage && casenum && court && document){
 	    this.caseCheckAndModify(document, court, casenum);
@@ -169,9 +167,6 @@ ContentListener.prototype = {
         //Casenum is defined, so this is a pre-docket show page
         //We will ask recap for a link to the docket page, if it exists
 	var jsonout = { court: court, 
-			showSubdocs: true,
-		         getDocketURL: true,
-			 urls: [],
 	    	        casenum: casenum};
 
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
@@ -202,7 +197,7 @@ ContentListener.prototype = {
 
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
-    docCheckAndModify: function(document, court, showSubdocs, casenum) {
+    docCheckAndModify: function(document, court) {
 
 	// Don't add js libs they have already been loaded
 	var loaded = document.getElementsByClassName("recapjs");
@@ -212,8 +207,7 @@ ContentListener.prototype = {
 	}
 	
 	// Construct the JSON object parameter
-	var jsonout = { showSubdocs: showSubdocs,
-			court: court, 
+	var jsonout = { court: court, 
 			urls: [] };
 
 	try {
