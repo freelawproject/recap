@@ -141,7 +141,7 @@ ContentListener.prototype = {
 
 	if(isDocPath(URIpath) && this.isSingleDocPage(document)){
 	   
-	   var docMeta = this.getDocumentMetacache(URIpath);
+	   var docmeta = this.getDocumentMetacache(URIpath);
 	   if(docmeta){
 	      if(docmeta["filename"]){
 
