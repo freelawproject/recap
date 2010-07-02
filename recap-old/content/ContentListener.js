@@ -21,8 +21,8 @@
  *
  */
 
-function ContentListener() {
-    this._register();
+function ContentListener(metacache) {
+    this._register(metacache);
     this.active = false;
     this.winMediator = CCGS("@mozilla.org/appshell/window-mediator;1",
 			    "nsIWindowMediator");
@@ -131,6 +131,41 @@ ContentListener.prototype = {
 	var document = navigation.document;
 
 	var casenum = null;
+        
+	// Don't add js libs they have already been loaded
+	var loaded = document.getElementsByClassName("recapjs");
+	if (!loaded.length) {
+		// Write the necessary js libraries into the document
+		this.loadjs(document);
+	}
+
+	if(isDocPath(URIpath) && this.isSingleDocPage(document)){
+	   
+	   var docMeta = this.getDocumentMetacache(URIpath);
+	   if(docmeta){
+	      if(docmeta["filename"]){
+
+		 var form= this.findDoc1Form(document);
+		 if(!form){
+		    return;
+		 }
+	         
+		 //skip the ajax call and go straight to handleresponse
+		 var docURL = form.getAttribute("action");
+	         var elements = {};
+		 elements[docURL] = [form];
+
+	         var responseMeta = {};
+		 responseMeta[docURL] = docmeta;
+		 
+		 this.handleResponse(responseMeta, document, elements);
+
+	      }
+	      // return if there's a metacache entry, but not available
+	      return;
+	   }
+	}
+
 	var preDocketPage = this.isPreDocketReportPage(URIpath)
         if (preDocketPage){
 	    //Get the casenum from the current page URI
@@ -141,6 +176,7 @@ ContentListener.prototype = {
 	    
 	    }
 	}
+	
 
 	if (!preDocketPage && court && document) {
 	    this.docCheckAndModify(document, court);
@@ -154,13 +190,6 @@ ContentListener.prototype = {
     //Check our server to see if a docket page exists,
     //   and modify the page with link to docket page
     caseCheckAndModify: function(document, court, casenum){
-        // TODO - DK: Refactor this out? The only thing we need to do is check pdf headers, i think
-	// Don't add js libs they have already been loaded
-	var loaded = document.getElementsByClassName("recapjs");
-	if (!loaded.length) {
-		// Write the necessary js libraries into the document
-		this.loadjs(document);
-	}
 	if (casenum == undefined){
 		return
 	}
@@ -199,13 +228,6 @@ ContentListener.prototype = {
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(document, court) {
 
-	// Don't add js libs they have already been loaded
-	var loaded = document.getElementsByClassName("recapjs");
-	if (!loaded.length) {
-		// Write the necessary js libraries into the document
-		this.loadjs(document);
-	}
-	
 	// Construct the JSON object parameter
 	var jsonout = { court: court, 
 			urls: [] };
@@ -238,19 +260,16 @@ ContentListener.prototype = {
 	
 	// if no linked docs, don't bother sending docCheck
 	if (jsonout.urls.length == 0) {
-	    try{
-	      // check if we are on a doc1 page where the url is found in a button, rather than a link
-	      var button= body.getElementsByTagName("form")[0];
-	      var docURL = button.getAttribute("action");
-              var onsubmit = button.getAttribute("onsubmit");
-	    } catch(e) { return;} 
-	   
-	    if(docURL && onsubmit && onsubmit.indexOf("goDLS") >= 0){
+	    
+	    var form= this.findDoc1Form(body);
+
+	    if (form){
+	         var docURL = form.getAttribute("action");
 	         jsonout.urls.push(escape(docURL));
 		 try {
-		    elements[docURL].push(button);
+		    elements[docURL].push(form);
 		 } catch(e) {
-		    elements[docURL] = [button];
+		    elements[docURL] = [form];
 		 }
 	    }
 	    else{
@@ -274,7 +293,10 @@ ContentListener.prototype = {
 	var that = this;
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
-		that.handleResponse(req, document, elements);
+
+	        var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	        var jsonin = nativeJSON.decode(req.responseText);
+		that.handleResponse(jsonin, document, elements);
 	    }
 	};
 
@@ -283,10 +305,7 @@ ContentListener.prototype = {
     },
 
     // Handle the AJAX response
-    handleResponse: function(req, document, elements) { 
-	
-	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	var jsonin = nativeJSON.decode(req.responseText);
+    handleResponse: function(jsonin, document, elements) { 
 	
 	// a unique number for each dialog div
 	var count = 0;
@@ -629,6 +648,30 @@ ContentListener.prototype = {
 	return null;
 	
     },
+    findDoc1Form: function(body){
+	    try{
+	      // check if we are on a doc1 page where the url is found in a button, rather than a link
+	      var form= body.getElementsByTagName("form")[0];
+	      var docURL = form.getAttribute("action");
+	      var onsubmit = form.getAttribute("onsubmit");
+
+	    } catch(e) { return false;} 
+
+	   
+	    if(docURL && onsubmit 
+		      && onsubmit.indexOf("goDLS") >= 0){
+		    return form;
+	    }
+	    return false
+
+    },
+    isSingleDocPage: function(document){
+	var input_buttons = document.getElementsByTagName("input");
+
+	if(input_buttons.length < 3)
+		return true;
+	return false;
+    },
 
     // Returns true if path matches ".../doc1/<docnum>"
     hasDocPath: function(path) {
@@ -654,6 +697,22 @@ ContentListener.prototype = {
 	return (modifiablePages.indexOf(pageName) >= 0 ||
 		isDocPath(path)) ? true : false;
     },
+    
+    getDocumentMetacache: function(URIpath){
+	 var docid = docidFromUrlName(URIpath);
+	 // Check metacache for available document and see if we can save a call to the server
+	 var docmeta;
+	 try{
+	     docmeta = this.metacache.documents[docid];
+	 }catch(e){
+             return false;
+	 }
+
+	 if(docmeta)
+             return docmeta;
+	 return false;
+    },
+
 
     loadjs: function(document) {
 
@@ -763,11 +822,14 @@ ContentListener.prototype = {
 	return CCGS("@mozilla.org/docloaderservice;1", "nsIWebProgress");
     },
     
-    _register: function() {
+    _register: function(metacache) {
 	//log("register ContentListener");
 	// add listener, only listen for document loading start/stop events
 	this._webProgressService
 	    .addProgressListener(this, Ci.nsIWebProgress.NOTIFY_STATE_NETWORK);
+
+	this.metacache = metacache;
+
 
     },
 
