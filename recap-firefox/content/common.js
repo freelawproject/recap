@@ -68,6 +68,26 @@ function isDocPath(path) {
     }	
 }
 
+// Tries to extract docid from doc1 url path
+function docidFromUrlName(path){
+   try{ 
+     var docid= path.match(/^\/doc1\/(\d+)$/i)[1];
+   }catch(e){
+     return false;
+   }
+
+   return coerce_docid(docid)
+}
+
+//    Some PACERs use the fourth digit of the docid to flag whether 
+//     the user has been shown a receipt page. We don't care about that,
+//     so we coerce the fourth digit to be 0 before inserting it into 
+//     the database.
+//
+function coerce_docid(docid){
+   return docid.slice(0,3) + "0" + docid.slice(4)
+}
+
 // Checks whether hostname is a PACER domain
 function isPACERHost(hostname) {
     return (PACER_DOMAINS.indexOf(hostname) >= 0) ? true : false;
