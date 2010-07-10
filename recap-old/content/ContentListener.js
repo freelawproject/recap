@@ -344,7 +344,7 @@ ContentListener.prototype = {
 		if (element.nextSibling) {
 		    nextElement = element.nextSibling;
 		    nextClass = nextElement.className;		
-		    if (nextClass == "recapIcon") 
+		    if (nextClass == "recapIcon" || nextClass == "recapTextLinkBox") 
 			continue;
 		}
 		
