@@ -38,7 +38,9 @@
 		    border-width: 1px;
 		    border-color: #000000;
 		    background-color:#eeeeee;
-		    margin: 10px;
+		    margin-left: auto;
+		    margin-right: auto;
+		    margin-top: 10px;
 		}
 
 .recapSmaller{ font-size: 0.7em;}
