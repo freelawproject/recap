@@ -132,7 +132,7 @@ RecapService.prototype = {
 		      "nsIObserverService");
 	
 	switch (topic) {
-	case "app-startup":
+	case "profile-after-change":
 	    log("startup observed");
 	    this._init();
 	    break;
@@ -166,10 +166,17 @@ RecapService.prototype = {
     },
 		
     _xpcom_categories: [{
-	    category: "app-startup",
+	    category: "profile-after-change",
 	    service: true
 	}]	
 };
 
-function NSGetModule(compMgr, fileSpec) 
-    XPCOMUtils.generateModule([RecapService]);
+/**
+* XPCOMUtils.generateNSGetFactory was introduced in Mozilla 2 (Firefox 4).
+* XPCOMUtils.generateNSGetModule is for Mozilla 1.9.2 (Firefox 3.6).
+*/
+if (XPCOMUtils.generateNSGetFactory)
+    var NSGetFactory = XPCOMUtils.generateNSGetFactory([RecapService]);
+else
+    var NSGetModule = XPCOMUtils.generateNSGetModule([RecapService]);
+    
