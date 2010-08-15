@@ -80,7 +80,7 @@ ContentListener.prototype = {
 	}
 	
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
-				"nsIPrefService").getBranch("recap.");
+				"nsIPrefService").getBranch("extensions.recap.");
 
 	var temp_disabled = prefs.getBoolPref("temp_disable");
 
@@ -721,7 +721,7 @@ ContentListener.prototype = {
 	jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
 	
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
-				"nsIPrefService").getBranch("recap.");
+				"nsIPrefService").getBranch("extensions.recap.");
 		
 	if (prefs.getBoolPref("auto_check_pdf_headers") == true) {
 		jstext += this.localFileToString(RECAP_PATH + "recapPDFHeaders.js");

@@ -64,7 +64,7 @@ RequestObserver.prototype = {
 	var pragmaVal = this.getPragmaValue(channel);
 
         var prefs = CCGS("@mozilla.org/preferences-service;1",
-			 "nsIPrefService").getBranch("recap.");
+			 "nsIPrefService").getBranch("extensions.recap.");
         
         var cache_time_ms = prefs.getIntPref("cache_time_ms");
 
@@ -104,7 +104,7 @@ RequestObserver.prototype = {
     setContentDispositionHeader: function(channel, filename, court) {
         
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
-			 "nsIPrefService").getBranch("recap.");
+			 "nsIPrefService").getBranch("extensions.recap.");
 		
 	if (prefs.getBoolPref("pretty_filenames") == false) {
 	    return;
@@ -424,7 +424,7 @@ RequestObserver.prototype = {
             return;
 
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
-				"nsIPrefService").getBranch("recap.");
+				"nsIPrefService").getBranch("extensions.recap.");
 
 	var temp_disabled = prefs.getBoolPref("temp_disable");
 	var channel = subject.QueryInterface(Ci.nsIHttpChannel);
