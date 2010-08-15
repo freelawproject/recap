@@ -78,7 +78,7 @@ RecapService.prototype = {
 	    Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
 	    Recap.gContentListener = new Recap.ContentListener(this.metacache);
 	
-	    var myListener = new Recap.PrefListener("recap.",
+	    var myListener = new Recap.PrefListener("extensions.recap.",
                                   function(branch, name)
                                   {
                                       switch (name) 

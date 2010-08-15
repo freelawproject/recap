@@ -166,7 +166,7 @@ function log(text) {
 
 function showAlert(icon, headline, message) {
     var prefs = CCGS("@mozilla.org/preferences-service;1",
-		     "nsIPrefService").getBranch("recap.");
+		     "nsIPrefService").getBranch("extensions.recap.");
     
     if (prefs.getBoolPref("display_notifications") == false) {
 	return;
@@ -194,7 +194,7 @@ function updateStatusIcon() {
     var hostname = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
     
     var prefs = CCGS("@mozilla.org/preferences-service;1",
-		     "nsIPrefService").getBranch("recap.");
+		     "nsIPrefService").getBranch("extensions.recap.");
   
     if(prefs.getBoolPref("temp_disable") == true) {
             //make a red icon and put it here!
@@ -220,7 +220,7 @@ function updateStatusIcon() {
 }
 function handlePrefDisable(){
         var prefs = CCGS("@mozilla.org/preferences-service;1",
-		     "nsIPrefService").getBranch("recap.");
+		     "nsIPrefService").getBranch("extensions.recap.");
   
         var curr_disable = prefs.getBoolPref("temp_disable");
     	

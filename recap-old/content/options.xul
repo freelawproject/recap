@@ -32,11 +32,11 @@
   <prefpane id="recap-pref-pane" label="Recap Preferences">
 
     <preferences>
-      <preference id="pref_pretty_filenames" name="recap.pretty_filenames" type="bool"/>
-      <preference id="pref_pretty_filenames_choice" name="recap.pretty_filenames_choice" type="string"/>
-      <preference id="pref_auto_check_pdf_headers" name="recap.auto_check_pdf_headers" type="bool"/>
-      <preference id="pref_display_notifications" name="recap.display_notifications" type="bool"/>
-      <preference id="pref_temp_disable" name="recap.temp_disable" type="bool" />
+      <preference id="pref_pretty_filenames" name="extensions.recap.pretty_filenames" type="bool"/>
+      <preference id="pref_pretty_filenames_choice" name="extensions.recap.pretty_filenames_choice" type="string"/>
+      <preference id="pref_auto_check_pdf_headers" name="extensions.recap.auto_check_pdf_headers" type="bool"/>
+      <preference id="pref_display_notifications" name="extensions.recap.display_notifications" type="bool"/>
+      <preference id="pref_temp_disable" name="extensions.recap.temp_disable" type="bool" />
     </preferences>
 
     <groupbox>
