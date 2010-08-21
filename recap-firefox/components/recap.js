@@ -41,14 +41,14 @@ var Recap = {}; // New empty extension namespace
 
 var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci["mozIJSSubScriptLoader"]);
 
-jsLoader.loadSubScript(RECAP_PATH + "common.js", this);
+jsLoader.loadSubScript(RECAP_PATH + "common.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "RequestObserver.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DownloadListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "ContentListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "DocLinkListener.js", Recap);
 jsLoader.loadSubScript(RECAP_PATH + "PrefListener.js", Recap);
 
-log("recap.js loaded");
+Recap.log("recap.js loaded");
 
 /** RecapService: Turning PACER inside out.
  *    Mostly boilerplate code to set up the new service component.
@@ -70,7 +70,7 @@ RecapService.prototype = {
 
     _init: function() {
 	if(!this.initialized) {
-	    var os = CCGS("@mozilla.org/observer-service;1",
+	    var os = Recap.CCGS("@mozilla.org/observer-service;1",
 			  "nsIObserverService");
 	    os.addObserver(this, "xpcom-shutdown", false);
 	    os.addObserver(this, "quit-application", false);
@@ -84,7 +84,7 @@ RecapService.prototype = {
                                       switch (name) 
                                       {
                                           case "temp_disable":
-						handlePrefDisable();
+						Recap.handlePrefDisable();
                                                 break;
                                       }
                                   });
@@ -128,21 +128,21 @@ RecapService.prototype = {
      * See nsIObserver
      */
     observe: function Recap_observe(subject, topic, data) {
-	var os = CCGS("@mozilla.org/observer-service;1", 
+	var os = Recap.CCGS("@mozilla.org/observer-service;1", 
 		      "nsIObserverService");
 	
 	switch (topic) {
 	case "app-startup":
 	case "profile-after-change":
-	    log("startup observed");
+	    Recap.log("startup observed");
 	    this._init();
 	    break;
 	case "xpcom-shutdown":
-	    log("shutdown observed");
+	    Recap.log("shutdown observed");
 	    this._shutdown();
 	    break;
 	case "quit-application":
-	    log("quit observed");
+	    Recap.log("quit observed");
 	    this._quit();
 	    break;
 	}
@@ -159,7 +159,7 @@ RecapService.prototype = {
 	createInstance: function (outer, iid) {
 	    if (outer != null)
 		throw Cr.NS_ERROR_NO_AGGREGATION;
-	    log("createInstance called");
+	    Recap.log("createInstance called");
 	    return this._instance == null ? 
   	      this._instance = (new RecapService()).QueryInterface(iid) : 
 	      (this._instance).QueryInterface(iid);
