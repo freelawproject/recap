@@ -190,6 +190,10 @@ function updateStatusIcon() {
                    .getService(Components.interfaces.nsIWindowMediator);
     var browserWindow = wm.getMostRecentWindow("navigator:browser");
 
+    if(browserWindow == undefined){
+	    return; // browser window is sometimes not defined on startup
+    }
+
     var statusIcon = browserWindow.document.getElementById("recap-panel-image");
     var hostname = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
     
@@ -223,18 +227,23 @@ function handlePrefDisable(){
 		     "nsIPrefService").getBranch("extensions.recap.");
   
         var curr_disable = prefs.getBoolPref("temp_disable");
-    	
+
 	updateStatusIcon();
+	
+    	var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
+                   	.getService(Components.interfaces.nsIWindowMediator);
+        browserWindow = wm.getMostRecentWindow("navigator:browser");
+	if(browserWindow == undefined)
+			return;
         
 	if(curr_disable == true){
 		showAlert(ICON_DISABLED_32, 
     			"RECAP deactivated.", "RECAP will stay deactivated even when logged into PACER.");
 	}
 	else{
-    		var wm = Components.classes["@mozilla.org/appshell/window-mediator;1"]
-                   	.getService(Components.interfaces.nsIWindowMediator);
-    		var browserWindow = wm.getMostRecentWindow("navigator:browser");
+
 		var URIhost = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
+
 		
 		if(isPACERHost(URIhost) && havePACERCookie()){
 			
