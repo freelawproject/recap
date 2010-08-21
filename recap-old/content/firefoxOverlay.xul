@@ -31,7 +31,7 @@
 
   <statusbar id="status-bar">
     <statusbarpanel id="recap-panel">
-      <image id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="openPrefs();" style="cursor: pointer;"/>
+      <image id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="recap.openPrefs();" style="cursor: pointer;"/>
     </statusbarpanel>
   </statusbar>
 
@@ -39,7 +39,7 @@
   <script src="common.js"/>
   
   <menupopup id="menu_ToolsPopup">
-    <menuitem label="Recap Preferences..." oncommand="openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
+    <menuitem label="Recap Preferences..." oncommand="recap.openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
   </menupopup>
 
 

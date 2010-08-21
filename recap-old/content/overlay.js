@@ -28,23 +28,17 @@ var recap = {
 	this.initialized = true;
 	
 	var container = gBrowser.tabContainer;
-	container.addEventListener("TabSelect", tabSelected, false);
+	container.addEventListener("TabSelect", this.tabSelected, false);
 
     },
-   
+    tabSelected: function(event){
+        updateStatusIcon(); 
+    },
+    openPrefs: function(){
+        window.openDialog("chrome://recap/content/options.xul", 
+		          "Preferences", 
+		          "chrome=yes,titlebar=yes,toolbar=yes,centerscreen");
+    }
 };
 
 window.addEventListener("load", function(e) { recap.onLoad(e); }, false);
-
-function tabSelected(event) {
-    updateStatusIcon(); 
-}
-
-function openPrefs() {
-    
-    window.openDialog("chrome://recap/content/options.xul", 
-		      "Preferences", 
-		      "chrome=yes,titlebar=yes,toolbar=yes,centerscreen");
-
-
-}
