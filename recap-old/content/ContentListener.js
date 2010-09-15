@@ -85,9 +85,10 @@ ContentListener.prototype = {
 	var temp_disabled = prefs.getBoolPref("temp_disable");
 
 	if ((isPACERHost(URIhost)|| isUnsupportedPACERHost(URIhost))
-	    && havePACERCookie() 
+	    && (havePACERCookie() || hasECFCookie())
 	    && !this.active) {
 	    // Just logged into PACER
+	    // TODO add preference to always deactivate on ECF
             if(temp_disabled == true){
 	    		showAlert(ICON_DISABLED_32, 
 	       			"RECAP deactivated.", "Your settings forced RECAP to stay deactivated.");
@@ -97,6 +98,10 @@ ContentListener.prototype = {
 	       			"RECAP not supported.", "RECAP does not work on Appellate Courts");
 		    
 	    }
+	    else if(hasECFCookie()){
+	    		showAlert(ICON_LOGGED_IN_32, 
+	       		"RECAP kinda activated.", "RECAP will activate on PACER pages only.");
+	    }
 	    else{
 	    		showAlert(ICON_LOGGED_IN_32, 
 	       		"RECAP activated.", "You are logged into PACER.");
@@ -104,7 +109,7 @@ ContentListener.prototype = {
 	    this.active = true;
 
 	} else if ((isPACERHost(URIhost)|| isUnsupportedPACERHost(URIhost))
-		   && !havePACERCookie()
+		   && (!havePACERCookie() && !hasECFCookie())
 		   && this.active) {
 	    // Just logged out of PACER
 	    if(temp_disabled == false) { 
