@@ -24,6 +24,7 @@
 function ContentListener(metacache) {
     this._register(metacache);
     this.active = false;
+    this.ECFLoggedIn = false;
     this.winMediator = CCGS("@mozilla.org/appshell/window-mediator;1",
 			    "nsIWindowMediator");
     
@@ -84,41 +85,51 @@ ContentListener.prototype = {
 
 	var temp_disabled = prefs.getBoolPref("temp_disable");
 
-	if ((isPACERHost(URIhost)|| isUnsupportedPACERHost(URIhost))
-	    && (havePACERCookie() || hasECFCookie())
-	    && !this.active) {
-	    // Just logged into PACER
-	    // TODO add preference to always deactivate on ECF
-            if(temp_disabled == true){
-	    		showAlert(ICON_DISABLED_32, 
-	       			"RECAP deactivated.", "Your settings forced RECAP to stay deactivated.");
-	    }
+	if ( isPACERHost(URIhost) || isUnsupportedPACERHost(URIhost) ) {
+		if(temp_disabled == true && 
+		   ( 
+			(!this.active && havePACERCookie()) || 
+			(!this.ECFLoggedIn && hasECFCookie()) 
+		   ) 
+		  ) {
+	    	showAlert(ICON_DISABLED_32, 
+	       		"RECAP deactivated.", "Your settings forced RECAP to stay deactivated.");
+	    } 
 	    else if (isUnsupportedPACERHost(URIhost)){
-	    		showAlert(ICON_EXCLAMATION_32, 
-	       			"RECAP not supported.", "RECAP does not work on Appellate Courts");
-		    
-	    }
-	    else if(hasECFCookie()){
-	    		showAlert(ICON_LOGGED_IN_32, 
-	       		"RECAP kinda activated.", "RECAP will activate on PACER pages only.");
-	    }
-	    else{
-	    		showAlert(ICON_LOGGED_IN_32, 
+	    	showAlert(ICON_EXCLAMATION_32, 
+	       		"RECAP not supported.", "RECAP does not work on Appellate Courts");
+		}
+	    else if (havePACERCookie() && hasECFCookie() && 
+	    		 (!this.active || !this.ECFLoggedIn) )
+	    {
+	    	// Just logged into ECF *AND* PACER
+			showAlert(ICON_LOGGED_IN_32, 
+	       		"RECAP enabled.", "Logged into PACER and ECF, but RECAP will activate on PACER pages only.");
+			this.active = true;
+			this.ECFLoggedIn = true;
+		} 
+		else if (havePACERCookie() && !this.active ) {
+			// Just logged into PACER
+			showAlert(ICON_LOGGED_IN_32, 
 	       		"RECAP activated.", "You are logged into PACER.");
-	    }
-	    this.active = true;
-
-	} else if ((isPACERHost(URIhost)|| isUnsupportedPACERHost(URIhost))
-		   && (!havePACERCookie() && !hasECFCookie())
-		   && this.active) {
-	    // Just logged out of PACER
-	    if(temp_disabled == false) { 
-	         // Show alert only if we are not disabled
-		 showAlert(ICON_LOGGED_OUT_32, 
+			this.active = true;
+		} 
+		else if (hasECFCookie() && !this.ECFLoggedIn ) {
+			// Just logged into ECF
+			showAlert(ICON_LOGGED_IN_32, 
+	       		"RECAP not activated.", "RECAP is not enabled when you are only logged into ECF.");
+			this.ECFLoggedIn = true;
+		}
+		else if (!havePACERCookie() && this.active) {
+	   		// Just logged out of PACER
+		 	showAlert(ICON_LOGGED_OUT_32, 
 	       		"RECAP deactivated.", "You are logged out of PACER.");
+	    	this.active = false;
 	    }
-
-	    this.active = false;    
+	    else if (!hasECFCookie() && this.ECFLoggedIn) {
+	    	// Just logged out of ECF, don't show any notification
+	    	this.ECFLoggedIn = false;
+	    }
 	} 
 
 	this.updateAllWindowIcons();
