@@ -104,19 +104,19 @@ ContentListener.prototype = {
 	    {
 	    	// Just logged into ECF *AND* PACER
 			showAlert(ICON_LOGGED_IN_32, 
-	       		"RECAP enabled.", "Logged into PACER and ECF, but RECAP will activate on PACER pages only.");
+	       		"RECAP enabled.", "Logged into PACER and ECF. But RECAP will activate on PACER pages only.");
 			this.active = true;
 			this.ECFLoggedIn = true;
 		} 
 		else if (havePACERCookie() && !this.active ) {
 			// Just logged into PACER
-			showAlert(ICON_LOGGED_IN_32, 
+			showAlert(ICON_EXCLAMATION_32, 
 	       		"RECAP activated.", "You are logged into PACER.");
 			this.active = true;
 		} 
 		else if (hasECFCookie() && !this.ECFLoggedIn ) {
 			// Just logged into ECF
-			showAlert(ICON_LOGGED_IN_32, 
+			showAlert(ICON_LOGGED_OUT_32, 
 	       		"RECAP not activated.", "RECAP is not enabled when you are only logged into ECF.");
 			this.ECFLoggedIn = true;
 		}
