@@ -121,7 +121,7 @@ function havePACERCookie() {
 	var cookie = cookieEnum.getNext();
 	if (cookie instanceof Components.interfaces.nsICookie){
 	    if (cookie.host.match("uscourts.gov")) {
-		if (cookie.name.match("PacerUser")) {
+		if (cookie.name.match("PacerUser")||cookie.name.match("PacerSession")) {
 		    if(cookie.value.indexOf("unvalidated") >=0){
 			    return false;
 		    }
@@ -224,17 +224,11 @@ function updateStatusIcon() {
     }
 
     if (isPACERHost(hostname)){
-	    if(hasECFCookie()){
+	    if(hasECFCookie() && havePACERCookie()){
 
-		    var documentURI= browserWindow.gBrowser.selectedBrowser.contentDocument.documentURI;
-		    if(isECFActivePath(documentURI)){
-			    statusIcon.tooltipText = "You are logged into ECF - RECAP Active";
-			    statusIcon.src = ICON_LOGGED_IN;
-		    }
-		    else{
-			    statusIcon.tooltipText = "RECAP will activate on PACER pages only";
-			    statusIcon.src = ICON_EXCLAMATION;
-		    }
+			statusIcon.tooltipText = "You are logged into both ECF and PACER, RECAP will activate on PACER pages only.";
+			statusIcon.src = ICON_EXCLAMATION;
+
 	    }
 	    else if(havePACERCookie()){
 		    statusIcon.tooltipText = "You are logged into PACER.";
