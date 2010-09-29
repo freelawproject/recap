@@ -103,14 +103,14 @@ ContentListener.prototype = {
 	    		 (!this.active || !this.ECFLoggedIn) )
 	    {
 	    	// Just logged into ECF *AND* PACER
-			showAlert(ICON_LOGGED_IN_32, 
+			showAlert(ICON_EXCLAMATION_32, 
 	       		"RECAP enabled.", "Logged into PACER and ECF. But RECAP will activate on PACER pages only.");
 			this.active = true;
 			this.ECFLoggedIn = true;
 		} 
 		else if (havePACERCookie() && !this.active ) {
 			// Just logged into PACER
-			showAlert(ICON_EXCLAMATION_32, 
+			showAlert(ICON_LOGGED_IN_32, 
 	       		"RECAP activated.", "You are logged into PACER.");
 			this.active = true;
 		} 
