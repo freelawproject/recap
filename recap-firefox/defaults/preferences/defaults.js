@@ -4,3 +4,4 @@ pref("extensions.recap.pretty_filenames_choice", "pretty_filenames_IAFilename");
 pref("extensions.recap.auto_check_pdf_headers", true);
 pref("extensions.recap.display_notifications", true);
 pref("extensions.recap.temp_disable", false);
+pref("extensions.recap.has_been_initialized", false);
