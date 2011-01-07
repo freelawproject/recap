@@ -30,6 +30,28 @@ var recap = {
 	var container = gBrowser.tabContainer;
 	container.addEventListener("TabSelect", this.tabSelected, false);
 
+    //For ff4, we need to add our icon to the addon bar
+    var prefs = CCGS("@mozilla.org/preferences-service;1",
+                        "nsIPrefService").getBranch("extensions.recap.");
+       
+    var has_been_initialized = prefs.getBoolPref("has_been_initialized");
+
+    if(!has_been_initialized){
+        var addonBar = document.getElementById("addon-bar");
+
+        if(addonBar) {
+            var currentSet = addonBar.currentSet;
+            if (currentSet.indexOf("recap-panel") == -1) {
+                addonBar.currentSet += ",recap-panel";
+                addonBar.setAttribute("currentset", addonBar.currentSet);
+                document.persist("addon-bar", "currentset"); 
+                addonBar.collapsed = false;
+            }
+            prefs.setBoolPref("has_been_initialized", true);
+        }
+    }
+
+
     },
     tabSelected: function(event){
         updateStatusIcon(); 
