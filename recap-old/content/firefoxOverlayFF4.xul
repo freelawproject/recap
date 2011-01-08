@@ -31,7 +31,7 @@
 
   <toolbarpalette id="BrowserToolbarPalette">
     <toolbaritem id="recap-panel">
-      <image id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="recap.openPrefs();" style="cursor: pointer;"/>
+      <image class='panel-imageff4' id="recap-panel-image" src="chrome://recap/skin/recap-icon-grey.png" onclick="recap.openPrefs();" style="cursor: pointer;" />
     </toolbaritem>
   </toolbarpalette>
 
