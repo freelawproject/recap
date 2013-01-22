@@ -1,0 +1,32 @@
+<html><head><title>CAND-ECF</title> 
+<script type="text/javascript">if (top!=self) {top.location.replace(location.href);}</script><link rel="stylesheet" type="text/css" href="/css/default.css"><script type="text/javascript" src="/lib/core.js"></script><link rel="stylesheet" type="text/css" href="/css/print.css" media="print"><script type="text/javascript" src="/cgi-bin/menu.pl?id=-1"></script></script></head><body BGCOLOR=CCFFFF TEXT=000000 onLoad='SetFocus()'><div class="noprint"><div id="topmenu" class="yuimenubar"><div class="bd"><img src="/graphics/cmecf-logo.gif" class="cmecfLogo" id="cmecfLogo" alt="CM/ECF" title="" /><img src="/graphics/menubar-help.gif" class="helpImage" id="helpImage" alt="?" title="" onMouseOver="CMECF.MainMenu.helpImageOn()" onMouseOut="CMECF.MainMenu.helpImageOff()" /><ul class="first-of-type"><li class="yuimenubaritem" style="width:11%"><a class="yuimenubaritemlabel" href="/cgi-bin/iquery.pl"><u>Q</u>uery</a></li><li class="yuimenubaritem" style="width:11%"><a class="yuimenubaritemlabel" href="/cgi-bin/DisplayMenu.pl?Reports"><u>R</u>eports</a></li><li class="yuimenubaritem" style="width:11%"><a class="yuimenubaritemlabel" href="/cgi-bin/DisplayMenu.pl?Utilities"><u>U</u>tilities</a></li><li class="yuimenubaritem" style="width:11%"><a class="yuimenubaritemlabel" href="/cgi-bin/login.pl?logout"><u>L</u>ogout</a></li></ul></div></div></div><script type="text/javascript">if (navigator.appVersion.indexOf("MSIE")==-1){window.setTimeout(CMECF.MainMenu.createMenu, 0);}else{CMECF.util.Event.addListener(window, "load", CMECF.MainMenu.createMenu);}</script><div id="cmecfMainContent"><input type="hidden" id="cmecfMainContentScroll" value="0"><SCRIPT LANGUAGE="JavaScript"> 
+        var IsForm = false;
+        var FirstField;
+        function SetFocus() {
+            if(IsForm) {
+                if(FirstField) {
+                    var ind = FirstField.indexOf('document.',0);
+                    if(ind == 0)
+                    {
+                        eval(FirstField);
+                    }
+                    else
+                    {
+                        var Code = "document.forms[0]."+FirstField+".focus();";
+                        eval(Code);
+                    }
+                } else {
+                    var Cnt = 0;                
+                    while(document.forms[0].elements[Cnt] != null) {
+                        if(document.forms[0].elements[Cnt].type != "hidden") {
+                            document.forms[0].elements[Cnt].focus();
+                            break;
+                        }
+                        Cnt += 1;
+                    }
+                }
+            }
+            return(true);
+        }
+        </SCRIPT> 
+<P>To accept charges shown below, click on the 'View Document' button, otherwise click the 'Back' button on your browser.</P><form method=post action='https://ecf.cand.uscourts.gov/doc1/03517852828' onSubmit="goDLS('/doc1/03517852828','238554','5','1','','1','','');return(false);"><HR><CENTER><TABLE BORDER=1 BGCOLOR=white width="400"><TR><TH COLSPAN=4><FONT SIZE=+1 COLOR=DARKRED>Pacer Service Center </FONT></TH></TR><TR><TH COLSPAN=4><FONT COLOR=DARKBLUE>Transaction Receipt </FONT></TH></TR><TR></TR><TR></TR><TR><TD COLSPAN=4 ALIGN=CENTER><FONT SIZE=-1 COLOR=DARKBLUE>Sat Apr 30 15:47:19 2011</FONT></TD></TR><TR><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Pacer Login: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> pc3572 </FONT></TH></TD><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Client Code: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE>                                  </FONT></TD></TR><TR><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Description: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Image1-0 </FONT></TD><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Case Number: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> 3:11-cr-00166-RS</FONT></TD></TR><TR><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Billable Pages: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> 6 </FONT></TD><TH ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> Cost: </FONT></TH><TD ALIGN=LEFT><FONT SIZE=-1 COLOR=DARKBLUE> 0.48 </FONT></TD></TR><TR></TR><TR></TR></TABLE></CENTER></HR><INPUT type=submit Value="View Document"></FORM></div></body></html>

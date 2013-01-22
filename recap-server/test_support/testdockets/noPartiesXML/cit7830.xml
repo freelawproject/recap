@@ -1,0 +1,45 @@
+<!DOCTYPE gov_uscourts_docket SYSTEM "docket.dtd"> 
+<gov_uscourts_docket> 
+  <nonce>HMSYhO</nonce> 
+  <case_details> 
+    <court>cit</court> 
+    <docket_num>1:09-cv-00523</docket_num> 
+    <case_name>Franco Manufacturing Co., Inc. v. United States</case_name> 
+    <pacer_case_num>7830</pacer_case_num> 
+    <date_case_filed>2009-12-10</date_case_filed> 
+    <date_last_filing>2009-12-10</date_last_filing> 
+    <assigned_to>Unassigned</assigned_to> 
+    <jury_demand>No</jury_demand> 
+  </case_details> 
+  <document_list> 
+    <document doc_num="1" attachment_num="0"> 
+      <pacer_de_seq_num>6</pacer_de_seq_num> 
+      <pacer_dm_id>441201</pacer_dm_id> 
+      <date_filed>2009-12-10</date_filed> 
+      <date_entered>2009-12-10</date_entered> 
+      <short_desc>Summons</short_desc> 
+    </document> 
+    <document doc_num="2" attachment_num="0"> 
+      <pacer_de_seq_num>9</pacer_de_seq_num> 
+      <pacer_dm_id>441204</pacer_dm_id> 
+      <date_filed>2009-12-10</date_filed> 
+      <date_entered>2009-12-10</date_entered> 
+      <short_desc>Form 05 Information Statement</short_desc> 
+    </document> 
+    <document doc_num="3" attachment_num="0"> 
+      <pacer_de_seq_num>11</pacer_de_seq_num> 
+      <pacer_dm_id>441207</pacer_dm_id> 
+      <date_filed>2009-12-10</date_filed> 
+      <date_entered>2009-12-10</date_entered> 
+      <short_desc>Form 13 Corporate Disclosure Statement</short_desc> 
+    </document> 
+    <document doc_num="4" attachment_num="0"> 
+      <pacer_de_seq_num>13</pacer_de_seq_num> 
+      <pacer_dm_id>441210</pacer_dm_id> 
+      <date_filed>2009-12-10</date_filed> 
+      <date_entered>2009-12-10</date_entered> 
+      <long_desc>Summons served by Clerk's Office upon: Plaintiff, Defendant and Bureau of Customs and Border Protection. (Goell, Geoffrey) (Entered: 12/10/2009)</long_desc> 
+      <short_desc>Service of 1581(a) Summons</short_desc> 
+    </document> 
+  </document_list> 
+</gov_uscourts_docket> 

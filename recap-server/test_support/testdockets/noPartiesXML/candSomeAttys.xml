@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!DOCTYPE gov_uscourts_docket SYSTEM "docket.dtd">
+<gov_uscourts_docket>
+  <nonce>L6S3BN</nonce>
+  <case_details>
+    <court>cand2</court>
+    <docket_num>3:08-cv-00177</docket_num>
+    <case_name>Brady et al v. Deloitte &amp; Touche LLP et al</case_name>
+    <pacer_case_num>7830</pacer_case_num>
+    <date_case_filed>2008-01-10</date_case_filed>
+    <assigned_to>Hon. Susan Illston</assigned_to>
+    <case_cause>28:1331 Fed. Question</case_cause>
+    <nature_of_suit>790 Labor: Other</nature_of_suit>
+    <jury_demand>Plaintiff</jury_demand>
+    <jurisdiction>Federal Question</jurisdiction>
+  </case_details>
+  <party_list>
+    <party>
+      <name>James Brady</name>
+      <type>Plaintiff</type>
+      <attorney_list>
+        <attorney>
+          <attorney_name>Wayne Scott Kreger</attorney_name>
+          <contact>Milstein Adelman &amp; Kreger LLP
+2800 Donald Douglas Loop North
+Santa Monica, CA 90405
+310-396-9600
+Fax: 310-396-9635
+Email: wkreger@maklawyers.com</contact>
+          <attorney_role>LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+      </attorney_list>
+    </party>
+    <party>
+      <name>Sarah Cavanagh</name>
+      <type>Plaintiff</type>
+      <extra_info>individually and on behalf of all others similarly situated</extra_info>
+      <attorney_list>
+        <attorney>
+          <attorney_name>Wayne Scott Kreger</attorney_name>
+          <contact>(See above for address)</contact>
+          <attorney_role>TERMINATED: 06/22/2009
+LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>William Anthony Baird</attorney_name>
+          <contact>(See above for address)</contact>
+          <attorney_role>LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Steven Stone Elster</attorney_name>
+          <contact>(See above for address)</contact>
+          <attorney_role>ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+      </attorney_list>
+    </party>
+    <party>
+      <name>Deloitte &amp; Touche LLP</name>
+      <type>Defendant</type>
+      <extra_info>a limited liability partnership</extra_info>
+      <attorney_list>
+        <attorney>
+          <attorney_name>James Edgar Boddy , Jr.</attorney_name>
+          <contact>Morrison &amp; Foerster LLP
+425 Market Street
+San Francisco, CA 94105-2482
+415/268-7081
+Fax: 415/268-7522
+Email: jboddy@mofo.com</contact>
+          <attorney_role>LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Kathryn M. Davis</attorney_name>
+          <contact>Morrison &amp; Foersterr LLP
+101 Ygnacio Valley Road, Suite 450
+P.O. Box 8130
+Walnut Creek, CA 94596-8130
+(925) 295-3372
+Fax: (925) 946-9912
+Email: kathryndavis@mofo.com</contact>
+          <attorney_role>LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Linda E. Shostak</attorney_name>
+          <contact>Morrison &amp; Foerster LLP
+425 Market Street
+San Francisco, CA 94105
+(415) 268-7202
+Email: lshostak@mofo.com</contact>
+          <attorney_role>LEAD ATTORNEY
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Andrew Marc Paley</attorney_name>
+          <contact>Seyfarth Shaw LLP
+2029 Century Park East
+Suite 3500
+Los Angeles, CA 90067
+310-201-5224
+Fax: 310-201-5219
+Email: apaley@seyfarth.com</contact>
+          <attorney_role>TERMINATED: 08/11/2008
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Sheryl Lyn Skibbe</attorney_name>
+          <contact>Seyfarth Shaw LLP
+2029 Century Park East
+Suite 3500
+Los Angeles, CA 90067-3021
+310-277-7200
+Fax: 310-201-5219
+Email: sskibbe@seyfarth.com</contact>
+          <attorney_role>TERMINATED: 08/11/2008
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+      </attorney_list>
+    </party>
+    <party>
+      <name>Deloitte Tax LLP</name>
+      <type>Defendant</type>
+      <extra_info>TERMINATED: 08/14/2008</extra_info>
+      <attorney_list>
+        <attorney>
+          <attorney_name>Andrew Marc Paley</attorney_name>
+          <contact>(See above for address)</contact>
+          <attorney_role>TERMINATED: 08/14/2008
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+        <attorney>
+          <attorney_name>Sheryl Lyn Skibbe</attorney_name>
+          <contact>(See above for address)</contact>
+          <attorney_role>TERMINATED: 08/14/2008
+ATTORNEY TO BE NOTICED</attorney_role>
+        </attorney>
+      </attorney_list>
+    </party>
+  </party_list>
+  <document_list>
+    <document doc_num="1" attachment_num="0">
+      <pacer_de_seq_num>7</pacer_de_seq_num>
+      <pacer_dm_id>4069590</pacer_dm_id>
+      <date_filed>2008-01-10</date_filed>
+      <long_desc>COMPLAINT (summons issued); against Deloitte &amp; Touche LLP, Deloitte Tax LLP ( Filing fee $ 350, receipt number 34611014451.). Filed byJames Brady, Travis Call, Sarah Cavanagh. (ys, COURT STAFF) (Filed on 1/10/2008) (ys, COURT STAFF). (Entered: 01/11/2008)</long_desc>
+    </document>
+    <document doc_num="2" attachment_num="0">
+      <pacer_de_seq_num>9</pacer_de_seq_num>
+      <pacer_dm_id>4045400</pacer_dm_id>
+      <date_filed>2008-01-10</date_filed>
+      <long_desc>ADR SCHEDULING ORDER: Case Management Conference set for 4/18/2008 02:00 PM. Case Management Statement due by 4/11/2008. (Attachments: # 1 standing orders and cmc order)(ys, COURT STAFF) (Filed on 1/10/2008) (Entered: 01/11/2008)</long_desc>
+    </document>
+    <document doc_num="3" attachment_num="0">
+      <pacer_de_seq_num>15</pacer_de_seq_num>
+      <pacer_dm_id>4121283</pacer_dm_id>
+      <date_filed>2008-02-08</date_filed>
+      <long_desc>First AMENDED COMPLAINT against all defendants. Filed byJames Brady, Travis Call, Sarah Cavanagh. (Kreger, Wayne) (Filed on 2/8/2008) Modified on 2/11/2008 (ys, COURT STAFF). (Entered: 02/08/2008)</long_desc>
+    </document>
+  </document_list>
+</gov_uscourts_docket>
+
