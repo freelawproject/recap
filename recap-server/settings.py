@@ -4,16 +4,14 @@
 import os 
 import logging
 
-from uploads.recap_config import config
-
 ROOT_PATH = os.path.dirname(__file__)
 
-DEBUG = config["DJANGO_DEBUG"]
+DEBUG = True
 TEMPLATE_DEBUG = DEBUG
 
-ADMINS = (
-    config["DJANGO_ADMIN"],  # ('Your Name', 'your_email@domain.com'),
-)
+#ADMINS = (
+#    config["DJANGO_ADMIN"],  # ('Your Name', 'your_email@domain.com'),
+#)
 
 SERVER_EMAIL = "recaplogger@gmail.com"
 DEFULT_FROM_EMAIL = "recaplogger@gmail.com"
@@ -36,7 +34,7 @@ logging.basicConfig(
 MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'          # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
-DATABASE_NAME = config["DATABASE_NAME"]  # Or path to database file if using sqlite3.
+DATABASE_NAME = 'recap_dev' # Or path to database file if using sqlite3.
 DATABASE_USER = 'recap'            # Not used with sqlite3.
 DATABASE_PASSWORD = 'REMOVED'   # Not used with sqlite3.
 DATABASE_HOST = ''                 # Set to empty string for localhost. Not used with sqlite3.
