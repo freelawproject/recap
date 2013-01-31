@@ -1501,9 +1501,9 @@ if __name__ == "__main__":
 
 
     def dktrpt():
-        filename = "/var/django/recap_dev/recapsite/uploads/gitmo_dktrpt.html"
+        filename = "./dockets/soghoian_docket.html"
         docketbits = open(filename).read()
-        docket = parse_dktrpt(docketbits, "dcd", 131990)
+        docket = parse_dktrpt(docketbits, "dcd", 12345)
         print docket.casemeta
         print docket.documents
 
