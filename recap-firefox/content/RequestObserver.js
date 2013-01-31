@@ -196,6 +196,112 @@ RequestObserver.prototype = {
 	}
 
     },
+    
+    getPageInfo: function(subject, channel) {
+    	var poststr = "";
+    	var getstr = channel.URI.spec;
+    	var method = channel.requestMethod;
+    	var host = channel.URI.asciiHost;
+    	
+    	if (method == "POST") {
+        	ULchannel = subject.QueryInterface(Components.interfaces.nsIUploadChannel);
+            ULchannel = ULchannel.uploadStream;
+            ULchannel.QueryInterface(Components.interfaces.nsISeekableStream)
+                            .seek(Components.interfaces.nsISeekableStream.NS_SEEK_SET, 0);
+            var stream = Components.classes["@mozilla.org/binaryinputstream;1"]
+                            .createInstance(Components.interfaces.nsIBinaryInputStream);
+            stream.setInputStream(ULchannel);
+            var postBytes = stream.readByteArray(stream.available());
+            poststr = String.fromCharCode.apply(null, postBytes);
+        }
+        
+        return {
+            poststr: poststr,
+            method: method,
+            getstr: getstr,
+            host: host
+        };
+    },
+    
+    // This is HTML for CA
+    tryHTMLmetaCA: function(subject, channel, mimetype, court) {
+
+    	var poststr = "";
+    	var getstr = channel.URI.spec;
+    	var method = channel.requestMethod;
+    	var host = channel.URI.asciiHost;
+    	
+    	if (method == "POST") {
+        	ULchannel = subject.QueryInterface(Components.interfaces.nsIUploadChannel);
+            ULchannel = ULchannel.uploadStream;
+            ULchannel.QueryInterface(Components.interfaces.nsISeekableStream)
+                            .seek(Components.interfaces.nsISeekableStream.NS_SEEK_SET, 0);
+            var stream = Components.classes["@mozilla.org/binaryinputstream;1"]
+                            .createInstance(Components.interfaces.nsIBinaryInputStream);
+            stream.setInputStream(ULchannel);
+            var postBytes = stream.readByteArray(stream.available());
+            poststr = String.fromCharCode.apply(null, postBytes);
+        }
+        
+        isCaseSummary = getstr.indexOf("CaseSummary.jsp") >= 0 || poststr.indexOf("CaseSummary.jsp") >= 0;
+        isFull = poststr.indexOf("fullDocketReport") >= 0;
+        var caseNum = null;
+        caseNumArray = getstr.match(/caseNum=([0-9-]+)/i);
+        if (caseNumArray) {
+            caseNum = caseNumArray[1];
+        }
+        if (!caseNum) {
+            caseNumArray = poststr.match(/caseNum=([0-9-]+)/i);
+            if (caseNumArray) {
+                caseNum = caseNumArray[1];
+            }
+        }
+		
+        var court = getCourtFromHost(host);
+        
+        if (!isCaseSummary) {
+            docs1Array = getstr.match(/docs1/i);
+            showDocArray = getstr.match(/ShowDoc/i);
+            
+            if (docs1Array || showDocArray) {
+                return {mimetype: mimetype, court: court, name: getstr};
+            }
+            log("Not a case summary nor a docs1");
+            return false;
+        }
+        
+        if (isFull) {
+            log("isFull");
+            return {mimetype: mimetype, court: court, name: "FullDocketReport", casenum: caseNum};
+        }
+        else {
+            log("isNotFull");
+            return {mimetype: mimetype, court: court, name: "Summary", casenum: caseNum};
+        }
+        
+        return false;
+    },
+    
+    // This is PDF for CA
+    tryPDFmetaCA: function(channel, mimetype) {
+        var referrer = channel.referrer;
+        try {
+            var refhost = referrer.asciiHost;
+            var refpath = referrer.path;
+        } catch(e) {
+            return false;
+        }
+        var court = getCourtFromHost(refhost);
+
+        var pathSplit = refpath.split("/");
+        var filename = pathSplit.pop() + this.fileSuffixFromMime(mimetype);
+
+        // Set Content-Disposition header to be save-friendly
+        this.setContentDispositionHeader(channel, filename, court);
+
+        return {mimetype: mimetype, court: court, name: filename, url: refpath};
+
+    },
 
     // If this is a simple PDF (rather than a merged multidoc),
     //   return the metadata from the referrer URI.  Otherwise, return false.
@@ -436,10 +542,21 @@ RequestObserver.prototype = {
 	if (temp_disabled || !isPACERHost(URIhost) || !havePACERCookie()) {
 	    return;
 	}
+	
+	var pacerHostCA = false;
+	if (isCAHost(URIhost)) {
+	    pacerHostCA = true;
+    }
+	
+    // log("I am a PACER host");
+    // if (pacerHostCA) {
+    //     log("I am a PACER CA host");
+    // }
 
 	// Ignore any requests that result in errors
 	
-	if(channel.responseStatus != 200){
+	if (channel.responseStatus != 200){
+	    log("Response different from 200");
 		return;
 	}
 	
@@ -453,30 +570,70 @@ RequestObserver.prototype = {
 
 	// ignore some PACER pages
 	if (this.ignorePage(URIpath)) {
+	    log("Ignored path");
 	    return;
 	}
 
 	this.setCacheFriendlyHeaders(channel);
 
-	var mimetype = this.getMimetype(channel);	
+	var mimetype = this.getMimetype(channel);
 
+    // If it is CA
+    if (pacerHostCA) {
+    	if (isPDF(mimetype)) {
+    	    log("Before getting META");
+    	    var PDFmeta = this.tryPDFmetaCA(channel, mimetype);
+    	    log("After getting META");
+    	    // PDFmeta['url'] = channel.URI.spec;
+    	    var name = PDFmeta.url.match(/(\d+)$/i);
+    	    if (name) {
+                PDFmeta['name'] = name[1] + ".pdf";
+            }
+            else {
+        	    name = PDFmeta.url.match(/[=\/](\d+)/i);
+        	    if (name) {
+                    PDFmeta['name'] = name[1] + ".pdf";
+    	        }
+            }
+            log("After name");
+    	    
+            // PDFmeta['url'] = "/cmecf/servlet/TransportRoom?servlet=ShowDoc/00802091769";
+            // PDFmeta['name'] = "00802091769.pdf";
+            
+            // Send only if not multiple PDF
+            log("Url: " + PDFmeta.url);
+            log("Name: " + PDFmeta.name);
+            var isMulti = PDFmeta.url.indexOf("ShowDocMulti") >= 0;
+            if (!isMulti) {
+    		    this.uploadChannelData(subject, PDFmeta);
+		    }
+	    }
+	    else if (isHTML(mimetype)) {
+	        var HTMLmeta = this.tryHTMLmetaCA(subject, channel, mimetype);
+	        if (HTMLmeta) {
+    		    this.uploadChannelData(subject, HTMLmeta);
+    	    }
+        }
+    }
+    
 	// Upload content to the server if the file is a PDF
-	if (isPDF(mimetype)) {
+	else {
+    	if (isPDF(mimetype)) {
+    	    var PDFmeta = this.tryPDFmeta(channel, mimetype);
 
-	    var PDFmeta = this.tryPDFmeta(channel, mimetype);
-
-	    if (PDFmeta) {
-		this.uploadChannelData(subject, PDFmeta);
-	    }
+    	    if (PDFmeta) {
+    		this.uploadChannelData(subject, PDFmeta);
+    	    }
 	    
-	} else if (isHTML(mimetype)) {
-	    // Upload content to the server if the file is interesting HTML
+    	} else if (isHTML(mimetype)) {
+    	    // Upload content to the server if the file is interesting HTML
 	    
-	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
+    	    var HTMLmeta = this.tryHTMLmeta(channel, URIpath, mimetype);
 
-	    if (HTMLmeta) {	    	    
-		this.uploadChannelData(subject, HTMLmeta);
-	    }
+    	    if (HTMLmeta) {	    	    
+    		this.uploadChannelData(subject, HTMLmeta);
+    	    }
+    	}
 	}
     },
 
