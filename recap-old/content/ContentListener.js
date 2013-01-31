@@ -25,6 +25,7 @@ function ContentListener(metacache) {
     this._register(metacache);
     this.active = false;
     this.ECFLoggedIn = false;
+    this.isCA = false;
     this.winMediator = CCGS("@mozilla.org/appshell/window-mediator;1",
 			    "nsIWindowMediator");
     
@@ -68,6 +69,14 @@ ContentListener.prototype = {
 	if (!doneLoading) {
 	    return;
 	}
+
+    // var channel = webProgress.QueryInterface(Ci.nsIHttpChannel);
+    // var URIscheme = channel.URI.scheme;
+    // var URIhost = channel.URI.asciiHost;
+    // var URIpath = channel.URI.path;
+    // log(URIscheme);
+    // log(URIhost);
+    // log(URIpath);
 
 	var navigation = webProgress.QueryInterface(Ci.nsIWebNavigation);
 
@@ -135,19 +144,25 @@ ContentListener.prototype = {
 	this.updateAllWindowIcons();
 
 	// Ensure that the page warrants modification
-	if (temp_disabled ||
-	    !isPACERHost(URIhost) ||
-	    !havePACERCookie() ||
-	    !this.isModifiable(URIpath)) {
+	if (
+	    temp_disabled
+	    || !isPACERHost(URIhost)
+	    || !havePACERCookie()
+//	    || !this.isModifiable(URIpath)
+	    ) {
 
 	    return;
 	}
+	
+	var pacerHostCA = false;
+	if (isCAHost(URIhost)) {
+	    pacerHostCA = true;
+    }
+    // log("IS CA? " + pacerHostCA);
 
 	var court = getCourtFromHost(URIhost);	
 	var document = navigation.document;
-
-	var casenum = null;
-        
+	
 	// Don't add js libs they have already been loaded
 	var loaded = document.getElementsByClassName("recapjs");
 	if (!loaded.length) {
@@ -155,52 +170,96 @@ ContentListener.prototype = {
 		this.loadjs(document);
 	}
 
-	if(isDocPath(URIpath) && this.isSingleDocPage(document)){
+	var casenum = null;
+    
+    if (!pacerHostCA) {
+        if (!this.isModifiable(URIpath)) {
+            return;
+        }
+
+    	if(isDocPath(URIpath) && this.isSingleDocPage(document)){
 	   
-	   var docmeta = this.getDocumentMetacache(URIpath);
-	   if(docmeta){
-	      if(docmeta["filename"]){
+    	   var docmeta = this.getDocumentMetacache(URIpath);
+    	   if(docmeta){
+    	      if(docmeta["filename"]){
 
-		 var form= this.findDoc1Form(document);
-		 if(!form){
-		    return;
-		 }
+    		 var form= this.findDoc1Form(document);
+    		 if(!form){
+    		    return;
+    		 }
 	         
-		 //skip the ajax call and go straight to handleresponse
-		 var docURL = form.getAttribute("action");
-	         var elements = {};
-		 elements[docURL] = [form];
+    		 //skip the ajax call and go straight to handleresponse
+    		 var docURL = form.getAttribute("action");
+    	         var elements = {};
+    		 elements[docURL] = [form];
 
-	         var responseMeta = {};
-		 responseMeta[docURL] = docmeta;
+    	         var responseMeta = {};
+    		 responseMeta[docURL] = docmeta;
 		 
-		 this.handleResponse(responseMeta, document, elements);
+    		 this.handleResponse(responseMeta, document, elements);
 
-	      }
-	      // return if there's a metacache entry, but not available
-	      return;
-	   }
-	}
+    	      }
+    	      // return if there's a metacache entry, but not available
+    	      return;
+    	   }
+    	}
 
-	var preDocketPage = this.isPreDocketReportPage(URIpath)
-        if (preDocketPage){
-	    //Get the casenum from the current page URI
-	    try {
-		casenum = URIpath.match(/\?(\d+)$/i)[1];
-	    } catch (e) {
-		    log('could not find casenum! Query case failed')
+    	var preDocketPage = this.isPreDocketReportPage(URIpath)
+            if (preDocketPage){
+    	    //Get the casenum from the current page URI
+    	    try {
+    		casenum = URIpath.match(/\?(\d+)$/i)[1];
+    	    } catch (e) {
+    		    log('could not find casenum! Query case failed')
 	    
-	    }
-	}
+    	    }
+    	}
 	
 
-	if (!preDocketPage && court && document) {
-	    this.docCheckAndModify(document, court);
+    	if (!preDocketPage && court && document) {
+    	    this.docCheckAndModify(document, court);
+    	}
+    	else if (preDocketPage && casenum && court && document){
+    	    this.caseCheckAndModify(document, court, casenum);
+    	}
 	}
-	else if (preDocketPage && casenum && court && document){
-	    this.caseCheckAndModify(document, court, casenum);
-	}
+	else {
+	    // Here is CA
+	    
+	    // Page with links
+	    var name = null;
+	    var nameArray = URIpath.match(/(\d+)$/i);
+	    if (nameArray) {
+	        name = nameArray[1];
+        }
+        else {
+    	    nameArray = URIpath.match(/[=\/](\d+)/i);
+    	    if (nameArray) {
+    	        name = nameArray[1];
+	        }
+        }
+        // log(name);
+	    this.docCheckAndModifyCA(document, court, name);
+        
+	    // Docs1
+	    // get the ID
+	    /*
+	    var name = null;
+	    var nameArray = URIpath.match(/(\d+)$/i);
+	    if (nameArray) {
+	        name = nameArray[1];
+        }
+        else {
+    	    nameArray = URIpath.match(/[=\/](\d+)/i);
+    	    name = nameArray[1];
+        }
+        log(name);
+	    */
+    }
 
+    },
+    
+    isSingleDocCA: function() {
     },
 
     //Check our server to see if a docket page exists,
@@ -240,58 +299,144 @@ ContentListener.prototype = {
     },
 
 
+    docCheckAndModifyCA: function(document, court, id) {
+
+    	// Construct the JSON object parameter
+    	var jsonout = { court: court, 
+    			urls: [] };
+
+    	try {
+    	    var body = document.getElementsByTagName("body")[0];
+    	} catch(e) {
+    	    return;
+    	}
+
+    	var links = body.getElementsByTagName("a");
+    	// Save pointers to the HTML elements for each "a" tag, keyed by URL
+    	var elements = {};
+
+    	for (var i = 0; i < links.length; i++) {
+    	    var link = links[i];
+
+    	    var docURL = this.getDocURL(link.href);
+
+    	    if (docURL) {
+    		jsonout.urls.push(escape(docURL));
+    		try {
+    		    elements[docURL].push(link);
+    		} catch(e) {
+    		    elements[docURL] = [link];
+    		}
+
+    	    }
+    	}
+
+    	// if no linked docs, don't bother sending docCheck
+    	if (jsonout.urls.length == 0) {
+
+    	    var form = this.findDoc1Form(body);
+    	    if (form && id) {
+    	         var docURL = form.getAttribute("action");
+    	         if (docURL == "TransportRoom") {
+    	             // It is a CA
+    	             var myURL = "/docs1/" + id;
+    	             jsonout.urls.push(escape(myURL));
+    	             try {
+            		    elements[myURL].push(form);
+            		 } catch(e) {
+            		    elements[myURL] = [form];
+            		 }
+            		 
+                 }
+             }
+             else {
+                 return;
+             }
+    	}
+
+    	if (jsonout.urls.length == 0) {
+    	    return;
+	    }
+	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	
+	// Serialize the JSON object to a string
+	var jsonouts = nativeJSON.encode(jsonout);
+
+        // Send the AJAX POST request
+	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
+		       "nsIXMLHttpRequest");
+	
+	var params = "json=" + jsonouts;
+	
+	req.open("POST", QUERY_URL, true);
+
+	var that = this;
+	req.onreadystatechange = function() {
+	    if (req.readyState == 4 && req.status == 200) {
+
+	        var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
+	        var jsonin = nativeJSON.decode(req.responseText);
+		that.handleResponse(jsonin, document, elements);
+	    }
+	};
+
+	req.send(params);
+	return true;
+
+    },
+
     // Check our server for cached copies of documents linked on the page,
     //   and modify the page with links to documents on our server
     docCheckAndModify: function(document, court) {
 
-	// Construct the JSON object parameter
-	var jsonout = { court: court, 
-			urls: [] };
+    	// Construct the JSON object parameter
+    	var jsonout = { court: court, 
+    			urls: [] };
 
-	try {
-	    var body = document.getElementsByTagName("body")[0];
-	} catch(e) {
-	    return;
-	}
-	
-	var links = body.getElementsByTagName("a");
-	// Save pointers to the HTML elements for each "a" tag, keyed by URL
-	var elements = {};
-	
-	for (var i = 0; i < links.length; i++) {
-	    var link = links[i];
-	    
-	    var docURL = this.getDocURL(link.href);
-	    
-	    if (docURL) {
-		jsonout.urls.push(escape(docURL));
-		try {
-		    elements[docURL].push(link);
-		} catch(e) {
-		    elements[docURL] = [link];
-		}
-		
-	    }
-	}
-	
-	// if no linked docs, don't bother sending docCheck
-	if (jsonout.urls.length == 0) {
-	    
-	    var form= this.findDoc1Form(body);
+    	try {
+    	    var body = document.getElementsByTagName("body")[0];
+    	} catch(e) {
+    	    return;
+    	}
 
-	    if (form){
-	         var docURL = form.getAttribute("action");
-	         jsonout.urls.push(escape(docURL));
-		 try {
-		    elements[docURL].push(form);
-		 } catch(e) {
-		    elements[docURL] = [form];
-		 }
-	    }
-	    else{
-	      return;
-	    }
-	}
+    	var links = body.getElementsByTagName("a");
+    	// Save pointers to the HTML elements for each "a" tag, keyed by URL
+    	var elements = {};
+
+    	for (var i = 0; i < links.length; i++) {
+    	    var link = links[i];
+
+    	    var docURL = this.getDocURL(link.href);
+
+    	    if (docURL) {
+    		jsonout.urls.push(escape(docURL));
+    		try {
+    		    elements[docURL].push(link);
+    		} catch(e) {
+    		    elements[docURL] = [link];
+    		}
+
+    	    }
+    	}
+
+    	// if no linked docs, don't bother sending docCheck
+    	if (jsonout.urls.length == 0) {
+
+    	    var form= this.findDoc1Form(body);
+
+    	    if (form){
+    	         var docURL = form.getAttribute("action");
+    	         jsonout.urls.push(escape(docURL));
+    		 try {
+    		    elements[docURL].push(form);
+    		 } catch(e) {
+    		    elements[docURL] = [form];
+    		 }
+    	    }
+    	    else{
+    	      return;
+    	    }
+    	}
 
 	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	
@@ -381,6 +526,7 @@ ContentListener.prototype = {
 		
                 //when the element is a form, this is a doc 1 page, so we'll add some more text than we would
 		// on a docket page
+		// log(element.nodeName);
 		if(element.nodeName == "FORM"){ 
 		   
 		   var textLink= document.createElement("a");
@@ -651,7 +797,7 @@ ContentListener.prototype = {
     // Get the document URL path (e.g. '/doc1/1234567890')
     getDocURL: function(url) {
 	var docURL = null;
-	try { docURL = url.match(/\/doc1\/(\d*)/i)[0]; } catch (e) {}
+	try { docURL = url.match(/\/docs?1\/(\d*)/i)[0]; } catch (e) {}
 	if (docURL) {
 		return docURL;
 	}
@@ -665,17 +811,16 @@ ContentListener.prototype = {
 	
     },
     findDoc1Form: function(body){
-	    try{
+        var form = null;
+	    try {
 	      // check if we are on a doc1 page where the url is found in a button, rather than a link
-	      var form= body.getElementsByTagName("form")[0];
+	      form = body.getElementsByTagName("form")[0];
 	      var docURL = form.getAttribute("action");
 	      var onsubmit = form.getAttribute("onsubmit");
 
 	    } catch(e) { return false;} 
 
-	   
-	    if(docURL && onsubmit 
-		      && onsubmit.indexOf("goDLS") >= 0){
+	    if (docURL && ((onsubmit && onsubmit.indexOf("goDLS") >= 0) || true /*form.getAttribute("dls_id")*/)) {
 		    return form;
 	    }
 	    return false
