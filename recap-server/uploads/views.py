@@ -11,6 +11,7 @@ import InternetArchiveCommon as IACommon
 import UploadHandler
 import BucketLockManager
 import DocumentManager
+import ParsePacer
 import datetime
 
 def index(request):
@@ -61,17 +62,16 @@ def upload(request):
     else:
         court = court.strip()
 
-    try:
-        casenum = unicode(int(request.POST["casenum"]))
-    except ValueError:
-        message = "upload: 'casenum' is not an integer: %s" % \
-            request.POST["casenum"]
-        logging.error(message)
-        return HttpResponse(message)
-    except KeyError:
-        casenum = None
+    if request.POST.get("casenum"):
+        casenum_re = re.compile(r'\d+(-\d+)?')
+        casenum = request.POST["casenum"].strip()
+        if not casenum_re.match(casenum):
+            message = "upload: 'casenum' invalid: %s" % \
+                request.POST["casenum"]
+            logging.error(message)
+            return HttpResponse(message)
     else:
-        casenum = casenum.strip()
+        casenum = None
 
     try:
         mimetype = request.POST["mimetype"].strip()
@@ -173,10 +173,13 @@ def query(request):
 
         if query:
             query = query[0]
+            real_casenum = query.casenum
+            if ParsePacer.is_appellate(court):
+                real_casenum = ParsePacer.uncoerce_casenum(real_casenum)
 
             response[url] = {
                 "filename": IACommon.get_pdf_url(court,
-                                                 query.casenum,
+                                                 real_casenum,
                                                  query.docnum,
                                                  query.subdocnum),
                 "timestamp": query.lastdate.strftime("%m/%d/%y")}
@@ -194,9 +197,12 @@ def query(request):
                     response[url]["subDocuments"] = {}
 
                     for subDoc in subquery:
+                        real_sub_casenum = subDoc.casenum
+                        if ParsePacer.is_appellate(court):
+                            real_sub_casenum = ParsePacer.uncoerce_casenum(real_sub_casenum)
                         response[url]["subDocuments"][subDoc.subdocnum] = {
                                      "filename" : IACommon.get_pdf_url(court,
-                                                              subDoc.casenum,
+                                                              real_sub_casenum,
                                                               subDoc.docnum,
                                                               subDoc.subdocnum),
                                      "timestamp": subDoc.lastdate.strftime("%m/%d/%y")}

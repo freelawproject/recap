@@ -24,30 +24,32 @@ def is_pdf(mimetype):
 def is_html(mimetype):
     return mimetype.find("text/html") >= 0
 
+doc_re = ParsePacer.doc_re
+ca_doc_re = ParsePacer.ca_doc_re
 def is_doc1_path(path):
     """ Returns true if path is exactly a doc1 path.
           e.g. /doc1/1234567890
     """
-    doc_re = re.compile(r'^/doc1/\d+$')
-    return bool(doc_re.match(path))
+    return bool(doc_re.search(path) or ca_doc_re.search(path))
 
 def is_doc1_html(filename, mimetype, url, casenum):
     """ Returns true if the metadata indicates a doc1 HTML file. """
     return is_doc1_path(filename) and is_html(mimetype) \
         and url is None and casenum is None
 
-def docid_from_url_name(name_from_url):
+def docid_from_url_name(url):
     """ Extract the docid from a PACER URL name. """
-
-    t = name_from_url.split("/")
-    name_from_url = t.pop()
-    t = name_from_url.split("?")
-
-    return ParsePacer.coerce_docid(t[0])
+    if doc_re.search(url):
+        return ParsePacer.coerce_docid(doc_re.search(url).group(1))
+    if ca_doc_re.search(url):
+        return ca_doc_re.search(url).group(2) or ca_doc_re.search(url).group(3)
+    raise ValueError('docid_from_url_name')
 
 
 def handle_upload(filedata, court, casenum, mimetype, url):
     """ Main handler for uploaded data. """
+
+    logging.debug('handle_upload %s %s %s %s', court, casenum, mimetype, url)
 
     try:
         filename = filedata['filename']
@@ -64,12 +66,7 @@ def handle_upload(filedata, court, casenum, mimetype, url):
         message = handle_doc1(filebits, court, filename)
 
     elif is_html(mimetype):
-        if casenum:
-            message = handle_docket(filebits, court, casenum, filename)
-        else:
-            message = "docket has no casenum."
-            logging.error("handle_upload: %s" % message)
-            return "upload: %s" % message
+        message = handle_docket(filebits, court, casenum, filename)
 
     else:
         message = "couldn't recognize file type %s" % (mimetype)
@@ -85,7 +82,7 @@ def handle_pdf(filebits, court, url):
     # Parse coerced docid out of url
     try:
         docid = docid_from_url_name(url)
-    except AttributeError:
+    except ValueError:
         logging.warning("handle_pdf: no url available to get docid")
         return "upload: pdf failed. no url supplied."
 
@@ -95,7 +92,7 @@ def handle_pdf(filebits, court, url):
     try:
         doc = query[0]
     except IndexError:
-        logging.info("handle_pdf: haven't yet seen docket %s" % (url))
+        logging.info("handle_pdf: haven't yet seen docket %s" % (docid))
         return "upload: pdf ignored."
     else:
         # Sanity check
@@ -105,6 +102,8 @@ def handle_pdf(filebits, court, url):
             return "upload: pdf metadata mismatch."
 
         casenum = doc.casenum
+        if ParsePacer.is_appellate(court):
+            casenum = ParsePacer.uncoerce_casenum(casenum)
         docnum = doc.docnum
         subdocnum = doc.subdocnum
         sha1 = doc.sha1
@@ -148,18 +147,54 @@ def handle_pdf(filebits, court, url):
 def handle_docket(filebits, court, casenum, filename):
     ''' Parse HistDocQry and DktRpt HTML files for metadata.'''
 
+    logging.debug('handle_docket: %s %s %s', court, casenum, filename)
+
     #TK: Remove ^.* from regex when upgrading test client
     histdocqry_re = re.compile(r"HistDocQry_?\d*\.html$")
     dktrpt_re = re.compile(r".*DktRpt_?\d*\.html$")
 
     if histdocqry_re.match(filename):
-        return handle_histdocqry(filebits, court, casenum)
+        if casenum:
+            return handle_histdocqry(filebits, court, casenum)
+        else:
+            message = "docket has no casenum."
+            logging.error("handle_upload: %s" % message)
+            return "upload: %s" % message
     elif dktrpt_re.match(filename):
-        return handle_dktrpt(filebits, court, casenum)
+        if casenum:
+            return handle_histdocqry(filebits, court, casenum)
+        else:
+            message = "docket has no casenum."
+            logging.error("handle_upload: %s" % message)
+            return "upload: %s" % message
+    elif filename == 'Summary':
+        return handle_cadkt(filebits, court, casenum)
+    elif filename == 'FullDocketReport':
+        return handle_cadkt(filebits, court, casenum, True)
 
     message = "unrecognized docket file."
     logging.error("handle_docket: %s %s" % (message, filename))
     return "upload: %s" % (message)
+
+
+def handle_cadkt(filebits, court, casenum, is_full=False):
+    docket = ParsePacer.parse_cadkt(filebits, court, casenum, is_full)
+
+    if not docket:
+        return "upload: could not parse docket."
+
+    # Merge the docket with IA
+    do_me_up(docket)
+
+    # Update the local DB
+    DocumentManager.update_local_db(docket)
+
+    response = {"cases": {},
+                "documents": {},
+                "message":"DktRpt successfully parsed."}
+    message = simplejson.dumps(response)
+
+    return message
 
 
 def handle_dktrpt(filebits, court, casenum):
@@ -211,27 +246,33 @@ def handle_histdocqry(filebits, court, casenum):
 def handle_doc1(filebits, court, filename):
     """ Write HTML (doc1) file metadata into the database. """
 
-    uncoerced_docid = docid_from_url_name(filename)
-    main_docid = ParsePacer.coerce_docid(uncoerced_docid)
+    logging.debug('handle_doc1 %s %s', court, filename)
 
-    query = Document.objects.filter(docid=main_docid)
+    docid = docid_from_url_name(filename)
+
+    query = Document.objects.filter(docid=docid)
 
     try:
         main_doc = query[0]
     except IndexError:
-        logging.info("handle_doc1: unknown docid %s" % (main_docid))
+        logging.info("handle_doc1: unknown docid %s" % (docid))
         return "upload: doc1 ignored."
     else:
         casenum = main_doc.casenum
+        if ParsePacer.is_appellate(court):
+            casenum = ParsePacer.uncoerce_casenum(casenum)
         main_docnum = main_doc.docnum
 
         # Sanity check
         if court != main_doc.court:
             logging.error("handle_doc1: court mismatch (%s, %s) %s" %
-                          (court, main_doc.court, main_docid))
+                          (court, main_doc.court, docid))
             return "upload: doc1 metadata mismatch."
 
-    docket = ParsePacer.parse_doc1(filebits, court, casenum, main_docnum)
+    if ParsePacer.is_appellate(court):
+        docket = ParsePacer.parse_ca_doc1(filebits, court, casenum, main_docnum)
+    else:
+        docket = ParsePacer.parse_doc1(filebits, court, casenum, main_docnum)
 
     if docket:
         # Merge the docket with IA
@@ -239,9 +280,13 @@ def handle_doc1(filebits, court, filename):
          # Update the local DB
         DocumentManager.update_local_db(docket)
 
-    response = {"cases": _get_cases_dict(casenum, docket),
-                "documents": _get_documents_dict(court, casenum),
-                "message": "doc1 successfully parsed."}
+    if ParsePacer.is_appellate(court):
+        response = {"cases": {}, "documents": {},
+                    "message": "doc1 successfully parsed."}
+    else:
+        response = {"cases": _get_cases_dict(casenum, docket),
+                    "documents": _get_documents_dict(court, casenum),
+                    "message": "doc1 successfully parsed."}
     message = simplejson.dumps(response)
     return message
 

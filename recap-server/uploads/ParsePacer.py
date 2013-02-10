@@ -22,6 +22,25 @@ def coerce_docid(docid):
     """
     return docid[:3]+"0"+docid[4:]
 
+def coerce_casenum(casenum):
+    """ Appellate courts use a YY-NNNN format for casenum
+        coerce that to a YYYYNNNN int for the database
+    """
+    if int(casenum.split('-')[0]) > 80:
+        return '19' + casenum.replace('-', '')
+    else:
+        return '20' + casenum.replace('-', '')
+
+def uncoerce_casenum(casenum):
+    casenum = unicode(casenum)
+    return casenum[2:4] + '-' + casenum[4:]
+
+def is_appellate(court):
+    return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
+
+doc_re = re.compile(r'/doc1/(\d+)$')
+ca_doc_re = re.compile(r'(TransportRoom.*ShowDoc.*?dls_id.*?(\d+)|/docs1/(\d+)$)')
+
 def parse_dktrpt(filebits, court, casenum):
 
     docket = DocketXML.DocketXML(court, casenum)
@@ -111,6 +130,96 @@ def parse_dktrpt(filebits, court, casenum):
     return docket
 
 
+def parse_cadkt(filebits, court, casenum, is_full):
+    logging.debug('parse_cadkt: %s %s %s', court, casenum, is_full)
+
+    if is_full:
+        filename = "%s.%s.full.dktrpt" % (court, casenum)
+    else:
+        filename = "%s.%s.dktrpt" % (court, casenum)
+    f = open('dockets/' + filename, 'w')
+    f.write(filebits)
+    f.close()
+
+    docket = DocketXML.DocketXML(court, casenum)
+
+    try:
+        the_soup = BeautifulSoup(filebits, convertEntities="html")
+    except TypeError:
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
+        #  when unicode coercion fails.
+        message = "DktRpt BeautifulSoup error %s.%s" % \
+            (court, casenum)
+        logging.warning(message)
+
+        filename = "%s.%s.dktrpt" % (court, casenum)
+        try:
+            error_to_file(filebits, filename)
+        except NameError:
+            pass
+
+        return None
+
+    except HTMLParseError:
+        # Adjust for malformed HTML.  Wow, PACER.
+
+        # Strip out broken links from DktRpt pages
+        badre = re.compile("<A HREF=\/cgi-bin\/.*\.pl[^>]*</A>")
+        filebits = badre.sub('', filebits)
+
+        filebits = filebits.replace("&#037; 20",
+                                    "&#037;20")
+        filebits = filebits.replace(" name=send_to_file<HR><CENTER>",
+                                    " name=send_to_file><HR><CENTER>")
+
+        filebits = filebits.replace("</font color=red>",
+                                    "</font>")
+        try:
+            the_soup = BeautifulSoup(filebits, convertEntities="html")
+        except HTMLParseError, err:
+
+            message = "DktRpt parse error. %s.%s %s line: %s char: %s." % \
+                (court, casenum, err.msg, err.lineno, err.offset)
+            logging.warning(message)
+
+            filename = "%s.%s.dktrpt" % (court, casenum)
+            try:
+                error_to_file(filebits, filename)
+            except NameError:
+                pass
+
+            return None
+
+    docmeta_list, doctable = _parse_cadkt_document_table(the_soup, is_full)
+
+    for docmeta in docmeta_list:
+        try:
+            # Update the docket object with doc metadata
+            docket.add_document(docmeta["doc_num"],
+                                docmeta["attachment_num"],
+                                docmeta)
+
+        except KeyError:
+            # HTML link did not parse correctly, so no doc add to docket.
+            pass
+
+    try:
+        # Remove doctable from the_soup so _get_case_metadata won't look there.
+        doctable.extract()
+    except AttributeError:
+        pass
+
+    case_data = _get_case_metadata_from_ca_dktrpt(the_soup, is_full)
+
+    # Update the docket object with the parsed case meta
+    docket.update_case(case_data)
+
+    logging.debug(docket.documents.keys())
+    logging.debug(docket.casemeta)
+
+    return docket
+
+
 def parse_histdocqry(filebits, court, casenum):
 
     docket = DocketXML.DocketXML(court, casenum)
@@ -177,7 +286,6 @@ def parse_histdocqry(filebits, court, casenum):
 def parse_doc1(filebits, court, casenum, main_docnum):
 
     docket = DocketXML.DocketXML(court, casenum)
-
 
     try:
         index_soup = BeautifulSoup(filebits, convertEntities="html")
@@ -286,6 +394,71 @@ def parse_doc1(filebits, court, casenum, main_docnum):
 
     # Update the docket object with the parsed case meta
     docket.update_case(case_data)
+
+    return docket
+
+def parse_ca_doc1(filebits, court, casenum, main_docnum):
+    logging.debug('parse_ca_doc1: %s %s %s', court, casenum, main_docnum)
+
+    docket = DocketXML.DocketXML(court, casenum)
+
+    try:
+        index_soup = BeautifulSoup(filebits, convertEntities="html")
+
+    except TypeError:
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
+        #  when unicode coercion fails.
+        message = "doc1 BeautifulSoup error %s.%s.%s" % \
+            (court, casenum, main_docnum)
+        logging.warning(message)
+
+        filename = "%s.%s.%s.doc1" % (court, casenum, main_docnum)
+        try:
+            error_to_file(filebits, filename)
+        except NameError:
+            pass
+
+        return None
+
+    except HTMLParseError:
+        # Adjust for malformed HTML.  Wow, PACER.
+        filebits = filebits.replace("FORM method=POST ACTION=\\",
+                                    "FORM method=POST ACTION=")
+        try:
+            index_soup = BeautifulSoup(filebits, convertEntities="html")
+        except HTMLParseError, err:
+            message = "doc1 parse error. %s.%s.%s %s line: %s char: %s." % \
+                (court, casenum, main_docnum, err.msg, err.lineno, err.offset)
+            logging.warning(message)
+
+            filename = "%s.%s.%s.doc1" % (court, casenum, main_docnum)
+            try:
+                error_to_file(filebits, filename)
+            except NameError:
+                pass
+
+            return None
+
+    rows = index_soup.findAll("tr")
+
+    for row in rows:
+        if not row.findAll(href=ca_doc_re):
+            continue
+
+        cells = row("td")
+        if len(cells) != 4: continue
+
+        try:
+            docid = cells[1]("a")[0]["href"].split('/')[-1]
+        except KeyError: # No href location.
+            continue
+
+        subdocnum = cells[0].string
+        short_desc = cells[2].string
+
+        docket.add_document(main_docnum, subdocnum,
+                            {"pacer_doc_id": docid,
+                             "short_desc": short_desc})
 
     return docket
 
@@ -540,6 +713,36 @@ def _parse_dktrpt_document_table(the_soup, court):
 
                 cell_list.append(row_values)
             return cell_list, table
+
+    return [], None
+
+def _parse_cadkt_document_table(the_soup, is_full):
+    tables = the_soup.findAll('table')
+    for table in tables:
+        if not table.findAll(href=ca_doc_re):
+            continue
+        if table.findAll('table'):
+            continue
+
+        docmeta_list = []
+        for row in table('tr'):
+            if not row.findAll(href=ca_doc_re):
+                continue
+            cells = row("td")
+            if len(cells) != 3: continue
+
+            docmeta = {}
+            docmeta["attachment_num"] = 0
+            docmeta["doc_num"] = cells[1]("a")[0]["href"].split('/')[-1]
+            docmeta["pacer_doc_id"] = docmeta["doc_num"]
+
+            docmeta["date_filed"] = cells[0].string
+
+            docmeta["long_desc"] = cells[2].string
+
+            docmeta_list.append(docmeta)
+
+        return docmeta_list, table
 
     return [], None
 
@@ -900,6 +1103,47 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
 
 
     return case_data
+
+orig_case_re = re.compile(r'(\w+)\.uscourts\.gov/cgi-bin/(?:iquery|DktRpt)\.pl\?caseNumber=([^&]+)')
+def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
+    case_data = {}
+
+    try:
+        case_data["nature_of_suit"] = the_soup(text="Nature of Suit: ")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["date_case_filed"] = the_soup(text="Docketed:")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["date_case_terminated"] = the_soup(text="Termed:")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["docket_num"] = the_soup(text="Court of Appeals Docket #: ")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+
+    for td in the_soup("td"):
+        if td.string and ' v. ' in td.string:
+            case_data["case_name"] = td.string
+
+    try:
+        case_data["appeal_from"] = the_soup(text="Appeal From:")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        href = the_soup("a", href=orig_case_re)[0]["href"]
+        match = orig_case_re.search(href)
+        case_data["originating_court_id"] = match.group(1)
+        case_data["originating_case_number"] = match.group(2)
+    except IndexError:
+        pass
+
+
+    return case_data
+
 
 #Try to parse out the individual parties and their attorneys
 def _get_parties_info_from_dkrpt(the_soup, court):
@@ -1505,7 +1749,29 @@ if __name__ == "__main__":
         print docket.casemeta
         print docket.documents
 
-    dktrpt()
+    def cadkt():
+        filename = "docket-13-1157.html"
+        docketbits = open(filename).read()
+        docket = parse_cadkt(docketbits, "ca8", 20131157, False)
+        print docket.casemeta
+        #print docket.documents
+        filename = "docket-13-1157-full.html"
+        docketbits = open(filename).read()
+        docket = parse_cadkt(docketbits, "ca8", 20131157, True)
+        print docket.casemeta
+        #print docket.documents
+
+    def cadoc1():
+        filename = "multidoc-00802034315.html"
+        docketbits = open(filename).read()
+        docket = parse_ca_doc1(docketbits, "ca8", 20131157, 802034315)
+        print docket.casemeta
+        print docket.documents
+
+    cadkt()
+    #cadoc1()
+
+    #dktrpt()
 
     #histdoc()
     #doc1()

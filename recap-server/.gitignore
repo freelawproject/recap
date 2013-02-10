@@ -1,4 +1,5 @@
 *.pyc
 *.swp
+debug.log
 settings.py
 uploads/recap_config.py
