@@ -133,13 +133,13 @@ def parse_dktrpt(filebits, court, casenum):
 def parse_cadkt(filebits, court, casenum, is_full):
     logging.debug('parse_cadkt: %s %s %s', court, casenum, is_full)
 
-    if is_full:
-        filename = "%s.%s.full.dktrpt" % (court, casenum)
-    else:
-        filename = "%s.%s.dktrpt" % (court, casenum)
-    f = open('dockets/' + filename, 'w')
-    f.write(filebits)
-    f.close()
+    # if is_full:
+    #     filename = "%s.%s.full.dktrpt" % (court, casenum)
+    # else:
+    #     filename = "%s.%s.dktrpt" % (court, casenum)
+    # f = open('dockets/' + filename, 'w')
+    # f.write(filebits)
+    # f.close()
 
     docket = DocketXML.DocketXML(court, casenum)
 
@@ -726,19 +726,23 @@ def _parse_cadkt_document_table(the_soup, is_full):
 
         docmeta_list = []
         for row in table('tr'):
-            if not row.findAll(href=ca_doc_re):
-                continue
             cells = row("td")
             if len(cells) != 3: continue
+            if not cells[1].findAll(href=ca_doc_re):
+                continue
 
             docmeta = {}
             docmeta["attachment_num"] = 0
-            docmeta["doc_num"] = cells[1]("a")[0]["href"].split('/')[-1]
-            docmeta["pacer_doc_id"] = docmeta["doc_num"]
+            docmeta["pacer_doc_id"] = cells[1]("a")[0]["href"].split('/')[-1]
+
+            docmeta["doc_num"] = docmeta["pacer_doc_id"]  # FIXME
 
             docmeta["date_filed"] = cells[0].string
 
-            docmeta["long_desc"] = cells[2].string
+            if cells[2].string:
+                docmeta["long_desc"] = cells[2].string
+            else:
+                docmeta["long_desc"] = "".join(cells[2].findAll(text=True)).strip()
 
             docmeta_list.append(docmeta)
 
@@ -1125,9 +1129,12 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
     except (AttributeError, IndexError):
         pass
 
-    for td in the_soup("td"):
-        if td.string and ' v. ' in td.string:
-            case_data["case_name"] = td.string
+    # This is a terrible heuristic, but seriously I couldn't find a better one
+    for cell in the_soup(text="Court of Appeals Docket #: ")[0] \
+                .parent.parent.parent.parent.findAll('td'):
+        if not cell.findAll('b'):
+            case_data["case_name"] = cell.string
+            break
 
     try:
         case_data["appeal_from"] = the_soup(text="Appeal From:")[0].next.strip()
@@ -1138,7 +1145,7 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
         match = orig_case_re.search(href)
         case_data["originating_court_id"] = match.group(1)
         case_data["originating_case_number"] = match.group(2)
-    except IndexError:
+    except (AttributeError, IndexError):
         pass
 
 
@@ -1750,16 +1757,27 @@ if __name__ == "__main__":
         print docket.documents
 
     def cadkt():
-        filename = "docket-13-1157.html"
-        docketbits = open(filename).read()
-        docket = parse_cadkt(docketbits, "ca8", 20131157, False)
-        print docket.casemeta
-        #print docket.documents
-        filename = "docket-13-1157-full.html"
-        docketbits = open(filename).read()
-        docket = parse_cadkt(docketbits, "ca8", 20131157, True)
-        print docket.casemeta
-        #print docket.documents
+        import glob, json
+        for filename in glob.glob('dockets/*'):
+            print '####################################'
+            print filename
+            print '####################################'
+            docketbits = open(filename).read()
+            court, casenum, x = filename.split('/', 1)[-1].split('.', 2)
+            docket = parse_cadkt(docketbits, court, casenum, False)
+            if (not "nature_of_suit" in docket.casemeta
+                or not "date_case_filed" in docket.casemeta
+                or not "date_case_terminated" in docket.casemeta
+                or not "docket_num" in docket.casemeta
+                or not "case_name" in docket.casemeta
+                or not "appeal_from" in docket.casemeta
+                or not "originating_court_id" in docket.casemeta
+                or not "originating_case_number" in docket.casemeta
+                or None in docket.casemeta.values()):
+                print json.dumps(docket.casemeta, indent=4)
+            # print json.dumps(docket.documents, indent=4)
+            print ''
+            print ''
 
     def cadoc1():
         filename = "multidoc-00802034315.html"
