@@ -1,4 +1,4 @@
-# Run tests by doing 'python manage.py test' in the recapsite directory
+# Run tests by doing 'python manage.py test' in the recap-server directory
 # Note that some tests in TestParsePacer take a long time, you may want to comment it
 # out from this file while actively developing. Alternatively, refactor those tests
 # so they don't take so long.

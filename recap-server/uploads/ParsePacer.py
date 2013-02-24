@@ -1492,7 +1492,7 @@ if __name__ == "__main__":
         print docket.documents
 
     def histdoc():
-        filename = "/var/django/recap_dev/recapsite/uploads/gitmo.html"
+        filename = "/var/django/recap_dev/recap-server/uploads/gitmo.html"
         docketbits = open(filename).read()
         docket = parse_histdocqry(docketbits, "scb", 30031)
 

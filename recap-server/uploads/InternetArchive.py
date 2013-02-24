@@ -743,7 +743,7 @@ def _check_for_long_running_jobs():
 				   '-s smtp.gmail.com:587 -xu recaplogger@gmail.com -xp REMOVED', 
 				   '-m "There is probably a runaway cron job on monocle. See the following ps output:', 
 				   long_running_jobs.strip(), 
-                   '\n\nIf you want to silence these emails for 6 hours: log onto monocle, su to harlanyu and touch /var/django/recap_prod/recapsite/silence_warning_emails"']
+                   '\n\nIf you want to silence these emails for 6 hours: log onto monocle, su to harlanyu and touch /var/django/recap_prod/recap-server/silence_warning_emails"']
 
 		os.popen(" ".join(emailmessagecmd))
 
@@ -760,7 +760,7 @@ def enter_pdb(sig, frame):
     pdb.set_trace()
 
 def print_stacktrace(sig, frame):
-    f = open("/var/django/recap_prod/recapsite/crash.log", "a")
+    f = open("/var/django/recap_prod/recap-server/crash.log", "a")
     f.write(str(traceback.extract_stack()))
     
     f.write("\n")

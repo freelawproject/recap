@@ -2,7 +2,7 @@
 import sys, os
 sys.path.extend(('..', '.'))
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'recapsite.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'recap-server.settings'
 #######################################################
 import urllib, urllib2
 import httplib

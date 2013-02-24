@@ -5,7 +5,7 @@ import re
 #################### DJANGO CONFIG ####################                         
 sys.path.extend(('../..', '..', '.'))
 
-os.environ['DJANGO_SETTINGS_MODULE'] = 'recapsite.settings'
+os.environ['DJANGO_SETTINGS_MODULE'] = 'recap-server.settings'
 #######################################################
 
 

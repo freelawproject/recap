@@ -14,8 +14,8 @@ def read_in_cases_to_repair(filename):
 
 if __name__ == '__main__':
   ''' Be sure to set the appropriate environment variables for django!
-      export PYTHONPATH=/var/django/recap_prod:/var/django/recap_prod/recapsite
-      export DJANGO_SETTINGS_MODULE=recapsite.settings
+      export PYTHONPATH=/var/django/recap_prod:/var/django/recap_prod/recap-server
+      export DJANGO_SETTINGS_MODULE=recap-server.settings
   '''
 
   if len(sys.argv) != 2:
