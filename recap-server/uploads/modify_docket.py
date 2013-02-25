@@ -16,7 +16,7 @@ def delete_documents_from_docket(court, casenum, documents):
     if not docketstring:
         print "Could not find docket on IA, exiting...."
         exit()
-    
+
     ia_docket, message = DocketXML.parse_xml_string(docketstring)
 
     if not ia_docket:
@@ -32,7 +32,7 @@ def delete_documents_from_docket(court, casenum, documents):
     docketbits = ia_docket.to_xml()
 
     request = IACommon.make_docketxml_request(docketbits, court, casenum,
-                                              ia_docket.casemeta) 
+                                              ia_docket.casemeta)
 
     success_status = False
     try:
@@ -42,9 +42,9 @@ def delete_documents_from_docket(court, casenum, documents):
             print "Updated %s %s docket.xml" % (court, casenum)
             success_status = True
 
-    
+
     #attempt to upload a new version of html
-    html_put_msg = IADirect.cleanup_docket_put(court, casenum, ia_docket, 
+    html_put_msg = IADirect.cleanup_docket_put(court, casenum, ia_docket,
                                                metadiff=0)
 
     print "   Updated %s %s : %s" % (court, casenum, html_put_msg)
@@ -52,7 +52,7 @@ def delete_documents_from_docket(court, casenum, documents):
     return success_status
 
 def get_documents(court, casenum, docrange, show_warning=True):
-    docnum_list = [] 
+    docnum_list = []
 
     #if it's a single document
     if len(docrange.split(",")) == 1 and docrange.find('-') < 0:
@@ -66,21 +66,21 @@ def get_documents(court, casenum, docrange, show_warning=True):
               docnum_list.append(d)
 
 
-    query = Document.objects.filter(court=court, 
-                                    casenum=casenum, 
-                                    docnum__in=docnum_list, 
+    query = Document.objects.filter(court=court,
+                                    casenum=casenum,
+                                    docnum__in=docnum_list,
                                     subdocnum=0)
 
-    try: 
+    try:
         doc = query[0]
     except IndexError:
         print "could not find any documents, exiting..."
         exit()
-    #after sanity checks above, add in all associated subdocuments 
-    query = Document.objects.filter(court=court, 
-                                    casenum=casenum, 
+    #after sanity checks above, add in all associated subdocuments
+    query = Document.objects.filter(court=court,
+                                    casenum=casenum,
                                     docnum__in=docnum_list)
-        
+
     if show_warning:
         print "You are about to remove %s documents (#'s: %s ) from this case. Are you sure? (y/N) " % ( str(len(query)), [str(d.docnum) for d in query] ),
         s = sys.stdin.read(1)
@@ -93,21 +93,21 @@ def get_documents(court, casenum, docrange, show_warning=True):
 def parse_args():
     parser = OptionParser()
     parser.add_option("--court", dest="court",
-		               help="3 or 4 letter court abbreviation (e.g: cand, mad) (required)")
+                       help="3 or 4 letter court abbreviation (e.g: cand, mad) (required)")
     parser.add_option("--casenum", dest="casenum",
                        help="pacer case number of docket (required)")
-    parser.add_option("--action", dest="action", 
-                       help="action to modify this docket (delete_document depends on docranged)", 
+    parser.add_option("--action", dest="action",
+                       help="action to modify this docket (delete_document depends on docranged)",
                        default="delete_documents")
 
-    parser.add_option("--docrange", dest="docrange", 
+    parser.add_option("--docrange", dest="docrange",
                        help="docrange to delete (no spaces!: '3,4,33-55')")
-    
-    parser.add_option("--no_warn", action="store_false", dest="show_warning", 
+
+    parser.add_option("--no_warn", action="store_false", dest="show_warning",
                        help="don't require user confirmation before deleting ")
 
     (options, args) = parser.parse_args()
-    
+
 
     if not (options.court and options.casenum):
        parser.print_help()
@@ -136,13 +136,13 @@ def main():
           if document.available:
              remove_document.archive_document_locally(document, "backup_documents")
 
-        
+
         status = delete_documents_from_docket(court, casenum, documents)
 
         if not status:
             print "IA Docket update did not succeed, exiting...."
             exit()
-        
+
         print "not deleting items from IA - not setup to deal with large numbers of deletions"
         print "If this is a relatively small number of files, open this script and uncomment the lines below :"
         for document in documents:

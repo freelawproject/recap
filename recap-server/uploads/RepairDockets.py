@@ -1,5 +1,5 @@
 import sys
-import DocumentManager 
+import DocumentManager
 import UploadHandler
 
 def read_in_cases_to_repair(filename):
@@ -21,7 +21,7 @@ if __name__ == '__main__':
   if len(sys.argv) != 2:
     sys.stderr.write("Usage: %s <filename_containing_cases_to_repair>\n " % sys.argv[0])
     sys.stderr.write("      The contents of filename should have a single case per line, each identified by 'court casenum'\n " )
-    sys.exit(1) 
+    sys.exit(1)
 
   cases_to_repair = read_in_cases_to_repair(sys.argv[1])
 
@@ -34,8 +34,8 @@ if __name__ == '__main__':
     docket = DocumentManager.create_docket_from_local_documents(court, casenum)
 
     if docket:
-	# this will merge our docket with existing one on IA
-        UploadHandler.do_me_up(docket) 
+        # this will merge our docket with existing one on IA
+        UploadHandler.do_me_up(docket)
     else:
         print " Could not create docket from local documents for %s %s" % (court, casenum)
 

@@ -25,7 +25,7 @@ MAX_RETRIES = 10
 
 def lock(court, casenum):
 
-    argstring = urllib.urlencode({"court": court, 
+    argstring = urllib.urlencode({"court": court,
                                   "casenum": casenum,
                                   "key": AUTH_KEY})
 
@@ -46,12 +46,12 @@ def lock(court, casenum):
 
     got_lock = bool(int(resp_parts[0]))
     nonce_or_message = resp_parts[1]
-    
+
     return got_lock, nonce_or_message
 
 def unlock(court, casenum, modified=1, ignore_nonce=0):
 
-    argstring = urllib.urlencode({"court": court, 
+    argstring = urllib.urlencode({"court": court,
                                   "casenum": casenum,
                                   "key": AUTH_KEY,
                                   "modified": int(modified),
@@ -86,7 +86,7 @@ def print_unlock_message(releasepair):
     if released_lock:
         print "  released lock."
     else:
-        print "  could not release lock: %s" % message        
+        print "  could not release lock: %s" % message
 
 def get_timestamp():
     timestamp = datetime.datetime.now()
@@ -110,7 +110,7 @@ def add_to_failed(casenum, message):
     cases_failed.append((casenum, message))
 
 def process_case(casenum):
-    
+
     # Setup: Grab the lock.
     got_lock, nonce_or_message = lock(court, casenum)
 
@@ -213,10 +213,10 @@ def process_case(casenum):
             index_ls.append(casedocname)
         elif casedocname.endswith(".pdf"):
             pdf_ls.append(casedocname)
-        
+
     # Step 2: Parse each index file
     for indexname in index_ls:
-                
+
         try:
             indexpath = "%s/%s" % (casedir, indexname)
             indexfile = open(indexpath)
@@ -227,7 +227,7 @@ def process_case(casenum):
             continue
 
         docnum = indexname.strip("-index.html")
-        index_docket = ParsePacer.parse_doc1(indexbits, court, 
+        index_docket = ParsePacer.parse_doc1(indexbits, court,
                                              casenum, docnum)
         # Merge this docket into the IA docket
         ia_docket.merge_docket(index_docket)
@@ -251,7 +251,7 @@ def process_case(casenum):
         print_unlock_message(unlock(court, casenum, False))
         add_to_retry(casenum)
         return False
-        
+
     # Step 4: Upload each pdf file.
     doccount = 0
     for pdfname in pdf_ls:
@@ -279,12 +279,12 @@ def process_case(casenum):
 
         try:
             # converting v3->v4 subdocnums
-            subdocnum = unicode(int(split[1]) - 1)   
+            subdocnum = unicode(int(split[1]) - 1)
         except IndexError:
-            subdocnum = "0"                
+            subdocnum = "0"
 
-        doc_docket = DocketXML.make_docket_for_pdf(pdfbits, court, 
-                                                   casenum, docnum, 
+        doc_docket = DocketXML.make_docket_for_pdf(pdfbits, court,
+                                                   casenum, docnum,
                                                    subdocnum)
         doc_meta = doc_docket.get_document_metadict(docnum, subdocnum)
 
@@ -308,7 +308,7 @@ def process_case(casenum):
 
             # Add this document's metadata into the ia_docket
             ia_docket.merge_docket(doc_docket)
-            
+
         else:
             print "same."
 
@@ -324,7 +324,7 @@ def process_case(casenum):
 
         # Assign the docket the new nonce from the lock
         ia_docket.nonce = nonce
-            
+
         ia_casemeta_merged_hash = hash(pickle.dumps(ia_docket.casemeta))
         casemeta_diff = ia_casemeta_orig_hash != ia_casemeta_merged_hash
 
@@ -341,7 +341,7 @@ def process_case(casenum):
     else:
         ignore_nonce = 1
         print "same."
-        
+
     if ignore_nonce:
         print_unlock_message(unlock(court, casenum, ignore_nonce=1))
     else:
@@ -370,7 +370,7 @@ def make_bucket(casenum):
         bucket_made.add(casenum)
 
 if __name__ == "__main__":
-    
+
     if len(sys.argv) != 2:
         sys.stderr.write("Usage: %s <directory>\n" % sys.argv[0])
         sys.exit(1)
@@ -421,9 +421,9 @@ if __name__ == "__main__":
         retry_list = cases_to_retry.keys()
 
         for casenum in retry_list:
-            
+
             num_retries = cases_to_retry[casenum]
-            
+
             if num_retries > MAX_RETRIES:
                 reason = "*** reached max retries ***"
                 add_to_failed(casenum, reason)
@@ -434,12 +434,12 @@ if __name__ == "__main__":
                 timestamp = get_timestamp()
 
                 print "[%s] Retry attempt %d/%d for %s.%s..." % \
-                    (timestamp, num_retries, MAX_RETRIES, 
+                    (timestamp, num_retries, MAX_RETRIES,
                      court, casenum),
 
                 if process_case(casenum):
                     del_from_retry(casenum)
-                                                                
+
     print "The following cases failed permanantly:"
     for (casenum, reason) in cases_failed:
         print "  * %s.%s: %s" % (court, casenum, reason)

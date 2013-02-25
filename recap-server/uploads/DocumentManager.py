@@ -18,9 +18,9 @@ def update_local_db(docket, ignore_available=1):
         docnum = docmeta["doc_num"]
         subdocnum = docmeta["attachment_num"]
 
-        docquery = Document.objects.filter(court=court, 
+        docquery = Document.objects.filter(court=court,
                                            casenum=casenum,
-                                           docnum=docnum, 
+                                           docnum=docnum,
                                            subdocnum=subdocnum)
 
         try:
@@ -54,7 +54,7 @@ def update_local_db(docket, ignore_available=1):
             docentry.lastdate = docmeta["upload_date"]
         except KeyError:
             pass
-        
+
         try:
             docentry.free_import = docmeta["free_import"]
         except KeyError:
@@ -87,18 +87,18 @@ def mark_as_available(filename):
             logging.error("mark_as_available: could not save %s."
                               % (filename))
 
-def handle_adddocmeta(docid, court, casenum, de_seq_num, dm_id, 
+def handle_adddocmeta(docid, court, casenum, de_seq_num, dm_id,
                       docnum, subdocnum):
 
     docid = ParsePacer.coerce_docid(docid)
 
-    query = Document.objects.filter(court=court, casenum=casenum, 
-				docnum=docnum, subdocnum=subdocnum)
+    query = Document.objects.filter(court=court, casenum=casenum,
+                                    docnum=docnum, subdocnum=subdocnum)
 
     try:
         doc = query[0]
     except IndexError:
-        doc = Document(docid=docid, court=court, casenum=casenum, 
+        doc = Document(docid=docid, court=court, casenum=casenum,
                        de_seq_num=de_seq_num, dm_id=dm_id, docnum=docnum,
                        subdocnum=subdocnum)
     else:
@@ -106,7 +106,7 @@ def handle_adddocmeta(docid, court, casenum, de_seq_num, dm_id,
         doc.dm_id = dm_id
         doc.docnum = docnum
         doc.docid = docid
-        
+
     try:
         doc.save()
     except IntegrityError:
@@ -120,9 +120,9 @@ def create_docket_from_local_documents(court, casenum, removedocket=None):
     localdocs = Document.objects.filter(court=court, casenum=casenum)
 
     try:
-	currdoc = localdocs[0]
+        currdoc = localdocs[0]
     except IndexError:
-        return None  
+        return None
 
     for doc in localdocs:
         docket.add_document_object(doc)
@@ -135,11 +135,11 @@ def create_docket_from_local_documents(court, casenum, removedocket=None):
     #   accurate readings of when we are actually adding locally stored information
     #   Note that this isn't perfect - information added through adddocmeta will be included in docket uploads as well
     for dockey in removedocket.documents.keys():
-	for metakey in removedocket.documents[dockey].keys():
-		try:
-		   del docket.documents[dockey][metakey]
-		except KeyError:
-		   pass
+        for metakey in removedocket.documents[dockey].keys():
+            try:
+                del docket.documents[dockey][metakey]
+            except KeyError:
+                pass
 
     return docket
 

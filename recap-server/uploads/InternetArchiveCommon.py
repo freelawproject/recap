@@ -24,7 +24,7 @@ def get_bucketname(court, casenum):
     return ".".join(bucketlist)
 
 def get_pdfname(court, casenum, docnum, subdocnum):
-    namelist = ["gov", "uscourts", court, unicode(casenum), 
+    namelist = ["gov", "uscourts", court, unicode(casenum),
                 unicode(docnum), unicode(subdocnum), "pdf"]
     return ".".join(namelist)
 
@@ -81,7 +81,7 @@ def _return_delete():
     return 'DELETE'
 
 def _init_put(storage_path):
-    
+
     request = urllib2.Request("%s/%s" % (STORAGE_URL, storage_path))
 
     request.add_header('authorization', AUTH_HEADER)
@@ -89,7 +89,7 @@ def _init_put(storage_path):
     request.add_header('x-archive-meta-mediatype', 'texts')
     request.add_header('x-archive-meta-language', 'eng')
 #    request.add_header('x-archive-meta-noindex', 'true')
-#    request.add_header('x-archive-meta-neverindex', 'true')        
+#    request.add_header('x-archive-meta-neverindex', 'true')
     request.add_header('x-archive-queue-derive', '0')
     # Don't use a lambda function here-- it's not pickleable.
     request.get_method = _return_put
@@ -111,7 +111,7 @@ def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, make
 
     storage_path = "%s/%s" % (bucketname, filename)
     request = _init_put(storage_path)
-    
+
     # Add the payload
     request.add_data(filebits)
 
@@ -120,7 +120,7 @@ def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, make
     metadict["pacer_case_num"] = casenum
     metadict["doc_num"] = docnum
     metadict["attachment_num"] = subdocnum
-    
+
     if makenew:
         request.add_header('x-archive-auto-make-bucket', '1')
         add_description_header(request, court, casenum)
@@ -181,7 +181,7 @@ def make_docketxml_request(docketbits, court, casenum, metadict={}, makenew=0):
     if makenew:
         request.add_header('x-archive-auto-make-bucket', '1')
         add_description_header(request, court, casenum)
-    
+
     for k,v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
@@ -193,7 +193,7 @@ def make_docketxml_request(docketbits, court, casenum, metadict={}, makenew=0):
 
     # add the payload
     request.add_data(docketbits)
-    
+
     return request
 
 def make_dockethtml_request(docketbits, court, casenum, metadict={}):
@@ -203,7 +203,7 @@ def make_dockethtml_request(docketbits, court, casenum, metadict={}):
 
     storage_path = "%s/%s" % (bucketname, filename)
     request = _init_put(storage_path)
-    
+
     for k,v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
@@ -217,7 +217,7 @@ def make_dockethtml_request(docketbits, court, casenum, metadict={}):
     request.add_data(docketbits)
 
     return request
-    
+
 def make_bucket_request(court, casenum, metadict={}, makenew=0):
     """ Make an new Internet Archive bucket. """
 
@@ -227,7 +227,7 @@ def make_bucket_request(court, casenum, metadict={}, makenew=0):
 
     if makenew:
         request.add_header('x-archive-auto-make-bucket', '1')
-	request.add_header('content-length', '0')
+        request.add_header('content-length', '0')
     else:
         request.add_header('x-archive-ignore-preexisting-bucket', '1')
 
@@ -247,7 +247,7 @@ def make_bucket_request(court, casenum, metadict={}, makenew=0):
 
 def make_casemeta_request(court, casenum, metadict={}):
     ''' Return a Request for replacing the case metadata '''
-    
+
     return make_bucket_request(court, casenum, metadict)
 
 

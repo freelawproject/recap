@@ -26,7 +26,7 @@ def is_html(mimetype):
     return mimetype.find("text/html") >= 0
 
 def get_docket_string(court, casenum):
-    docketurl = IACommon.get_docketxml_url(court, casenum)    
+    docketurl = IACommon.get_docketxml_url(court, casenum)
 
     request = urllib2.Request(docketurl)
 
@@ -65,7 +65,7 @@ def get_docket_string(court, casenum):
 
 def check_bucket_ready(court, casenum):
     bucketurl = IACommon.get_bucketcheck_url(court, casenum)
-    
+
     request = urllib2.Request(bucketurl)
 
     try:
@@ -83,22 +83,22 @@ def check_bucket_ready(court, casenum):
         return True, 200
 
 def make_new_bucket(court, casenum):
-    
+
     request = IACommon.make_bucket_request(court, casenum, makenew=1)
     return _dispatch_direct_put(request)
 
 def put_docket(docket, court, casenum, casemeta_diff=1):
 
     docketbits = docket.to_xml()
-    
-    request = IACommon.make_docketxml_request(docketbits, court, casenum, 
+
+    request = IACommon.make_docketxml_request(docketbits, court, casenum,
                                               docket.casemeta)
 
     put_result, put_msg = _dispatch_direct_put(request)
 
     if put_result:
         cleanup_docket_put(court, casenum, docket, metadiff=casemeta_diff)
-    
+
     return put_result, put_msg
 
 def put_casemeta(court, casenum, metadict={}):
@@ -108,7 +108,7 @@ def put_casemeta(court, casenum, metadict={}):
 
 def put_pdf(filebits, court, casenum, docnum, subdocnum, metadict={}):
     """ PUT the file into a new Internet Archive bucket. """
-    request = IACommon.make_pdf_request(filebits, court, casenum, 
+    request = IACommon.make_pdf_request(filebits, court, casenum,
                                         docnum, subdocnum, metadict)
 
     return _dispatch_direct_put(request)
@@ -120,12 +120,12 @@ def put_dockethtml(court, casenum, docket):
     return _dispatch_direct_put(request)
 
 def cleanup_docket_put(court, casenum, docket, metadiff=1):
-    
+
     # Best-effort casemeta update
     if metadiff:
         put_casemeta(court, casenum, docket.casemeta)
     # Best-effort docket HTML update
-    putstatus, putmsg = put_dockethtml(court, casenum, docket)    
+    putstatus, putmsg = put_dockethtml(court, casenum, docket)
     return putmsg
 
 def _dispatch_direct_put(request, tries_so_far=0):
@@ -153,4 +153,3 @@ def _dispatch_direct_put(request, tries_so_far=0):
            return True, "IA 200 created."
         else:
            return False, "IA %d error." % response.code
-

@@ -38,7 +38,7 @@ BLACKLIST_DICT = {}
 def put_file(filebits, court, casenum, docnum, subdocnum, metadict={}):
     """ PUT the file into a new Internet Archive bucket. """
 
-    request = IACommon.make_pdf_request(filebits, court, casenum, 
+    request = IACommon.make_pdf_request(filebits, court, casenum,
                                         docnum, subdocnum, metadict)
 
     # If this file is already scheduled, drop this. # TK: what we want?
@@ -51,8 +51,8 @@ def put_file(filebits, court, casenum, docnum, subdocnum, metadict={}):
 
     # Add a PickledPut DB entry to schedule the PUT, not yet ready
     ppentry = PickledPut(filename=filename)
-    
-    # Fix a race case? 
+
+    # Fix a race case?
     try:
         ppentry.save()
     except IntegrityError:
@@ -63,7 +63,7 @@ def put_file(filebits, court, casenum, docnum, subdocnum, metadict={}):
 
     # Pickle the request object into the jar
     pickle_success, message = pickle_object(request, filename)
-    
+
     if pickle_success:
         # PickledPut now ready for processing.
         ppentry.ready = 1
@@ -76,7 +76,7 @@ def put_file(filebits, court, casenum, docnum, subdocnum, metadict={}):
 
     return message
 
-def put_docket(docket, court, casenum, ppentry, 
+def put_docket(docket, court, casenum, ppentry,
                newbucket=0, casemeta_diff=1):
 
     # Put the docket to IA
@@ -88,7 +88,7 @@ def put_docket(docket, court, casenum, ppentry,
     put_result, put_msg = _dispatch_put(request, ppentry)
 
     if put_result:
-        html_put_msg = IADirect.cleanup_docket_put(court, casenum, docket, 
+        html_put_msg = IADirect.cleanup_docket_put(court, casenum, docket,
                                                    metadiff=casemeta_diff)
         print "  gov.uscourts.%s.%s.docket.html upload: %s" % (court,
                                                                unicode(casenum),
@@ -130,7 +130,7 @@ def unpickle_object(filename, directory = BASE_PICKLE_JAR):
         return None, "Unpickling failed: could not unpickle object."
     except:
         return None, "Unpickling failed: other error."
-        
+
     f.close()
 
     return obj, "Unpickling succeeded."
@@ -176,27 +176,23 @@ def _quarantine_pickle(filename, ssn=False, blacklist_file=False, invalid_PDF=Fa
             print "  %s placed in quarantine." % (filename)
 
 def _in_blacklist(filename):
-    
-    if BLACKLIST_DICT == {}: 
+
+    if BLACKLIST_DICT == {}:
         # Initialize blacklist
 
         BLACKLIST_LOCATION = ROOT_PATH + "/blacklist"
-	try:
-	    f = open(BLACKLIST_LOCATION, 'r')
+        try:
+            f = open(BLACKLIST_LOCATION, 'r')
         except IOError:
             return False # No blacklist file
         else:
-             
-	    for line in f:
-
-		# Remove comments, if they exist
-		nocomment = line[0:line.find("#")]
-
-		BLACKLIST_DICT[nocomment.strip()] = True;
-
+            for line in f:
+                # Remove comments, if they exist
+                nocomment = line[0:line.find("#")]
+                BLACKLIST_DICT[nocomment.strip()] = True;
 
         f.close()
-    
+
     return filename.strip() in BLACKLIST_DICT
 
 def _is_invalid_pdf(request, filename):
@@ -206,16 +202,16 @@ def _is_invalid_pdf(request, filename):
     if pdfbits.startswith("%PDF") == False:
         print "  %s is not a valid PDF." % (filename)
         return True
-    
+
     return False
 
 def _has_ssn(request, filename):
- 
+
     pdfbits = request.get_data()
 
     try:
-	#PDFFileReader will infinite loop if the input is not a valid PDF, 
-	# so be careful to only give it valid data
+        # PDFFileReader will infinite loop if the input is not a valid PDF,
+        # so be careful to only give it valid data
         pdfreader = PdfFileReader(StringIO.StringIO(pdfbits))
     except PdfReadError:
         # Try to fix by adding EOF
@@ -233,17 +229,17 @@ def _has_ssn(request, filename):
         return False
 
     # Area number is 3 digits between [001-772] except 000, 666, [734-749]
-    area_restr = "|".join(["00[1-9]", "0[1-9]\d", "[1-5]\d\d", 
-                           "6[0-57-9]\d", "66[0-57-9]", "7[0-25-6]\d", 
+    area_restr = "|".join(["00[1-9]", "0[1-9]\d", "[1-5]\d\d",
+                           "6[0-57-9]\d", "66[0-57-9]", "7[0-25-6]\d",
                            "73[0-3]", "77[0-2]"])
     # Group number is 2 digits [01-99]
     group_restr = "|".join(["0[1-9]", "[1-9]\d"])
 
     # Serial number is 4 digits [0001-9999]
-    serial_restr = "|".join(["000[1-9]", "00[1-9]\d", "0[1-9]\d\d", 
+    serial_restr = "|".join(["000[1-9]", "00[1-9]\d", "0[1-9]\d\d",
                              "[1-9]\d\d\d"])
 
-    ssn_re = re.compile("(%s)-(%s)-(%s)" % (area_restr, group_restr, 
+    ssn_re = re.compile("(%s)-(%s)-(%s)" % (area_restr, group_restr,
                                             serial_restr))
 
     try:
@@ -265,7 +261,7 @@ def _has_ssn(request, filename):
     return False
 
 def _update_docs_availability(docket):
-    
+
     court = docket.casemeta["court"]
     casenum = docket.casemeta["pacer_case_num"]
 
@@ -278,7 +274,7 @@ def _update_docs_availability(docket):
         available = doc.available
 
         docket.set_document_available(docnum, subdocnum, available)
-    
+
 
 def _dispatch_put(request, ppentry):
 
@@ -307,9 +303,9 @@ def _dispatch_put(request, ppentry):
 
     except urllib2.URLError, e: # URL Error
 
-	#if str(e.reason).startswith("timed out") or \
-	#	re.match(r'Network Unreachable', str(e.reason)) or \
-	#	re.match(r'Connection refused', str(e.reason)):
+        # if str(e.reason).startswith("timed out") or \
+        # re.match(r'Network Unreachable', str(e.reason)) or \
+        # re.match(r'Connection refused', str(e.reason)):
         return False, "IA URL error %s (pickle saved)." % e.reason
 
         #If none of the whitelisted errors above happens, quarantine the pickle
@@ -320,7 +316,7 @@ def _dispatch_put(request, ppentry):
         #_quarantine_pickle(filename)
 
         #return False, "IA URL error %s (pickle quarantined)." % str(e.reason)
-    
+
     except socket.timeout:
 
         # Unset the processing flag for later
@@ -344,7 +340,7 @@ def _dispatch_put(request, ppentry):
             ppentry.delete()
             # Delete the pickle file
             delete_pickle(filename)
-            
+
             return True, "IA 200 created (pickle deleted)."
         else:
             # Delete the entry from the DB
@@ -373,7 +369,7 @@ def _cron_get_updates():
         court = unicode(expiredlock.court)
         casenum = unicode(expiredlock.casenum)
         print "  %s.%s lock expired." % (court, casenum)
-        _cron_fetch_update(expiredlock)        
+        _cron_fetch_update(expiredlock)
 
 def _cron_fetch_update(lock):
     court = unicode(lock.court)
@@ -389,7 +385,7 @@ def _cron_fetch_update(lock):
             BucketLockManager.try_lock_later(lock)
         else:
             lock.delete()
-        print "  %s.%s couldn't fetch the docket: %d" % (court, casenum, 
+        print "  %s.%s couldn't fetch the docket: %d" % (court, casenum,
                                                          fetcherror)
         return
 
@@ -397,12 +393,12 @@ def _cron_fetch_update(lock):
 
     if not ia_docket:
         # Docket parsing error.
-        
+
         if nonce:
             BucketLockManager.try_lock_later(lock)
         else:
             lock.delete()
-        print "  %s.%s docket parsing error: %s" % (court, casenum, 
+        print "  %s.%s docket parsing error: %s" % (court, casenum,
                                                     message)
         return
     elif ia_docket.nonce == nonce or not nonce:
@@ -422,10 +418,10 @@ def _cron_fetch_update(lock):
             ia_docket.merge_docket(local_docket)
 
         ia_docket_after_local_merge_hash = hash(pickle.dumps(ia_docket))
-    
-        if ia_docket_orig_hash != ia_docket_after_local_merge_hash: 
-	    print " After fetch, some locally stored information was missing from %s.%s. Local info addition scheduled."  % (court, casenum)
-	    UploadHandler.do_me_up(ia_docket)
+
+        if ia_docket_orig_hash != ia_docket_after_local_merge_hash:
+            print " After fetch, some locally stored information was missing from %s.%s. Local info addition scheduled."  % (court, casenum)
+            UploadHandler.do_me_up(ia_docket)
 
         # Remove the lock.
         lock.delete()
@@ -435,7 +431,7 @@ def _cron_fetch_update(lock):
         print "  %s.%s fetched, wait more." % (court, casenum)
 
 def _cron_put_pickles():
-    
+
     # Get uploader credentials.
     uploader_query = Uploader.objects.filter(key=AUTH_KEY)
     try:
@@ -464,7 +460,7 @@ def _cron_put_pickles():
         filename = ppentry.filename
 
         ppmeta = IACommon.get_meta_from_filename(filename)
-    
+
         court = ppmeta["court"]
         casenum = ppmeta["casenum"]
 
@@ -481,13 +477,13 @@ def _cron_put_pickles():
 
             # Otherwise, we already have the lock, so continue.
 
-        else: 
+        else:
             # Switching to a new case.
 
             # Drop the current lock (from previous case), if necessary.
             if curr_court and curr_casenum:
-                dropped, errmsg = BucketLockManager.drop_lock(curr_court, 
-                                                              curr_casenum, 
+                dropped, errmsg = BucketLockManager.drop_lock(curr_court,
+                                                              curr_casenum,
                                                               RECAP_UPLOADER_ID,
                                                               nolocaldb=1)
                 if not dropped:
@@ -499,16 +495,16 @@ def _cron_put_pickles():
             curr_casenum = casenum
 
 
-	    lock_nonce, errmsg = BucketLockManager.get_lock(court, casenum, 
-                                                            RECAP_UPLOADER_ID, 
-							    one_per_uploader=1) 
+            lock_nonce, errmsg = BucketLockManager.get_lock(court, casenum,
+                                                            RECAP_UPLOADER_ID,
+                                                            one_per_uploader=1)
 
             if not lock_nonce:
-		print "  Passing on %s.%s: %s" % (court, casenum, errmsg)
+                print "  Passing on %s.%s: %s" % (court, casenum, errmsg)
 
-		# We don't have a lock, so don't drop the lock in the next loop
-		curr_court = None
-		curr_casenum = None
+                # We don't have a lock, so don't drop the lock in the next loop
+                curr_court = None
+                curr_casenum = None
                 continue
 
         # We'll always have the lock here.
@@ -527,8 +523,8 @@ def _cron_put_pickles():
 
         else:
            # Unpickling failed
-	   # If unpickling fails, it could mean that another cron job 
-	   # has already finished this PP - not sure how to distinguish this
+           # If unpickling fails, it could mean that another cron job
+           # has already finished this PP - not sure how to distinguish this
             print "  %s %s (Another cron job completed?)" % (filename, unpickle_msg)
 
             # Delete the entry from the DB
@@ -538,15 +534,15 @@ def _cron_put_pickles():
 
     # Drop last lock
     if curr_court and curr_casenum:
-        dropped, errmsg = BucketLockManager.drop_lock(curr_court, curr_casenum, 
-                                                      RECAP_UPLOADER_ID, 
+        dropped, errmsg = BucketLockManager.drop_lock(curr_court, curr_casenum,
+                                                      RECAP_UPLOADER_ID,
                                                       nolocaldb=1)
         if not dropped:
             print "  %s.%s someone stole my lock??" % (court, unicode(casenum))
 
 
 def _cron_process_PDF(obj, ppentry):
-   
+
     filename = ppentry.filename
     meta = IACommon.get_meta_from_filename(filename)
     court = meta["court"]
@@ -558,18 +554,18 @@ def _cron_process_PDF(obj, ppentry):
 
     # We only want to check for ssns on valid PDFs
     # PyPdf doesn't deal well with bad input
-    if not invalid_PDF: 
+    if not invalid_PDF:
        # SSN privacy check
-       has_ssn = _has_ssn(obj, filename) 
+       has_ssn = _has_ssn(obj, filename)
     else:
        has_ssn = False
-    
+
     # Blacklist file check
-    in_blacklist = _in_blacklist(filename) 
+    in_blacklist = _in_blacklist(filename)
 
     if invalid_PDF or has_ssn or in_blacklist:
 
-        docket = DocketXML.make_docket_for_pdf("", court, casenum, docnum, 
+        docket = DocketXML.make_docket_for_pdf("", court, casenum, docnum,
                                                subdocnum, available=0)
         UploadHandler.do_me_up(docket)
 
@@ -582,12 +578,12 @@ def _cron_process_PDF(obj, ppentry):
 
 
     put_result, put_msg = _dispatch_put(obj, ppentry)
-   
+
     if put_result:
         # Put success-- mark this document as available in the DB
         DocumentManager.mark_as_available(filename)
 
-        docket = DocketXML.make_docket_for_pdf("", court, casenum, docnum, 
+        docket = DocketXML.make_docket_for_pdf("", court, casenum, docnum,
                                                subdocnum, available=1)
         UploadHandler.do_me_up(docket)
 
@@ -612,7 +608,7 @@ def _cron_process_docketXML(docket, ppentry):
     if docketstring:
         # Got the existing docket-- put merged docket file.
         ia_docket, parse_msg = DocketXML.parse_xml_string(docketstring)
-        
+
         if ia_docket:
             put_result, put_msg = _cron_me_up(ia_docket, docket, ppentry)
 
@@ -621,14 +617,14 @@ def _cron_process_docketXML(docket, ppentry):
             print "  %s docket parsing error: %s" % (docketname, parse_msg)
 
     elif fetcherror is IADirect.FETCH_NO_FILE:
-        # Bucket exists but no docket-- put a new docket file.        
+        # Bucket exists but no docket-- put a new docket file.
         put_result, put_msg = put_docket(docket, court, casenum, ppentry)
 
         print "  %s put into existing bucket: %s" % (docketname, put_msg)
 
     elif fetcherror is IADirect.FETCH_NO_BUCKET:
         # Bucket doesn't exist-- make the bucket and put a new docket file.
-        put_result, put_msg = put_docket(docket, court, casenum, ppentry, 
+        put_result, put_msg = put_docket(docket, court, casenum, ppentry,
                                          newbucket=1)
 
         print "  %s put into new bucket: %s" % (docketname, put_msg)
@@ -640,7 +636,7 @@ def _cron_process_docketXML(docket, ppentry):
 #        ppentry.processing = 0
 #        ppentry.save()
         # Leave the pickle file for later
-	# Drop Lock Here?
+        # Drop Lock Here?
 
         print "  %s timed out.  wait for next cron." % (docketname)
 
@@ -650,7 +646,7 @@ def _cron_process_docketXML(docket, ppentry):
         # Unset the processing flag for later
 #        ppentry.processing = 0
 #        ppentry.save()
-	# Drop Lock Here?
+        # Drop Lock Here?
 
         # Leave the pickle file for later
         print "  %s unknown fetch error.  wait for next cron." % (docketname)
@@ -667,14 +663,14 @@ def _cron_me_up(ia_docket, docket, ppentry):
 
     # Merge ia_docket with our local database information to fill in blank fields that may exist in ia
     local_docket = DocumentManager.create_docket_from_local_documents(ia_court, ia_casenum, docket)
-    
+
     if local_docket:
         ia_docket.merge_docket(local_docket)
 
     ia_docket_after_local_merge_hash = hash(pickle.dumps(ia_docket))
 
-    if ia_docket_orig_hash != ia_docket_after_local_merge_hash: 
-	    print " Some locally stored information was missing from %s.%s. Local info added."  % (ia_court, ia_casenum)
+    if ia_docket_orig_hash != ia_docket_after_local_merge_hash:
+        print " Some locally stored information was missing from %s.%s. Local info added."  % (ia_court, ia_casenum)
 
     # Step 2: Merge new docket into the existing IA docket
     ia_docket.merge_docket(docket)
@@ -691,7 +687,7 @@ def _cron_me_up(ia_docket, docket, ppentry):
         casemeta_diff = ia_casemeta_orig_hash != ia_casemeta_merged_hash
 
         # Put the docket to IA
-        put_result, put_msg = put_docket(ia_docket, ia_court, ia_casenum, 
+        put_result, put_msg = put_docket(ia_docket, ia_court, ia_casenum,
                                          ppentry, casemeta_diff=casemeta_diff)
 
         return put_result, "merged: %s" % put_msg
@@ -723,8 +719,8 @@ def _silence_emails():
     return silence_emails
 
 def _get_number_of_running_jobs():
-	# The cron job runs as user recap info (UID 1008)
-	return int(os.popen("ps -eu harlanyu |grep python2.5| wc -l").read())
+    # The cron job runs as user recap info (UID 1008)
+    return int(os.popen("ps -eu harlanyu |grep python2.5| wc -l").read())
 
 
 def _check_for_long_running_jobs():
@@ -735,17 +731,17 @@ def _check_for_long_running_jobs():
         print " Found long running job(s) %s... but emails have been silenced, so NOT sending email" % long_running_jobs.strip()
         return
     elif long_running_jobs:
-		print " Found long running job(s) %s...sending email" % long_running_jobs.strip()
+        print " Found long running job(s) %s...sending email" % long_running_jobs.strip()
 
-		emailmessagecmd = ['/usr/bin/sendEmail', '-f "recaplogger@gmail.com"',
-				   '-t dhruv@dkapadia.com sjs@princeton.edu tblee@princeton.edu harlanyu@princeton.edu',
-				   '-u "[Automated] Runaway RECAP cron job?"', 
-				   '-s smtp.gmail.com:587 -xu recaplogger@gmail.com -xp REMOVED', 
-				   '-m "There is probably a runaway cron job on monocle. See the following ps output:', 
-				   long_running_jobs.strip(), 
+        emailmessagecmd = ['/usr/bin/sendEmail', '-f "recaplogger@gmail.com"',
+                           '-t dhruv@dkapadia.com sjs@princeton.edu tblee@princeton.edu harlanyu@princeton.edu',
+                           '-u "[Automated] Runaway RECAP cron job?"',
+                           '-s smtp.gmail.com:587 -xu recaplogger@gmail.com -xp REMOVED',
+                           '-m "There is probably a runaway cron job on monocle. See the following ps output:',
+                           long_running_jobs.strip(),
                    '\n\nIf you want to silence these emails for 6 hours: log onto monocle, su to harlanyu and touch /var/django/recap_prod/recap-server/silence_warning_emails"']
 
-		os.popen(" ".join(emailmessagecmd))
+        os.popen(" ".join(emailmessagecmd))
 
 
 
@@ -762,7 +758,7 @@ def enter_pdb(sig, frame):
 def print_stacktrace(sig, frame):
     f = open("/var/django/recap_prod/recap-server/crash.log", "a")
     f.write(str(traceback.extract_stack()))
-    
+
     f.write("\n")
     f.flush()
     f.close()
@@ -774,7 +770,7 @@ def listen_for_interrupts():
 
 if __name__ == '__main__':
     os.umask(0012) # necessary to get let pickles and www-data play nicely
-    
+
     listen_for_interrupts()
 
     # Print timestamp

@@ -15,32 +15,32 @@ else:
     BASE_ERROR_JAR = ROOT_PATH + "/errorjar"
 
 def coerce_docid(docid):
-    """ Some PACERs use the fourth digit of the docid to flag whether 
+    """ Some PACERs use the fourth digit of the docid to flag whether
         the user has been shown a receipt page. We don't care about that,
-        so we coerce the fourth digit to be 0 before inserting it into 
+        so we coerce the fourth digit to be 0 before inserting it into
         the database.
     """
     return docid[:3]+"0"+docid[4:]
 
 def parse_dktrpt(filebits, court, casenum):
-   
+
     docket = DocketXML.DocketXML(court, casenum)
 
     try:
         the_soup = BeautifulSoup(filebits, convertEntities="html")
     except TypeError:
-        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType' 
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
         #  when unicode coercion fails.
         message = "DktRpt BeautifulSoup error %s.%s" % \
             (court, casenum)
         logging.warning(message)
-        
+
         filename = "%s.%s.dktrpt" % (court, casenum)
         try:
             error_to_file(filebits, filename)
         except NameError:
             pass
-        
+
         return None
 
     except HTMLParseError:
@@ -50,12 +50,12 @@ def parse_dktrpt(filebits, court, casenum):
         badre = re.compile("<A HREF=\/cgi-bin\/.*\.pl[^>]*</A>")
         filebits = badre.sub('', filebits)
 
-        filebits = filebits.replace("&#037; 20", 
+        filebits = filebits.replace("&#037; 20",
                                     "&#037;20")
-        filebits = filebits.replace(" name=send_to_file<HR><CENTER>", 
+        filebits = filebits.replace(" name=send_to_file<HR><CENTER>",
                                     " name=send_to_file><HR><CENTER>")
-        
-	filebits = filebits.replace("</font color=red>", 
+
+        filebits = filebits.replace("</font color=red>",
                                     "</font>")
         try:
             the_soup = BeautifulSoup(filebits, convertEntities="html")
@@ -64,7 +64,7 @@ def parse_dktrpt(filebits, court, casenum):
             message = "DktRpt parse error. %s.%s %s line: %s char: %s." % \
                 (court, casenum, err.msg, err.lineno, err.offset)
             logging.warning(message)
-        
+
             filename = "%s.%s.dktrpt" % (court, casenum)
             try:
                 error_to_file(filebits, filename)
@@ -81,7 +81,7 @@ def parse_dktrpt(filebits, court, casenum):
 
         try:
             # Update the docket object with doc metadata
-            docket.add_document(docmeta["doc_num"], 
+            docket.add_document(docmeta["doc_num"],
                                 docmeta["attachment_num"],
                                 docmeta)
 
@@ -103,9 +103,9 @@ def parse_dktrpt(filebits, court, casenum):
     parties = _get_parties_info_from_dkrpt(the_soup, court)
 
     if parties:
-	docket.update_parties(parties)
+        docket.update_parties(parties)
 #    else:
-#	logging.debug("Could not find parties in docket!")
+#       logging.debug("Could not find parties in docket!")
 
 
     return docket
@@ -119,18 +119,18 @@ def parse_histdocqry(filebits, court, casenum):
         docket_soup = BeautifulSoup(filebits, convertEntities="html")
 
     except TypeError:
-        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType' 
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
         #  when unicode coercion fails.
         message = "HistDocQry BeautifulSoup error %s.%s" % \
             (court, casenum)
         logging.warning(message)
-        
+
         filename = "%s.%s.histdocqry" % (court, casenum)
         try:
             error_to_file(filebits, filename)
         except NameError:
             pass
-        
+
         return None
 
     except HTMLParseError, err:
@@ -153,7 +153,7 @@ def parse_histdocqry(filebits, court, casenum):
 
         try:
             # Update the docket object with doc metadata
-            docket.add_document(docmeta["doc_num"], 
+            docket.add_document(docmeta["doc_num"],
                                 docmeta["attachment_num"],
                                 docmeta)
         except KeyError:
@@ -165,7 +165,7 @@ def parse_histdocqry(filebits, court, casenum):
         doctable.extract()
     except AttributeError:
         pass
-    
+
     case_data = _get_case_metadata_from_histdocqry(docket_soup, court)
 
     # Update the docket object with the parsed case meta
@@ -175,7 +175,7 @@ def parse_histdocqry(filebits, court, casenum):
 
 
 def parse_doc1(filebits, court, casenum, main_docnum):
-    
+
     docket = DocketXML.DocketXML(court, casenum)
 
 
@@ -183,23 +183,23 @@ def parse_doc1(filebits, court, casenum, main_docnum):
         index_soup = BeautifulSoup(filebits, convertEntities="html")
 
     except TypeError:
-        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType' 
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
         #  when unicode coercion fails.
         message = "doc1 BeautifulSoup error %s.%s.%s" % \
             (court, casenum, main_docnum)
         logging.warning(message)
-        
+
         filename = "%s.%s.%s.doc1" % (court, casenum, main_docnum)
         try:
             error_to_file(filebits, filename)
         except NameError:
             pass
-        
+
         return None
 
     except HTMLParseError:
         # Adjust for malformed HTML.  Wow, PACER.
-        filebits = filebits.replace("FORM method=POST ACTION=\\", 
+        filebits = filebits.replace("FORM method=POST ACTION=\\",
                                     "FORM method=POST ACTION=")
         try:
             index_soup = BeautifulSoup(filebits, convertEntities="html")
@@ -229,15 +229,15 @@ def parse_doc1(filebits, court, casenum, main_docnum):
             continue
 
         docmatch = docre.match(uri)
-        
+
         if docmatch:
-            
+
             try:
                 subdocnum = int(link.contents[0].strip())
             except (KeyError, ValueError):
                 # No link text or not an integer
                 continue
-            
+
             court = docmatch.group(1)
             directory = docmatch.group(2)
             docid = coerce_docid(docmatch.group(3))
@@ -281,7 +281,7 @@ def parse_doc1(filebits, court, casenum, main_docnum):
                                     {"pacer_doc_id": docid,
                                      "short_desc": short_desc})
 
-    # Try to get officialcasenum from Pacer Service Center Receipt 
+    # Try to get officialcasenum from Pacer Service Center Receipt
     case_data = _get_case_metadata_from_pacer_receipt_table(index_soup, court)
 
     # Update the docket object with the parsed case meta
@@ -319,7 +319,7 @@ def _parse_opinion_report_table(the_soup, court):
 
     if opinion_table == None:
         return dockets
-    
+
     rows = opinion_table.findAll('tr')
     headers = [cell.string for cell in rows[0].findAll('th')]
 
@@ -340,14 +340,13 @@ def _parse_opinion_report_table(the_soup, court):
         #I've only observed 'Cause and NOS' so far
         #Caseflags and Office are two other often included keys
         notes_metadict= { "assigned_to" : r"Assigned to: *(.*)$",
-    		              "referred_to" : r"Referred to: *(.*)$",
-		                  "case_cause" : r"Cause: *(.*)$",	
-		                  "nature_of_suit" : r"NOS: *(.*)$", 
-		                  "jury_demand": r"Jury Demand: *(.*)$",
-		                  "jurisdiction": r"Jurisdiction: *(.*)$",
-		                  "demand": r"^Demand: *(.*)$"
-		       
-        } 
+                          "referred_to" : r"Referred to: *(.*)$",
+                          "case_cause" : r"Cause: *(.*)$",
+                          "nature_of_suit" : r"NOS: *(.*)$",
+                          "jury_demand": r"Jury Demand: *(.*)$",
+                          "jurisdiction": r"Jurisdiction: *(.*)$",
+                          "demand": r"^Demand: *(.*)$"
+        }
 
         for index, cell in enumerate(cells):
             key = headers[index]
@@ -363,7 +362,7 @@ def _parse_opinion_report_table(the_soup, court):
                 case_data['docket_num'] = cell.a.string.strip()
             elif key == 'Doc. #':
                 document["doc_num"] = cell.a.string.strip()
-                document["attachment_num"] = '0' # assume all docs are primary 
+                document["attachment_num"] = '0' # assume all docs are primary
 
                 linkstring = cell.a['href']
                 args = re.split(r'&', linkstring)
@@ -375,7 +374,7 @@ def _parse_opinion_report_table(the_soup, court):
                         document['pacer_dm_id'] = v
                     # this value may differ from the docket casenum, this is okay
                     if re.match(r'^.*caseid$', k):
-                        document['casenum'] = v 
+                        document['casenum'] = v
             elif key == 'Date Filed:':
                 datestr = cell.string
                 try:
@@ -406,7 +405,7 @@ def _parse_opinion_report_table(the_soup, court):
         for key in required_dockeys:
             if document.get(key) == None:
                 raise "Could not find required key %s for document: %s" (key, str(document))
-            
+
         docket = DocketXML.DocketXML(court, casenum, case_data)
         docket.add_document(document["doc_num"], document["attachment_num"], document)
 
@@ -419,18 +418,18 @@ def _open_soup(filebits, court, casenum="unknown", called_from=""):
     try:
         the_soup = BeautifulSoup(filebits, convertEntities="html")
     except TypeError:
-        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType' 
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
         #  when unicode coercion fails.
         message = "%s BeautifulSoup error %s.%s" % \
             (called_from, court, casenum)
         logging.warning(message)
-        
+
         filename = "%s.%s.%s" % (court, casenum, called_from)
         try:
             error_to_file(filebits, filename)
         except NameError:
             pass
-        
+
         return None
 
     except HTMLParseError:
@@ -440,11 +439,11 @@ def _open_soup(filebits, court, casenum="unknown", called_from=""):
         badre = re.compile("<A HREF=\/cgi-bin\/.*\.pl[^>]*</A>")
         filebits = badre.sub('', filebits)
 
-        filebits = filebits.replace("&#037; 20", 
+        filebits = filebits.replace("&#037; 20",
                                     "&#037;20")
-        filebits = filebits.replace(" name=send_to_file<HR><CENTER>", 
+        filebits = filebits.replace(" name=send_to_file<HR><CENTER>",
                                     " name=send_to_file><HR><CENTER>")
-        filebits = filebits.replace("</font color=red>", 
+        filebits = filebits.replace("</font color=red>",
                                     "</font>")
         try:
             the_soup = BeautifulSoup(filebits, convertEntities="html")
@@ -453,7 +452,7 @@ def _open_soup(filebits, court, casenum="unknown", called_from=""):
             message = "%s parse error. %s.%s %s line: %s char: %s." % \
                 (called_from, court, casenum, err.msg, err.lineno, err.offset)
             logging.warning(message)
-        
+
             filename = "%s.%s.%s" % (court, casenum, called_from)
             try:
                 error_to_file(filebits, filename)
@@ -464,13 +463,13 @@ def _open_soup(filebits, court, casenum="unknown", called_from=""):
     return the_soup
 
 
-    
+
 def _get_case_metadata_from_pacer_receipt_table(the_soup, court):
     # The only real metadata available is the docket_num (officialcasenum)
     case_data = {}
-    
+
     court_bankruptcy_re = re.compile("b-|b$")
-    
+
     if court_bankruptcy_re.search(court):
         # we're dealing with a bankruptcy court
         case_code_re = re.compile(r"#: (\d\d-\d*)")
@@ -480,12 +479,12 @@ def _get_case_metadata_from_pacer_receipt_table(the_soup, court):
     case_codes = the_soup.findAll(text = case_code_re)
     if len(case_codes) == 0:
         return {}
-    
+
     ocn_match = case_code_re.search(case_codes[0])
 
     if ocn_match:
         case_data["docket_num"] = ocn_match.group(1)
- 
+
     return case_data
 
 
@@ -494,10 +493,10 @@ def _get_case_metadata_from_pacer_receipt_table(the_soup, court):
 # returns a list of dicts where each dict represents one row in the table.
 # Within those dicts, the items labeled "number," "date," and "text" provide
 # the contents of the corresponding cells.
- 
+
 def _parse_dktrpt_document_table(the_soup, court):
 
-    headers = {"#": "number", "Date Filed": "date", "Filing Date": "date", 
+    headers = {"#": "number", "Date Filed": "date", "Filing Date": "date",
                "Docket Text":"text"}
 
     tables = the_soup.findAll('table')
@@ -531,7 +530,7 @@ def _parse_dktrpt_document_table(the_soup, court):
 
         if "number" in columns:
             cell_list = []
- 
+
             for row in table("tr")[1:]:
                 row_values = {}
                 cells = row(["td","th"])
@@ -597,12 +596,12 @@ def _parse_histdocqry_document_table(the_soup, court):
             except ValueError:
                 # Link text is not an int.
                 continue
-                    
+
             docmeta["doc_num"] = unicode(docnum)
             docmeta["attachment_num"] = 0    # Primary document
 
             if docmatchv3:
-                
+
                 court = docmatchv3.group(1)        # TK: Unused
                 directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
@@ -637,7 +636,7 @@ def _parse_histdocqry_document_table(the_soup, court):
             else:
                 docmeta["doc_num"] = unicode(docnum)
                 docmeta["attachment_num"] = 0
-            
+
 
         # Get Filed and Entered dates
         daterows = columns[1].table.findAll("tr")
@@ -648,7 +647,7 @@ def _parse_histdocqry_document_table(the_soup, court):
             datestr = datetime.date(int(year),
                                     int(month),
                                     int(day)).isoformat()
-                                    
+
             if daterow.find(text=re.compile("^Filed:")):
                 docmeta["date_filed"] = datestr
             elif daterow.find(text=re.compile("^Entered:")):
@@ -656,7 +655,7 @@ def _parse_histdocqry_document_table(the_soup, court):
             elif daterow.find(text=re.compile("^Filed.*Entered:")):
                 docmeta["date_filed"] = datestr
                 docmeta["date_entered"] = datestr
-                
+
         # Get short description
         short_desc_col = columns[2]
 
@@ -682,7 +681,7 @@ def _parse_histdocqry_document_table(the_soup, court):
 
         # Get long description, if available
         long_desc_row = row.findNextSibling("tr")
-               
+
         if long_desc_row:
             if long_desc_row.find(text=re.compile("Docket Text")):
                 long_desc_seq = \
@@ -697,32 +696,32 @@ def _parse_histdocqry_document_table(the_soup, court):
 def _get_case_metadata_from_dktrpt(the_soup, court):
 
     case_data = {}
-    
+
     court_bankruptcy_re = re.compile("b-|b$")
-    
+
     if court_bankruptcy_re.search(court):
 
         # we're dealing with a bankruptcy court
-    
+
         case_code_re = re.compile(r"((\d{1,2}:)?\d\d-[a-zA-Z]{1,4}-\d{1,10})")
 
         case_codes = the_soup.findAll(text = case_code_re)
         if len(case_codes) == 0:
-	    #Some bankruptcy court cases look different
-	    case_code_re = re.compile(r"#: ((\d-)?\d\d-\d*)")
+            #Some bankruptcy court cases look different
+            case_code_re = re.compile(r"#: ((\d-)?\d\d-\d*)")
             case_codes = the_soup.findAll(text = case_code_re)
 
-	    if len(case_codes) == 0:
-	        return {}
-    
+            if len(case_codes) == 0:
+                return {}
+
         ocn_match = case_code_re.search(case_codes[0])
 
         if ocn_match:
             case_data["docket_num"] = ocn_match.group(1)
-       
+
         # The case name is found after <I><B>Debtor</B></I><BR>
         s = the_soup.find(text=re.compile(r"^\s*Debtor(\s*In Possession)?\s*$"))
-        
+
         try:
             s = s.parent.parent.nextSibling.nextSibling
         except AttributeError:
@@ -738,33 +737,33 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
             else:
                 case_data["case_name"] = "Unknown Bankruptcy Case Title"
         else:
-	    # This is probably a sub docket to a larger case
-	    lead_bk = the_soup.find(text=re.compile(r"Lead BK Title:"))
+            # This is probably a sub docket to a larger case
+            lead_bk = the_soup.find(text=re.compile(r"Lead BK Title:"))
 
-	    if lead_bk:
-	        lead_bk_text = lead_bk.next.string.strip()
-	        if the_soup.find(text=re.compile(r'Adversary Proceeding')):
-	           suffix_text = "- Adversary Proceeding"
-	        else:
-    	           suffix_text = "- Unknown Proceeding"
+            if lead_bk:
+                lead_bk_text = lead_bk.next.string.strip()
+                if the_soup.find(text=re.compile(r'Adversary Proceeding')):
+                    suffix_text = "- Adversary Proceeding"
+                else:
+                    suffix_text = "- Unknown Proceeding"
 
-	        case_data["case_name"] = lead_bk_text + suffix_text
+                case_data["case_name"] = lead_bk_text + suffix_text
             else:
-	        if the_soup.find(text=re.compile(r'Adversary Proceeding')):
-	           case_data["case_name"] = "Adversary Proceeding - Docket #" + case_data["docket_num"]
-	        else:
+                if the_soup.find(text=re.compile(r'Adversary Proceeding')):
+                    case_data["case_name"] = "Adversary Proceeding - Docket #" + case_data["docket_num"]
+                else:
                    case_data["case_name"] = "Unknown Bankruptcy Case Title"
 
     else:
         # we're dealing with a district court
-        
+
         case_code_re = re.compile(r"((\d{1,2}:)?\d\d-[a-zA-Z]{1,4}-\d{1,10})")
 
         case_codes = the_soup.findAll(text = case_code_re)
 
         if len(case_codes) == 0:
             return {}
-   
+
         ocn_match = case_code_re.search(case_codes[0])
 
         if ocn_match:
@@ -782,7 +781,7 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
 
         if case_names:
             casename_match = case_name_re.search(case_names[0])
-        
+
             try:
                 case_data["case_name"] = casename_match.group(2).strip()
             except AttributeError:
@@ -790,9 +789,9 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
 
         elif inre_names:
             # Try a "In re:" name
-            
+
             inre_match = inre_name_re.search(inre_names[0])
-        
+
             try:
                 case_data["case_name"] = inre_match.group(2).strip()
             except AttributeError:
@@ -818,14 +817,14 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
             d2 = s.parent.parent.nextSibling
             if d2:
                 date_match = date_re.search(unicode(d2.string))
-	
-	if not date_match:
-	    # Some cases are weird
-	    d3 = s.next
-	    if d3:
-	       date_match = date_re.search(unicode(d3))
 
-    
+        if not date_match:
+            # Some cases are weird
+            d3 = s.next
+            if d3:
+               date_match = date_re.search(unicode(d3))
+
+
         if date_match:
             month = int(date_match.group(1))
             day = int(date_match.group(2))
@@ -836,22 +835,22 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
             except ValueError:
                 # passed in bad value for datetime, ignore.
                 pass
-	else:
-	    # Sometimes pacer uses two digit years
-	    two_digit_date_re = re.compile(r"(\d\d\/\d\d\/\d\d)")
-	    
-	    if d:
-	        date_match = two_digit_date_re.search(unicode(d.string))
+        else:
+            # Sometimes pacer uses two digit years
+            two_digit_date_re = re.compile(r"(\d\d\/\d\d\/\d\d)")
+
+            if d:
+                date_match = two_digit_date_re.search(unicode(d.string))
             if (not date_match) and d2:
-	        date_match = two_digit_date_re.search(unicode(d2.string))
-	
-	    if date_match:
-	        try:
-                   case_data["date_case_filed"] = \
-		       datetime.datetime.strptime(date_match.group(1), "%m/%d/%y").date().isoformat()
-		except ValueError:
-			# give up
-		   pass
+                date_match = two_digit_date_re.search(unicode(d2.string))
+
+            if date_match:
+                try:
+                    case_data["date_case_filed"] = \
+                       datetime.datetime.strptime(date_match.group(1), "%m/%d/%y").date().isoformat()
+                except ValueError:
+                    # give up
+                    pass
 
     s = the_soup.find(text=re.compile(r"Date [Tt]erminated:"))
 
@@ -870,7 +869,7 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
             d = s.parent.parent.nextSibling
             if d:
                 date_match = date_re.search(unicode(d.string))
-                
+
         if date_match:
             month = int(date_match.group(1))
             day = int(date_match.group(2))
@@ -883,21 +882,20 @@ def _get_case_metadata_from_dktrpt(the_soup, court):
                 pass
 
     simplemetadict = { "assigned_to" : r"Assigned to: *(.*)$",
-    		       "referred_to" : r"Referred to: *(.*)$",
-		       "case_cause" : r"Cause: *(.*)$",	
-		       "nature_of_suit" : r"Nature of Suit: *(.*)$", 
-		       "jury_demand": r"Jury Demand: *(.*)$",
-		       "jurisdiction": r"Jurisdiction: *(.*)$",
-		       "demand": r"^Demand: *(.*)$"
-		       
-		     } 
+                       "referred_to" : r"Referred to: *(.*)$",
+                       "case_cause" : r"Cause: *(.*)$",
+                       "nature_of_suit" : r"Nature of Suit: *(.*)$",
+                       "jury_demand": r"Jury Demand: *(.*)$",
+                       "jurisdiction": r"Jurisdiction: *(.*)$",
+                       "demand": r"^Demand: *(.*)$"
+                     }
 
     for k,v in simplemetadict.items():
-	metadata_entry = _get_simple_metadata_following_regex(the_soup, v)
-	if metadata_entry:
-	    case_data[k] = metadata_entry
-#	    logging.debug("%s: %s" % (k, case_data[k]))
-#	else:
+        metadata_entry = _get_simple_metadata_following_regex(the_soup, v)
+        if metadata_entry:
+            case_data[k] = metadata_entry
+#           logging.debug("%s: %s" % (k, case_data[k]))
+#       else:
 #            logging.debug("Couldn't find %s in %s" % (k, court))
 
 
@@ -915,7 +913,7 @@ def _get_parties_info_from_dkrpt(the_soup, court):
     # Compiling some regexes that we'll use a few times below
     dash_separator = re.compile(r"^-----*$")
     represented_by = re.compile(r"^represented\sby\s*", re.UNICODE)
-    
+
     # We use this search to find at least one valid entry from the parties table
     party_set= the_soup.findAll(text = re.compile(r"Defendant|Plaintiff|Petitioner|Respondent|Debtor|Trustee|Mediator|Creditor Committee|Intervenor|Claimant"))
 
@@ -923,200 +921,200 @@ def _get_parties_info_from_dkrpt(the_soup, court):
     for entry in party_set:
        if is_bankruptcy:
            valid_party = (entry.parent.name == u"b" and entry.parent.parent.name == u"i")
-	   is_adversary = False
+           is_adversary = False
 
            if not valid_party:
                # Adversary Proceedings have different party format
-	       valid_party = (entry.parent.name == u"b" and dash_separator.match(entry.next.next))
-	       is_adversary = valid_party
-       else: 
-	   valid_party = (entry.parent.name == u"u" and entry.parent.parent.name == u"b")
-	   is_adversary = False
+               valid_party = (entry.parent.name == u"b" and dash_separator.match(entry.next.next))
+               is_adversary = valid_party
+       else:
+           valid_party = (entry.parent.name == u"u" and entry.parent.parent.name == u"b")
+           is_adversary = False
 
        if valid_party:
            parties_rows = entry.findParent('table').findAll('tr')
-	   break
-   
-    
+           break
+
+
     if parties_rows:
-	
+
         for row in parties_rows:
             party_cols = row.findAll('td')
 
-	    if len(party_cols) == 0:
-		    continue
-	    
-	    if len(party_cols) == 1:
-	       # Sometimes, PACER has a row with one empty td element
-	       if not row.find(text=True):
-		    continue
+            if len(party_cols) == 0:
+                continue
 
-	    # Rows that contain only "V." don't give us any information, skip to next row
+            if len(party_cols) == 1:
+                # Sometimes, PACER has a row with one empty td element
+                if not row.find(text=True):
+                    continue
+
+            # Rows that contain only "V." don't give us any information, skip to next row
             if ("".join(row.findAll(text=True)).strip() == "V."):
-		   continue
+                continue
 
             if is_adversary:
-	       new_party_type_row = row.find(text=dash_separator)
-	    
-	       if new_party_type_row:
-	            new_party_row = False
-	       else:
-		   if len(party_cols) == 1:
-		       new_party_row = True
-		   else:
-		       # We can identify a new party by the text 'represented by', which appears in the second column
-		       if party_cols[1]:
-		          new_party_row = party_cols[1].find(text=represented_by)
+                new_party_type_row = row.find(text=dash_separator)
 
-	    else: 
-	       # This is either a district or normal bankruptcy
-	       if is_bankruptcy:
-	          new_party_row = True
-	          new_party_type_row = True
-	       else:
-		  if not row.b:
-			 # Some california cases put non party information in the same html table element
-			 # We can ignore the row if it has no bold text, which would normally signify
-			 # the party's name, or the party type
-		      continue
+                if new_party_type_row:
+                    new_party_row = False
+                else:
+                    if len(party_cols) == 1:
+                        new_party_row = True
+                    else:
+                        # We can identify a new party by the text 'represented by', which appears in the second column
+                        if party_cols[1]:
+                            new_party_row = party_cols[1].find(text=represented_by)
 
-	          if len(party_cols) == 1:
-		     try:
-	                 new_party_type_row = row.b.u
-			 new_party_row = False
-		     except AttributeError:
-			     pass
+            else:
+                # This is either a district or normal bankruptcy
+                if is_bankruptcy:
+                    new_party_row = True
+                    new_party_type_row = True
+                else:
+                    if not row.b:
+                        # Some california cases put non party information in the same html table element
+                        # We can ignore the row if it has no bold text, which would normally signify
+                        # the party's name, or the party type
+                        continue
 
-		     if not new_party_type_row:
-			     new_party_type_row = False
-			     new_party_row = True
+                    if len(party_cols) == 1:
+                        try:
+                            new_party_type_row = row.b.u
+                            new_party_row = False
+                        except AttributeError:
+                            pass
 
-	          elif len(party_cols) == 3:
-		       new_party_row = party_cols[1].find(text=represented_by)
-		       new_party_type_row = False
+                        if not new_party_type_row:
+                            new_party_type_row = False
+                            new_party_row = True
+
+                    elif len(party_cols) == 3:
+                        new_party_row = party_cols[1].find(text=represented_by)
+                        new_party_type_row = False
 
             if new_party_row:
-	       party = {}
-               party["attorneys"] = []
+                party = {}
+                party["attorneys"] = []
 
-	    if len(party_cols) == 3:
-	        if is_bankruptcy and not is_adversary:
-		    typeTag = party_cols[0].b
-		    try:
-		        type_string = typeTag.string.strip()
-		    except AttributeError: # some adversay cases are more similar to normal bank
-			typeTag = typeTag.findNext('b')
-			type_string = typeTag.contents[0]
-
-
-		    party["type"]= type_string
-		    nameTag = typeTag.findNext('b')
-
-		    if nameTag.string:
-			    party["name"] = nameTag.string.strip()
-		    elif nameTag.findAll(text=True):
-			    party["name"] = "".join(nameTag.findAll(text=True)).strip()
-		    
-		    party["extra_info"] = "".join(party_cols[0].findAll(text=True)[3:]).strip()
-		else:
-	          # Adversary Proceeding or district court
-	          if new_party_row:
-                    party["type"] = party_type
-	            party["name"] = unicode(party_cols[0].b.contents[0])
-		    party["extra_info"] = "".join(party_cols[0].findAll(text=True)[2:]).strip()
-
-#		print "Party: %s - %s :: %s" % (party["type"], party["name"], party["extra_info"])
-#		logging.debug( "Party: %s - %s :: %s" % (party["type"], party["name"], party["extra_info"]))
-	                 
-
-		# Attorney info - stripping all HTML tags
-
-		if is_bankruptcy:
-		  att_info = party_cols[2].font
-		else:
-		  att_info = party_cols[2]
+            if len(party_cols) == 3:
+                if is_bankruptcy and not is_adversary:
+                    typeTag = party_cols[0].b
+                    try:
+                        type_string = typeTag.string.strip()
+                    except AttributeError: # some adversay cases are more similar to normal bank
+                        typeTag = typeTag.findNext('b')
+                        type_string = typeTag.contents[0]
 
 
-		if new_party_row:
-                   att_list = []
+                    party["type"]= type_string
+                    nameTag = typeTag.findNext('b')
+
+                    if nameTag.string:
+                        party["name"] = nameTag.string.strip()
+                    elif nameTag.findAll(text=True):
+                        party["name"] = "".join(nameTag.findAll(text=True)).strip()
+
+                    party["extra_info"] = "".join(party_cols[0].findAll(text=True)[3:]).strip()
+                else:
+                    # Adversary Proceeding or district court
+                    if new_party_row:
+                        party["type"] = party_type
+                        party["name"] = unicode(party_cols[0].b.contents[0])
+                        party["extra_info"] = "".join(party_cols[0].findAll(text=True)[2:]).strip()
+
+#               print "Party: %s - %s :: %s" % (party["type"], party["name"], party["extra_info"])
+#               logging.debug( "Party: %s - %s :: %s" % (party["type"], party["name"], party["extra_info"]))
+
+
+                # Attorney info - stripping all HTML tags
+
+                if is_bankruptcy:
+                    att_info = party_cols[2].font
+                else:
+                    att_info = party_cols[2]
+
+
+                if new_party_row:
+                    att_list = []
 
                 attdict = {}
 
-		remove_spaces_re = re.compile(r"  +")
+                remove_spaces_re = re.compile(r"  +")
                 for node in att_info:
 
-	          if(isinstance(node, Tag)):
+                    if(isinstance(node, Tag)):
 
-	              # Save old lawyer to list, get new lawyer name
-		      if node.name == 'b':
-		         if attdict:
-		           att_list.append(attdict)
-			   #print "%s blah: " % attdict['attorney_name']
+                        # Save old lawyer to list, get new lawyer name
+                        if node.name == 'b':
+                            if attdict:
+                                att_list.append(attdict)
+                                #print "%s blah: " % attdict['attorney_name']
 
-			 attdict = {}
-			 if node.string: 
-			   attdict['attorney_name'] = node.string.strip()
-			 # Remove extra spaces in between names
-               		   attdict["attorney_name"] = remove_spaces_re.sub(r" ", attdict["attorney_name"])
+                            attdict = {}
+                            if node.string:
+                                attdict['attorney_name'] = node.string.strip()
+                                # Remove extra spaces in between names
+                                attdict["attorney_name"] = remove_spaces_re.sub(r" ", attdict["attorney_name"])
 
-		      # Optional role information
-		      elif node.name == 'i':
+                      # Optional role information
+                        elif node.name == 'i':
 
-			 # Sometimes attorney roles are italic AND bold
-			 if not node.string:
-			    if node.find('b'):
-			       node = node.find('b')
-			 try:
-			   attdict['attorney_role'] += "\n" + node.string.strip() 
-			 except KeyError:
-		           if node.string and node.string.strip():
-			     attdict['attorney_role'] = node.string.strip()
+                            # Sometimes attorney roles are italic AND bold
+                            if not node.string:
+                                if node.find('b'):
+                                    node = node.find('b')
+                            try:
+                                attdict['attorney_role'] += "\n" + node.string.strip()
+                            except KeyError:
+                                if node.string and node.string.strip():
+                                    attdict['attorney_role'] = node.string.strip()
 
-	          elif(isinstance(node, NavigableString)):
-		      if node.string and node.string.strip():
-		          try: 
-		            attdict['contact'] += "\n" + node.string.strip()
-		            attdict['contact'] = remove_spaces_re.sub(r" ", attdict["contact"])
-		          except KeyError:
-		            attdict['contact'] = node.string.strip()
+                    elif(isinstance(node, NavigableString)):
+                        if node.string and node.string.strip():
+                            try:
+                                attdict['contact'] += "\n" + node.string.strip()
+                                attdict['contact'] = remove_spaces_re.sub(r" ", attdict["contact"])
+                            except KeyError:
+                                attdict['contact'] = node.string.strip()
 
-		try: 
+                try:
                     # Append final lawyer
                     if attdict:
-                      att_list.append(attdict)
+                        att_list.append(attdict)
 
-		    party["attorneys"] = att_list
-		except NameError:
-			pass
+                    party["attorneys"] = att_list
+                except NameError:
+                    pass
 
-	    elif len(party_cols) == 1:
+            elif len(party_cols) == 1:
 
-		if new_party_row:
-	           party["name"] = unicode(party_cols[0].b.contents[0])
+                if new_party_row:
+                    party["name"] = unicode(party_cols[0].b.contents[0])
 
-		   try: # When parties are terminated, they sometimes have no type. See txed test case
-                       party["type"] = party_type
-		   except NameError:
-                       party["type"] = ""
+                    try: # When parties are terminated, they sometimes have no type. See txed test case
+                        party["type"] = party_type
+                    except NameError:
+                        party["type"] = ""
 
-	           party["extra_info"] = "".join(party_cols[0].findAll(text=True)[2:]).strip()
-	        else:
-                   party_type = row.b.find(text=True).strip()
+                    party["extra_info"] = "".join(party_cols[0].findAll(text=True)[2:]).strip()
+                else:
+                    party_type = row.b.find(text=True).strip()
 
-	    else: 
-	        #logging.debug(" Unexpected number of party columns: %s when %s" % (len(party_cols), party_cols.string))
-		continue
-	    
+            else:
+                #logging.debug(" Unexpected number of party columns: %s when %s" % (len(party_cols), party_cols.string))
+                continue
+
             try:
-	       # Clean up blank entries
-	       for k, v in party.items():
-	          if not v: 
-		     del party[k]
+                # Clean up blank entries
+                for k, v in party.items():
+                    if not v:
+                        del party[k]
 
-	       if new_party_row:
-	          parties.append(party)
-	    except NameError:
-		    pass
+                if new_party_row:
+                    parties.append(party)
+            except NameError:
+                pass
 
     return parties
 
@@ -1126,20 +1124,20 @@ def _get_simple_metadata_following_regex(soup, regex_string):
     s = soup.find(text=metadata_re)
 
     if not s:
-	return None
+        return None
     if s:
         metadata_match = metadata_re.search(s.string)
-	metadata = metadata_match.group(1)
+        metadata = metadata_match.group(1)
 
-	if (not metadata): 
-	    metadata = s.next.string;
-	    if not metadata:
-	       return None
-	
+        if (not metadata):
+            metadata = s.next.string;
+            if not metadata:
+               return None
+
         metadata = metadata.strip()
 
-	return metadata
-    
+        return metadata
+
 
 
 # Given a string or regexp, finds the first date string in the following DOM tree.
@@ -1164,7 +1162,7 @@ def _get_date_following_label(the_soup, label):
             except ValueError:
                 # passed in bad value for datetime, ignore.
                 pass
-        
+
 
     return None
 
@@ -1173,7 +1171,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
     case_data = {}
 
     court_bankruptcy_re = re.compile("b-|b$")
-    
+
     if court_bankruptcy_re.search(court):
         # we're dealing with a bankruptcy court
 
@@ -1181,12 +1179,12 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
 
         case_codes = the_soup.findAll(text = case_code_re)
         if len(case_codes) == 0:
-	    #Some bankruptcy court cases look different
-	    case_code_re = re.compile(r"#: ((\d-)?\d\d-\d*)")
+            #Some bankruptcy court cases look different
+            case_code_re = re.compile(r"#: ((\d-)?\d\d-\d*)")
             case_codes = the_soup.findAll(text = case_code_re)
-	    if len(case_codes) == 0:
+            if len(case_codes) == 0:
                 return {}
-    
+
         ocn_match = case_code_re.search(case_codes[0])
 
         if ocn_match:
@@ -1209,38 +1207,38 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
             case_data["case_name"] = case_name
 
         d = _get_date_following_label(the_soup, r"Date [Ff]iled:");
-	if d:
+        if d:
             case_data["date_case_filed"] = d
             print "Filed", d
 
         d = _get_date_following_label(the_soup, r"Date [Tt]erminated:");
-	if d:
+        if d:
             case_data["date_case_terminated"] = d
             print "Terminated", d
 
         d = _get_date_following_label(the_soup, r"Date of last filing:");
-	if d:
+        if d:
             case_data["date_last_filing"] = d
             print "Filing", d
 
         return case_data
 
     else:
- 
+
         case_name_re = re.compile(r"((\d{1,2}:)?\d\d-[a-zA-Z]{1,4}-\d{1,10})")
 
         case_names = the_soup.findAll(text = case_name_re)
 
         if len(case_names) == 0:
             return case_data
-   
+
         ocn_match = case_name_re.search(case_names[0])
 
         if not ocn_match:
             return case_data
 
         case_data["docket_num"] = ocn_match.group(1)
-    
+
         # A case name is any string of words and white space with the
         # string " v. " in the middle of it.
 
@@ -1267,7 +1265,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
 
         if inre_names and not case_data.has_key("case_name"):
             inre_match = inre_name_re.search(inre_names[0])
-        
+
             try:
                 case_data["case_name"] = inre_match.group(0).strip()
             except AttributeError:
@@ -1286,7 +1284,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                 d = s.parent.nextSibling
                 if d:
                     date_match = date_re.search(unicode(d.string))
-    
+
             if date_match:
                 month = int(date_match.group(1))
                 day = int(date_match.group(2))
@@ -1296,7 +1294,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                         datetime.date(year,month,day).isoformat()
                 except ValueError:
                     # passed in bad value for datetime, ignore.
-                    pass                
+                    pass
 
         s = the_soup.find(text=re.compile(r"Date [Tt]erminated:"))
 
@@ -1309,7 +1307,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                 d = s.parent.nextSibling
                 if d:
                     date_match = date_re.search(unicode(d.string))
-    
+
             if date_match:
                 month = int(date_match.group(1))
                 day = int(date_match.group(2))
@@ -1319,7 +1317,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                         datetime.date(year,month,day).isoformat()
                 except ValueError:
                     # passed in bad value for datetime, ignore.
-                    pass                
+                    pass
 
         s = the_soup.find(text=re.compile(r"Date of last filing:"))
 
@@ -1332,7 +1330,7 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                 d = s.parent.nextSibling
                 if d:
                     date_match = date_re.search(unicode(d.string))
-    
+
             if date_match:
                 month = int(date_match.group(1))
                 day = int(date_match.group(2))
@@ -1342,10 +1340,10 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
                         datetime.date(year,month,day).isoformat()
                 except ValueError:
                     # passed in bad value for datetime, ignore.
-                    pass                
+                    pass
 
         return case_data
- 
+
 def _parse_dktrpt_table_row(row, casenum):
     ''' Parse URLs of the form:
             https://ecf.laed.uscourts.gov/doc1/08501407159
@@ -1412,7 +1410,7 @@ def _parse_dktrpt_table_row(row, casenum):
 
     else:
         # No link, just see if there is a docnum.
-        
+
         docnumseq = row['number'].findAll(text=re.compile(".*"))
         docnumstr = "".join(docnumseq).strip("&nbsp;").strip()
 
@@ -1424,7 +1422,7 @@ def _parse_dktrpt_table_row(row, casenum):
         else:
             docmeta["doc_num"] = unicode(docnum)
             docmeta["attachment_num"] = 0
-            
+
     date_re = re.compile(r"(\d\d)\/(\d\d)\/(\d\d\d\d)")
     try:
         date_match = date_re.search(row['date'].string)
@@ -1442,7 +1440,7 @@ def _parse_dktrpt_table_row(row, casenum):
         except (AttributeError,ValueError):
             # No date_match or bad values for month/day/year
             pass
-        
+
     try:
         docket_text = row['text']
         long_desc_seq = \
@@ -1457,12 +1455,12 @@ def _parse_dktrpt_table_row(row, casenum):
 
     # If we parsed an index first and already added an entry for this
     # document there, we don't want to supercede that entry with
-    # one that will be incorrect.        
+    # one that will be incorrect.
 
     # TK? add checks for bankruptcy-style doc
     # listing and inserts/updates with docnum, subdocnum
     # (and eventually date filed and docket text)
-        
+
     return docmeta
 
 def error_to_file(filebits, filename):

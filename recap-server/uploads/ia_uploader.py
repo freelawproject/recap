@@ -24,7 +24,7 @@ logging.basicConfig(
     filename = 'uploader.log',
     filemode = 'a'
 )
-logger = logging.getLogger('ia_uploader')    
+logger = logging.getLogger('ia_uploader')
 
 SERVER_URL_BASE = "%s%s" % (config["SERVER_HOSTNAME"], config["SERVER_BASEDIR"])
 if not SERVER_URL_BASE.endswith("/"):
@@ -55,7 +55,7 @@ def decode_message(ch, method, properties, body):
     try:
         success, msg = lock_and_handle_message(message)
     except IOError, e:
-        logger.error('IOError when processing case %s.%s, deleting message. Error message: %s' % 
+        logger.error('IOError when processing case %s.%s, deleting message. Error message: %s' %
                                 (message['court'], message['casenum'], str(e)))
         # Not really successful, but this will delete the message below
         success = True
@@ -83,7 +83,7 @@ def lock_and_handle_message(message):
         return False, "Could not acquire lock"
 
     success, msg = _handle_message(message, lock_message)
-        
+
     modified = 0 if msg == "Unmodified" else 1
 
     logger.debug('Finished processing %s.%s. Releasing lock.' %
@@ -101,26 +101,26 @@ def lock_and_handle_message(message):
 def _handle_message(message, nonce):
     # messages must contain a docket, which will give us some metadata
     docket = _unpickle_object(message['docket_filename'])
-        
+
     #TK: This seems awkward. Almost certainly a better way to do this.
-    success = True 
+    success = True
     # documents are an optional part of each message
     # if we want to handle different types of docs (audio files, for example, we'd do it here)
     if message.get('docnums_to_filename'):
         # Docket is modified inside _upload_documents if uploads succeed
-        logger.info('Uploading %s documents for %s.%s'  % 
-                         (len(message['docnums_to_filename']), 
+        logger.info('Uploading %s documents for %s.%s'  %
+                         (len(message['docnums_to_filename']),
                             docket.get_court(), docket.get_casenum()))
         success, msg = _upload_documents(docket, message['docnums_to_filename'])
 
     if success:
         success, msg = upload_docket(docket, nonce)
-        
-    return success, msg 
 
-""" Upload a map of documents. 
+    return success, msg
+
+""" Upload a map of documents.
     Params:
-    docket should be the docket to which these documents belong. 
+    docket should be the docket to which these documents belong.
         docket is modified when docs are successfully uploaded
 
     docmap should be a map of docnums-> filename:
@@ -136,12 +136,12 @@ def _upload_documents(docket, docmap):
         pdfbits = _unpickle_object(filename)
 
         # make a docket that contains some metadata (sha1, etc) for this docket
-        temp_docket = DocketXML.make_docket_for_pdf(pdfbits, court, casenum, 
+        temp_docket = DocketXML.make_docket_for_pdf(pdfbits, court, casenum,
                                            docnum, subdocnum, available=0, free_import=1)
 
         docket.merge_docket(temp_docket)
 
-        doc_success, doc_msg = upload_document(pdfbits, court, casenum, 
+        doc_success, doc_msg = upload_document(pdfbits, court, casenum,
                                                         docnum, subdocnum)
         if doc_success:
             docket.set_document_available(docnum, subdocnum, "1")
@@ -151,7 +151,7 @@ def _upload_documents(docket, docmap):
 
     return True, "All documents uploaded"
 
-        
+
 
 def _should_delay_message(message):
     if not message.get('next_attempt_time'):
@@ -159,16 +159,16 @@ def _should_delay_message(message):
     current_time = time.time()
     if message['next_attempt_time'] > current_time:
         return True
-    return False 
+    return False
 
 def _requeue_message(ch, message):
-    """ Attempt to requeue message if it has not been requeued too many times before. 
+    """ Attempt to requeue message if it has not been requeued too many times before.
         Returns True on successfully requeue, False otherwise"""
     try:
         attempt_num = message['attempt_num']
         next_attempt_time = message['next_attempt_time']
     except KeyError:
-        attempt_num = 0 
+        attempt_num = 0
         next_attempt_time = time.time()
 
     attempt_num += 1
@@ -176,14 +176,14 @@ def _requeue_message(ch, message):
     next_attempt_time += time_delta
 
     message['attempt_num'] = attempt_num
-    message['next_attempt_time'] = next_attempt_time 
+    message['next_attempt_time'] = next_attempt_time
 
     # 2^ 15 ~= 9 hours
     if(attempt_num > 15):
         logger.warning('Message for %s.%s has failed %s times. Giving up forever!' % \
                         (message['court'], message['casenum'], attempt_num))
         return False
-    
+
     logger.warning('Message for %s.%s has failed %s times. Trying again in %s seconds' % \
                         (message['court'], message['casenum'], attempt_num, time_delta))
     ch.basic_publish(exchange='',
@@ -202,56 +202,56 @@ def _cleanup_successful_message(message):
 
 def upload_docket(docket, nonce):
     """Case should be locked prior to this method"""
-    ia_docket, message = _get_docket_from_IA(docket) 
+    ia_docket, message = _get_docket_from_IA(docket)
     if ia_docket:
         docket.merge_docket(ia_docket)
 
     # Don't upload if nothing has changed
-    if docket == ia_docket: 
+    if docket == ia_docket:
         return True, 'Unmodified'
 
     docket.nonce = nonce
 
     #TK: Check that it's okay to always request a new bucket made
-    request = IACommon.make_docketxml_request(docket.to_xml(), 
-                                                  docket.get_court(), 
+    request = IACommon.make_docketxml_request(docket.to_xml(),
+                                                  docket.get_court(),
                                                   docket.get_casenum(),
-                                                  docket.casemeta, 
+                                                  docket.casemeta,
                                                   makenew=True)
-            
+
     success, msg = _post_request(request)
 
     if not success:
-        logger.error('XML Docket upload for %s.%s failed: %s', docket.get_court(), 
+        logger.error('XML Docket upload for %s.%s failed: %s', docket.get_court(),
                                                                 docket.get_casenum(),
                                                                 msg)
         return False, msg
 
-    logger.info('XML Docket upload for %s.%s succeeded', docket.get_court(), 
+    logger.info('XML Docket upload for %s.%s succeeded', docket.get_court(),
                                                           docket.get_casenum())
 
 
     # TK: Maybe handle this in a separate function that can deal with html?
     # Assuming this is sucessful, also upload an update to the html page
-    request = IACommon.make_dockethtml_request(docket.to_html(), 
-                                               docket.get_court(), 
+    request = IACommon.make_dockethtml_request(docket.to_html(),
+                                               docket.get_court(),
                                                docket.get_casenum(),
                                                docket.casemeta)
 
     success, msg = _post_request(request)
     if not success:
-        logger.error('HTML Docket upload for %s.%s failed: %s', docket.get_court(), 
+        logger.error('HTML Docket upload for %s.%s failed: %s', docket.get_court(),
                                                                  docket.get_casenum(),
                                                                  msg)
         return False, msg
 
-    logger.info('HTML Docket upload for %s.%s succeeded', docket.get_court(), 
+    logger.info('HTML Docket upload for %s.%s succeeded', docket.get_court(),
                                                           docket.get_casenum())
     return success, msg
 
 def upload_document(pdfbits, court, casenum, docnum, subdocnum):
     logger.info('   Uploading document %s.%s.%s.%s' % (court, casenum, docnum, subdocnum))
-    request = IACommon.make_pdf_request(pdfbits, court, casenum, 
+    request = IACommon.make_pdf_request(pdfbits, court, casenum,
                                         docnum, subdocnum, metadict = {},
                                         makenew=True)
     success, msg = _post_request(request)
@@ -280,9 +280,9 @@ def _post_request(request):
             return True, "Success"
         else:
             return False, "IA %d error" % response.code
-        
+
 def _lock(court, casenum):
-    argstring = urllib.urlencode({"court": court, 
+    argstring = urllib.urlencode({"court": court,
                                   "casenum": casenum,
                                   "key": RECAP_AUTH_KEY})
 
@@ -298,14 +298,14 @@ def _lock(court, casenum):
         return False, "urllib2 bug"
     except socket.timeout:
         return False, "socket timeout"
-    
+
     got_lock, nonce_or_message = _split_lock_message(response.read())
     return got_lock, nonce_or_message
 
 
 def _unlock(court, casenum, modified=1, ignore_nonce=0):
 
-    argstring = urllib.urlencode({"court": court, 
+    argstring = urllib.urlencode({"court": court,
                                   "casenum": casenum,
                                   "key": RECAP_AUTH_KEY,
                                   "modified": int(modified),
@@ -325,7 +325,7 @@ def _unlock(court, casenum, modified=1, ignore_nonce=0):
         return False, "urllib2 bug"
 
     released_lock, message = _split_lock_message(response.read())
-    
+
     return released_lock, message
 
 def _get_docket_from_IA(docket):
@@ -339,8 +339,8 @@ def _get_docket_from_IA(docket):
             return ia_docket, fetcherror
         else:
             print "  %s docket parsing error: %s" % (docketname, parse_msg)
-            return None, parse_msg 
-    return None, fetcherror 
+            return None, parse_msg
+    return None, fetcherror
 
 def _split_lock_message(html_response):
     logger.debug("Lock/Unlock message is: %s" % html_response)
@@ -360,14 +360,14 @@ def _unpickle_object(filename):
     f = open(filename)
     obj = pickle.load(f)
     f.close()
-    return obj 
+    return obj
 
 def run_uploader():
     logger.info('IA Uploader started: Listening for messages')
     listen_for_messages()
 
 def listen_for_messages():
-    channel.basic_consume(decode_message, 
+    channel.basic_consume(decode_message,
                             queue = 'dockets')
     channel.start_consuming()
 

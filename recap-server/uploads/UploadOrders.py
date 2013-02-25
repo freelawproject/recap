@@ -2,7 +2,7 @@ import sys
 import os
 import glob
 import re
-#################### DJANGO CONFIG ####################                         
+#################### DJANGO CONFIG ####################
 sys.path.extend(('../..', '..', '.'))
 
 os.environ['DJANGO_SETTINGS_MODULE'] = 'recap-server.settings'
@@ -150,7 +150,7 @@ def _upload_document(path, court, document):
         UM.print_unlock_message(UM.unlock(court, casenum, False))
         return False, "***Skipping %s.%s: unknown docket fetch error: %s..." % \
             (court, casenum, fetcherror),
-    
+
     # Step 1b: If necessary, merge the two dockets.
     if ia_docket:
         ia_docket.merge_docket(docket)
@@ -169,8 +169,8 @@ def _upload_document(path, court, document):
         return False, "  ***Could not open file %s " % doc_filename
 
     #TK: probably need to make the bucket before doing this
-    doc_docket = DocketXML.make_docket_for_pdf(pdfbits, court, 
-                                               casenum, docnum, 
+    doc_docket = DocketXML.make_docket_for_pdf(pdfbits, court,
+                                               casenum, docnum,
                                                subdocnum)
     doc_meta = doc_docket.get_document_metadict(docnum, subdocnum)
 
@@ -195,7 +195,7 @@ def _upload_document(path, court, document):
             # Add this document's metadata into the ia_docket
         ia_docket.merge_docket(doc_docket)
 
-       
+
     # Step 5: Push the docket to IA, if things have changed.
     print "  docket upload...",
 
@@ -206,7 +206,7 @@ def _upload_document(path, court, document):
     if ia_docket_orig_string != ia_docket_merged_string:
         # Assign the docket the new nonce from the lock
         ia_docket.nonce = nonce
-            
+
         ia_casemeta_merged_hash = hash(pickle.dumps(ia_docket.casemeta))
         casemeta_diff = ia_casemeta_orig_hash != ia_casemeta_merged_hash
 
@@ -218,7 +218,7 @@ def _upload_document(path, court, document):
 
 
 
-        
+
     UM.print_unlock_message(UM.unlock(court, casenum, modified = False))
     return True, "Document uploaded"
 
@@ -234,7 +234,7 @@ if __name__ == "__main__":
     #this should be the directory
     # mirrored from http://protect.theinfo.org/pacer/
     dirarg = os.path.abspath(sys.argv[1])
-    # a set will make it easy for us to subtract completed directires 
+    # a set will make it easy for us to subtract completed directires
     directories = set([d for d in os.listdir(dirarg) if os.path.isdir(os.path.join(dirarg, d))])
 
     completed_directories = set([line.strip() for line in open(os.path.join(dirarg, 'completed_directories')).readlines()])
@@ -256,12 +256,12 @@ if __name__ == "__main__":
         #read in completed documents, remove from documents hash
         #completed_documents = set([line.strip() for line in open(os.path.join(current_path, 'completed_documents')).readlines()])
         #for docid in completed_documents:
-        #    del 
+        #    del
 
-        upload_documents(current_path, court, documents) 
+        upload_documents(current_path, court, documents)
 
 
-        
+
         #loop over entries in documetns hash, :
 
         pdb.set_trace()
@@ -274,10 +274,6 @@ if __name__ == "__main__":
 
         break
 
-        
-        
-        
-        
 
 
 
@@ -285,7 +281,11 @@ if __name__ == "__main__":
 
 
 
-        
+
+
+
+
+
 
     #directories_completed = open(somefile).read
 

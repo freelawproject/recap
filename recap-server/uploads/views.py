@@ -25,7 +25,7 @@ def upload(request):
         message = "upload: Not a POST request."
         logging.error(message)
         return HttpResponse(message)
-                
+
     try:
         if not request.FILES:
             message = "upload: No request.FILES attribute."
@@ -44,14 +44,14 @@ def upload(request):
     try:
         data = request.FILES["data"]
     except KeyError:
-        try: 
+        try:
             # TK: Only used in testing - get rid of me
             data = request.FILES["data_file"]
         except KeyError:
             message = "upload: No FILES 'data' attribute."
             logging.error(message)
             return HttpResponse(message)
-        
+
     try:
         court = request.POST["court"]
     except KeyError:
@@ -72,7 +72,7 @@ def upload(request):
         casenum = None
     else:
         casenum = casenum.strip()
-    
+
     try:
         mimetype = request.POST["mimetype"].strip()
     except KeyError:
@@ -85,9 +85,9 @@ def upload(request):
     except KeyError:
         url = None
 
-    message = UploadHandler.handle_upload(data, court, casenum, 
+    message = UploadHandler.handle_upload(data, court, casenum,
                                           mimetype, url)
-                                             
+
     return HttpResponse(message)
 
 
@@ -101,7 +101,7 @@ def query(request):
          The json output is a set of mappings:
                            {<pacer url>: { "filename": <public url>,
                                            "timestamp": <last time seen> },
-                            <pacer url>: ... }                
+                            <pacer url>: ... }
     """
 
     response = {}
@@ -126,21 +126,21 @@ def query(request):
         message = "query: Client read error (Timeout?)"
         logging.warning(message)
         return HttpResponse(message)
-        
+
     try:
         court = jsonin["court"].strip()
     except KeyError:
         message = "query: missing json 'court' argument."
         logging.warning(message)
         return HttpResponse(message)
-    
+
     try:
         urls = jsonin["urls"]
     except KeyError:
         message = "query: missing json 'urls' argument."
         logging.warning(message)
         return HttpResponse(message)
-    
+
     for url in urls:
 
         # detect show_doc style document links
@@ -154,8 +154,8 @@ def query(request):
             for arg in args:
                 (key, val) = arg.split("=")
                 argsdict[key] = val
-                    
-            # maybe need to add some checks for whether 
+
+            # maybe need to add some checks for whether
             # these vars exist in argsdict
 
             query = Document.objects.filter(court=court) \
@@ -169,23 +169,23 @@ def query(request):
             docid = UploadHandler.docid_from_url_name(url)
             query = Document.objects.filter(docid=docid) \
                 .filter(available=1)
-     
+
 
         if query:
             query = query[0]
 
             response[url] = {
-                "filename": IACommon.get_pdf_url(court, 
+                "filename": IACommon.get_pdf_url(court,
                                                  query.casenum,
-                                                 query.docnum, 
+                                                 query.docnum,
                                                  query.subdocnum),
-                "timestamp": query.lastdate.strftime("%m/%d/%y")} 
+                "timestamp": query.lastdate.strftime("%m/%d/%y")}
 
 
             if query.subdocnum == 0:
 
-                subquery = Document.objects.filter(court=court, 
-                                                   casenum=query.casenum, 
+                subquery = Document.objects.filter(court=court,
+                                                   casenum=query.casenum,
                                                    docnum=query.docnum,
                                                    available=1).exclude(
                                                    subdocnum=0)
@@ -197,7 +197,7 @@ def query(request):
                         response[url]["subDocuments"][subDoc.subdocnum] = {
                                      "filename" : IACommon.get_pdf_url(court,
                                                               subDoc.casenum,
-                                                              subDoc.docnum, 
+                                                              subDoc.docnum,
                                                               subDoc.subdocnum),
                                      "timestamp": subDoc.lastdate.strftime("%m/%d/%y")}
 
@@ -212,7 +212,7 @@ def query_cases(request):
          The json input is {"court": <court>,
                             "casenum": <casenum>}
 
-         The json output is 
+         The json output is
                            {"docket_url": <public url>,
                             "timestamp": <last time seen> }
     """
@@ -238,19 +238,19 @@ def query_cases(request):
         message = "query_cases: Client read error (Timeout?)"
         logging.warning(message)
         return HttpResponse(message)
-        
+
     try:
         court = jsonin["court"].strip()
     except KeyError:
         message = "query_cases: missing json 'court' argument."
         logging.warning(message)
         return HttpResponse(message)
-    
+
     try:
         casenum = unicode(int(jsonin["casenum"]))
     except ValueError:
         message = "query_cases: 'casenum' is not an integer: %s" % \
-    				jsonin["casenum"]
+                                jsonin["casenum"]
         logging.warning(message)
         return HttpResponse(message)
     except:
@@ -260,46 +260,46 @@ def query_cases(request):
 
     doc_query = Document.objects.filter(court=court) \
                   .filter(casenum=casenum) \
-		  .order_by('-lastdate', '-modified')
+                  .order_by('-lastdate', '-modified')
 
     yesterday = datetime.datetime.now() - datetime.timedelta(1)
 
     old_or_avail_query = doc_query.filter(available=1) \
-		         | doc_query.filter(modified__lte=yesterday)
+                         | doc_query.filter(modified__lte=yesterday)
     query = None
     try:
         query = old_or_avail_query[0]
     except IndexError:
-	try: 
-	    query = doc_query[0]
-	except IndexError:
-	    query = None
+        try:
+            query = doc_query[0]
+        except IndexError:
+            query = None
         else:
-	    ppquery = PickledPut.objects.filter(filename=IACommon.get_docketxml_name(court, casenum))
-	    if len(ppquery) > 0:
-	        query = None
+            ppquery = PickledPut.objects.filter(filename=IACommon.get_docketxml_name(court, casenum))
+            if len(ppquery) > 0:
+                query = None
 
 
 
     if query:
-	try:
-	  # we only have a last date for documents that have been uploaded
-	  date = query.lastdate.strftime("%m/%d/%y")
-	except AttributeError:
-	  try:
-	    date = query.modified.strftime("%m/%d/%y")
-	  except AttributeError:
-	    date = "Unknown"
+        try:
+            # we only have a last date for documents that have been uploaded
+            date = query.lastdate.strftime("%m/%d/%y")
+        except AttributeError:
+            try:
+                date = query.modified.strftime("%m/%d/%y")
+          except AttributeError:
+                date = "Unknown"
 
         response = {
-                      "docket_url": IACommon.get_dockethtml_url(court, 
+                      "docket_url": IACommon.get_dockethtml_url(court,
                                                  casenum),
                       "timestamp": date}
-	       
+
 
     jsonout = simplejson.dumps(response)
     return HttpResponse(jsonout, mimetype="application/json")
-		    #No documents exist, therefore no dockets exist
+                    #No documents exist, therefore no dockets exist
 
 
 
@@ -310,7 +310,7 @@ def adddocmeta(request):
         message = "adddocmeta: Not a POST request."
         logging.error(message)
         return HttpResponse(message)
-    
+
     try:
         docid = request.POST["docid"].strip()
         court = request.POST["court"].strip()
@@ -329,25 +329,25 @@ def adddocmeta(request):
         return HttpResponse(message)
 
     # Necessary to preserve backwards compatibility with 0.6
-    #  This param prevents tons of garbage from being printed to 
+    #  This param prevents tons of garbage from being printed to
     #  the error console after an Adddocmeta request
-    try: 
+    try:
         add_case_info = request.POST["add_case_info"]
     except KeyError:
-	add_case_info = None
+        add_case_info = None
 
 
     DocumentManager.handle_adddocmeta(docid, court, casenum, de_seq_num,
-					 dm_id, docnum, subdocnum)
+                                      dm_id, docnum, subdocnum)
     if add_case_info:
         response = {"documents": UploadHandler._get_documents_dict(court, casenum),
                   "message": "adddocmeta: DB updated for docid=%s" % (docid) }
         message = simplejson.dumps(response)
     else:
-	message = "adddocmeta: DB updated for docid=%s" % (docid) 
+        message = "adddocmeta: DB updated for docid=%s" % (docid)
 
     return HttpResponse(message)
-        
+
 def lock(request):
 
     try:
@@ -371,7 +371,7 @@ def lock(request):
         uploaderid = uploader.id
 
     # Try to grab the lock.
-    lock_nonce, errmsg = BucketLockManager.get_lock(court, casenum, 
+    lock_nonce, errmsg = BucketLockManager.get_lock(court, casenum,
                                                     uploaderid, one_per_uploader)
 
     if lock_nonce:
@@ -381,7 +381,7 @@ def lock(request):
 
 
 def unlock(request):
-      
+
     try:
         key = request.GET["key"].strip()
         court = request.GET["court"].strip()
@@ -417,7 +417,7 @@ def unlock(request):
 
 
 def querylocks(request):
-    
+
     try:
         key = request.GET["key"].strip()
     except KeyError:
@@ -448,7 +448,7 @@ def querylocks(request):
 
 def get_updated_cases(request):
     """
-    This view is used by archive.recapthelaw.org to determine what dockets to download from IA 
+    This view is used by archive.recapthelaw.org to determine what dockets to download from IA
     """
     API_KEYS = (u'',)
 
@@ -491,8 +491,3 @@ def heartbeat(request):
         return HttpResponse("It's Alive!")
     else:
         return HttpResponseServerError("500 Server error: He's Dead Jim")
-
-
-
-
-

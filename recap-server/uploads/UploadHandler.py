@@ -26,7 +26,7 @@ def is_html(mimetype):
 
 def is_doc1_path(path):
     """ Returns true if path is exactly a doc1 path.
-          e.g. /doc1/1234567890 
+          e.g. /doc1/1234567890
     """
     doc_re = re.compile(r'^/doc1/\d+$')
     return bool(doc_re.match(path))
@@ -56,7 +56,7 @@ def handle_upload(filedata, court, casenum, mimetype, url):
         message = "No filedata 'filename' or 'content' attribute."
         logging.error("handle_upload: %s" % message)
         return "upload: %s" % message
-    
+
     if is_pdf(mimetype):
         message = handle_pdf(filebits, court, url)
 
@@ -110,7 +110,7 @@ def handle_pdf(filebits, court, url):
         sha1 = doc.sha1
 
     # Docket with updated sha1, available, and upload_date
-    docket = DocketXML.make_docket_for_pdf(filebits, court, casenum, 
+    docket = DocketXML.make_docket_for_pdf(filebits, court, casenum,
                                            docnum, subdocnum, available=0)
     DocumentManager.update_local_db(docket)
 
@@ -138,11 +138,11 @@ def handle_pdf(filebits, court, url):
     logging.info("handle_pdf: uploaded %s.%s.%s.%s.pdf" % (court, casenum,
                                                            docnum, subdocnum))
     message = "pdf uploaded."
-    
+
     response = {}
     response["message"] = message
     jsonout = simplejson.dumps(response)
-    
+
     return jsonout
 
 def handle_docket(filebits, court, casenum, filename):
@@ -156,16 +156,16 @@ def handle_docket(filebits, court, casenum, filename):
         return handle_histdocqry(filebits, court, casenum)
     elif dktrpt_re.match(filename):
         return handle_dktrpt(filebits, court, casenum)
-    
+
     message = "unrecognized docket file."
-    logging.error("handle_docket: %s %s" % (message, filename)) 
+    logging.error("handle_docket: %s %s" % (message, filename))
     return "upload: %s" % (message)
 
 
 def handle_dktrpt(filebits, court, casenum):
-    
+
     if config['DUMP_DOCKETS'] and re.search(config['DUMP_DOCKETS_COURT_REGEX'], court):
-	logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (court, casenum))
+        logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (court, casenum))
         _dump_docket_for_debugging(filebits,court,casenum)
 
     docket = ParsePacer.parse_dktrpt(filebits, court, casenum)
@@ -181,9 +181,9 @@ def handle_dktrpt(filebits, court, casenum):
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
-                "message":"DktRpt successfully parsed."}   
+                "message":"DktRpt successfully parsed."}
     message = simplejson.dumps(response)
-	
+
     return message
 
 def handle_histdocqry(filebits, court, casenum):
@@ -195,10 +195,10 @@ def handle_histdocqry(filebits, court, casenum):
 
     # Merge the docket with IA
     do_me_up(docket)
-    
+
     # Update the local DB
     DocumentManager.update_local_db(docket)
-    
+
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
                 "message": "HistDocQry successfully parsed."}
@@ -238,7 +238,7 @@ def handle_doc1(filebits, court, filename):
         do_me_up(docket)
          # Update the local DB
         DocumentManager.update_local_db(docket)
-   
+
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
                 "message": "doc1 successfully parsed."}
@@ -251,7 +251,7 @@ def do_me_up(docket):
 
     court = docket.get_court()
     casenum = docket.get_casenum()
-    
+
     docketname = IACommon.get_docketxml_name(court, casenum)
 
     # Check if this docket is already scheduled to be processed.
@@ -271,41 +271,41 @@ def do_me_up(docket):
         else:
             # Pickle this object.
             pickle_success, msg = IA.pickle_object(docket, docketname)
-            
+
             if pickle_success:
                 # Ready for processing.
                 ppentry.ready = 1
                 ppentry.save()
-                
+
                 logging.info("do_me_up: ready. %s" % (docketname))
             else:
                 # Pickle failed, remove from DB.
                 ppentry.delete()
                 logging.error("do_me_up: %s %s" % (msg, docketname))
-                
+
     else:
         # Already scheduled.
-	# If there is a lock for this case, it's being uploaded. Don't merge now
-	locked = BucketLockManager.lock_exists(court, casenum)
-	if ppentry.ready and not locked:
+        # If there is a lock for this case, it's being uploaded. Don't merge now
+        locked = BucketLockManager.lock_exists(court, casenum)
+        if ppentry.ready and not locked:
             # Docket is waiting to be processed by cron job.
-            
+
             # Revert state back to 'not ready' so we can do local merge.
             ppentry.ready = 0
             ppentry.save()
-            
+
             # Fetch and unpickle the waiting docket.
             prev_docket, unpickle_msg = IA.unpickle_object(docketname)
 
             if prev_docket:
-                
+
                 # Do the local merge.
                 prev_docket.merge_docket(docket)
-                
+
                 # Pickle it back
                 pickle_success, pickle_msg = \
                     IA.pickle_object(prev_docket, docketname)
-                    
+
                 if pickle_success:
                     # Merged and ready.
                     ppentry.ready = 1
@@ -316,27 +316,27 @@ def do_me_up(docket):
                     ppentry.delete()
                     logging.error("do_me_up: re-%s %s" % (pickle_msg,
                                                           docketname))
-                
+
             else:
                 # Unpickle failed
                 ppentry.delete()
                 IA.delete_pickle(docketname)
                 logging.error("do_me_up: %s %s" % (unpickle_msg, docketname))
-            
-            
+
+
         # Ignore if in any of the other three possible state...
         #   because another cron job is already doing work on this entity
         # Don't delete DB entry or pickle file.
         elif ppentry.ready and locked:
             pass
-            #logging.debug("do_me_up: %s discarded, processing conflict." % 
+            #logging.debug("do_me_up: %s discarded, processing conflict." %
             #              (docketname))
         elif not ppentry.ready and not locked:
             pass
-            #logging.debug("do_me_up: %s discarded, preparation conflict." % 
+            #logging.debug("do_me_up: %s discarded, preparation conflict." %
             #              (docketname))
         else:
-            logging.error("do_me_up: %s discarded, inconsistent state." % 
+            logging.error("do_me_up: %s discarded, inconsistent state." %
                           (docketname))
 
 def _get_cases_dict(casenum, docket):
@@ -355,31 +355,31 @@ def _get_cases_dict(casenum, docket):
 def _get_documents_dict(court, casenum):
     """ Create a dict containing the info for the docs specified """
     documents = {}
-   
+
     query = Document.objects.filter(court=court, casenum=int(casenum))
     if query:
         for document in query:
             if document.docid:
-		docmeta = {"casenum": document.casenum,
-                           "docnum": document.docnum,   
+                docmeta = {"casenum": document.casenum,
+                           "docnum": document.docnum,
                            "subdocnum": document.subdocnum}
 
-		if document.available:
-		    docmeta.update({"filename": IACommon.get_pdf_url(document.court, 
+                if document.available:
+                    docmeta.update({"filename": IACommon.get_pdf_url(document.court,
                                                  document.casenum,
-                                                 document.docnum, 
+                                                 document.docnum,
                                                  document.subdocnum),
                                     "timestamp": document.lastdate.strftime("%m/%d/%y")})
-		documents[document.docid] = docmeta
+                documents[document.docid] = docmeta
     return documents
 
 def _dump_docket_for_debugging(filebits, court, casenum):
-    
-    docketdump_dir = ROOT_PATH + '/debugdockets/'   
+
+    docketdump_dir = ROOT_PATH + '/debugdockets/'
 
     if len(os.listdir(docketdump_dir)) > config['MAX_NUM_DUMP_DOCKETS']:
-	    return
-    
+        return
+
 
     dumpfilename = ".".join([court, casenum, "html"])
 
