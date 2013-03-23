@@ -3,17 +3,17 @@ from django.db import models
 
 class Document(models.Model):
     court = models.CharField(maxlength=10)
-    casenum = models.PositiveIntegerField()
+    casenum = models.CharField(maxlength=30)
     docnum = models.PositiveIntegerField()
     subdocnum = models.PositiveIntegerField()
-    docid = models.CharField(maxlength=32, null=True, blank=True)
+    docid = models.CharField(maxlength=32, null=True, blank=True, db_index=True)
     de_seq_num = models.PositiveIntegerField(null=True, blank=True)
     dm_id = models.PositiveIntegerField(null=True, blank=True)
     sha1 = models.CharField(maxlength=40, null=True, blank=True)
     available = models.BooleanField(default=0)
     lastdate = models.DateTimeField(null=True, blank=True, db_index=True)
     modified = models.DateTimeField(null=True, blank=True, auto_now_add=True, db_index=True)
-    free_import = models.BooleanField(default=0)
+    free_import = models.BooleanField(default=0, db_index=True)
 
     class Meta:
         unique_together = (("court", "casenum", "docnum", "subdocnum"),)
@@ -26,7 +26,7 @@ class PickledPut(models.Model):
 
 class BucketLock(models.Model):
     court = models.CharField(maxlength=10)
-    casenum = models.PositiveIntegerField()
+    casenum = models.CharField(maxlength=30)
     uploaderid = models.IntegerField()
     nonce = models.CharField(maxlength=6)
     ready = models.BooleanField(default=0)
