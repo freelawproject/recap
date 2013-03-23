@@ -33,4 +33,5 @@ config = {"DATABASE_NAME": "recap_dev",
 
 
 #Setup Instructions(uploading documents to the internet archive):
-These will come soon - developers will need credentials to upload to the archive.
+
+- Running python syncdb should have created a default Uploader row in the db. You'll need to get the 'key' from either the db or initial_data.json and set `UPLOAD_AUTHKEY` to that value.

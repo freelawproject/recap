@@ -4,9 +4,9 @@ import socket
 
 from recap_config import config
 
-AUTH_HEADER = "LOW MtXL0tEgFmJcLXjr:ir6XYFIlF0PjdFe5"
+AUTH_HEADER = config["IA_S3_UPLOAD_KEY"]
 STORAGE_URL = config["IA_STORAGE_URL"]
-COLLECTION = "usfederalcourts"
+COLLECTION = config["IA_COLLECTION"]
 BASE_DOWNLOAD_URL = "http://www.archive.org/download"
 
 socket.setdefaulttimeout(60)

@@ -1,0 +1,11 @@
+[
+  {
+    "model" : "uploads.Uploader",
+    "pk" : 1,
+    "fields": {
+        "key" : "foobar",
+        "name" : "defaultUploader"
+    }
+
+  }
+]
