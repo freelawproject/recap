@@ -294,7 +294,7 @@ def query_cases(request):
         except AttributeError:
             try:
                 date = query.modified.strftime("%m/%d/%y")
-          except AttributeError:
+            except AttributeError:
                 date = "Unknown"
 
         response = {
