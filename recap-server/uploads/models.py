@@ -4,8 +4,8 @@ from django.db import models
 class Document(models.Model):
     court = models.CharField(maxlength=10)
     casenum = models.CharField(maxlength=30)
-    docnum = models.PositiveIntegerField()
-    subdocnum = models.PositiveIntegerField()
+    docnum = models.CharField(maxlength=30)
+    subdocnum = models.CharField(maxlength=30)
     docid = models.CharField(maxlength=32, null=True, blank=True, db_index=True)
     de_seq_num = models.PositiveIntegerField(null=True, blank=True)
     dm_id = models.PositiveIntegerField(null=True, blank=True)

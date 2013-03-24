@@ -15,7 +15,6 @@ def update_local_db(docket, ignore_available=1):
     for docmeta in docket.documents.values():
 
         docnum = docmeta["doc_num"]
-        docnum = int(docnum) % 1000000000
         subdocnum = docmeta["attachment_num"]
 
         docquery = Document.objects.filter(court=court,
