@@ -22,19 +22,6 @@ def coerce_docid(docid):
     """
     return docid[:3]+"0"+docid[4:]
 
-def coerce_casenum(casenum):
-    """ Appellate courts use a YY-NNNN format for casenum
-        coerce that to a YYYYNNNN int for the database
-    """
-    if int(casenum.split('-')[0]) > 80:
-        return '19' + casenum.replace('-', '')
-    else:
-        return '20' + casenum.replace('-', '')
-
-def uncoerce_casenum(casenum):
-    casenum = unicode(casenum)
-    return casenum[2:4] + '-' + casenum[4:]
-
 def is_appellate(court):
     return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
 

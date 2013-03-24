@@ -102,8 +102,6 @@ def handle_pdf(filebits, court, url):
             return "upload: pdf metadata mismatch."
 
         casenum = doc.casenum
-        if ParsePacer.is_appellate(court):
-            casenum = ParsePacer.uncoerce_casenum(casenum)
         docnum = doc.docnum
         subdocnum = doc.subdocnum
         sha1 = doc.sha1
@@ -259,8 +257,6 @@ def handle_doc1(filebits, court, filename):
         return "upload: doc1 ignored."
     else:
         casenum = main_doc.casenum
-        if ParsePacer.is_appellate(court):
-            casenum = ParsePacer.uncoerce_casenum(casenum)
         main_docnum = main_doc.docnum
 
         # Sanity check

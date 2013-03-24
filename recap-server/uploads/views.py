@@ -174,8 +174,6 @@ def query(request):
         if query:
             query = query[0]
             real_casenum = query.casenum
-            if ParsePacer.is_appellate(court):
-                real_casenum = ParsePacer.uncoerce_casenum(real_casenum)
 
             response[url] = {
                 "filename": IACommon.get_pdf_url(court,
@@ -198,8 +196,6 @@ def query(request):
 
                     for subDoc in subquery:
                         real_sub_casenum = subDoc.casenum
-                        if ParsePacer.is_appellate(court):
-                            real_sub_casenum = ParsePacer.uncoerce_casenum(real_sub_casenum)
                         response[url]["subDocuments"][subDoc.subdocnum] = {
                                      "filename" : IACommon.get_pdf_url(court,
                                                               real_sub_casenum,

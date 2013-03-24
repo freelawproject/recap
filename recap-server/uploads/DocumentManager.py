@@ -12,9 +12,6 @@ def update_local_db(docket, ignore_available=1):
 
     court = docket.casemeta["court"]
     casenum = docket.casemeta["pacer_case_num"]
-    if '-' in casenum:
-        casenum = ParsePacer.coerce_casenum(casenum)
-
     for docmeta in docket.documents.values():
 
         docnum = docmeta["doc_num"]
