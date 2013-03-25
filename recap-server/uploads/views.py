@@ -159,8 +159,8 @@ def query(request):
             # these vars exist in argsdict
 
             query = Document.objects.filter(court=court) \
-                .filter(docnum=int(argsdict["doc_num"])) \
-                .filter(casenum=int(argsdict["caseid"])) \
+                .filter(docnum=argsdict["doc_num"]) \
+                .filter(casenum=argsdict["caseid"]) \
                 .filter(dm_id=int(argsdict["dm_id"])) \
                 .filter(available=1)
 
@@ -249,12 +249,7 @@ def query_cases(request):
         return HttpResponse(message)
 
     try:
-        casenum = unicode(int(jsonin["casenum"]))
-    except ValueError:
-        message = "query_cases: 'casenum' is not an integer: %s" % \
-                                jsonin["casenum"]
-        logging.warning(message)
-        return HttpResponse(message)
+        casenum = unicode(jsonin["casenum"])
     except:
         message = "query_cases: missing json 'casenum' argument."
         logging.warning(message)
@@ -316,10 +311,10 @@ def adddocmeta(request):
     try:
         docid = request.POST["docid"].strip()
         court = request.POST["court"].strip()
-        casenum = int(request.POST["casenum"])
+        casenum = request.POST["casenum"]
         de_seq_num = int(request.POST["de_seq_num"])
         dm_id = int(request.POST["dm_id"])
-        docnum = int(request.POST["docnum"])
+        docnum = request.POST["docnum"]
         subdocnum = 0
     except KeyError, err:
         message = "adddocmeta: %s not specified." % unicode(err)
