@@ -118,7 +118,7 @@ def query(request):
         logging.warning(message)
         return HttpResponse(message)
     except ValueError:
-        message = "query: too many url args"
+        message = "query: malformed 'json' POST argument"
         logging.warning(message)
         return HttpResponse(message)
     except IOError:

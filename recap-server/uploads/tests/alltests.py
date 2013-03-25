@@ -854,10 +854,9 @@ class TestQueryView(unittest.TestCase):
         response = self.client.post('/recap/query/')
         self.assertEquals("query: no 'json' POST argument", response.content)
     
-    # TK: what does too many url args mean as a message
     def test_query_invalid_json(self):
         response = self.client.post('/recap/query/', {'json': 'dkkfkdk'})
-        self.assertEquals("query: too many url args", response.content)
+        self.assertEquals("query: malformed 'json' POST argument", response.content)
 
     def test_query_missing_court_param(self):
         del self.valid_params['court']
