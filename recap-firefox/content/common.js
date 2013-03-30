@@ -46,6 +46,22 @@ var PACER_TO_WEST_COURT = {"akd":"D.Alaska", "almd":"M.D.Ala.", "alnd":"N.D.Ala.
 
 var CA_PACER_DOMAINS = ["ecf.ca1.uscourts.gov", "ecf.ca2.uscourts.gov", "pacer.ca2.uscourts.gov", "ecf.ca3.uscourts.gov", "ecf.ca4.uscourts.gov", "ecf.ca5.uscourts.gov", "ecf.ca6.uscourts.gov", "ecf.ca7.uscourts.gov", "ecf.ca8.uscourts.gov", "ecf.ca9.uscourts.gov", "ecf.ca10.uscourts.gov", "ecf.ca11.uscourts.gov","pacer.ca11.uscourts.gov", "ecf.cadc.uscourts.gov","ecf.cafc.uscourts.gov","pacer.cafc.uscourts.gov"];
 
+var CA_PACER_TO_COURT_NAME = {
+    "ca1": "1st.Cir.",
+    "ca2": "2d.Cir.",
+    "ca3": "3d.Cir.",
+    "ca4": "4th.Cir.",
+    "ca5": "5th.Cir.",
+    "ca6": "6th.Cir.",
+    "ca7": "7th.Cir.",
+    "ca8": "8th.Cir.",
+    "ca9": "9th.Cir.",
+    "ca10": "10th.Cir.",
+    "ca11": "11th.Cir.",
+    "cadc": "D.C.Cir.",
+    "cafc": "Fed.Cir."
+};
+
 var UNSUPPORTED_PACER_DOMAINS = [];
 
 function isPDF(mimetype) {

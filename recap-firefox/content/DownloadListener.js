@@ -57,6 +57,10 @@ function DownloadListener(filemeta, metacache) {
 
     // cache of document and case metadata from Recap namespace
     this.metacache = metacache;
+    
+    log("List of stuff:");
+    log(JSON.stringify(filemeta));
+    log(JSON.stringify(metacache));
 }
 
 DownloadListener.prototype = {

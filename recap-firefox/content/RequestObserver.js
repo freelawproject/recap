@@ -102,6 +102,7 @@ RequestObserver.prototype = {
 
     // Sets a better filename in the Content-Disposition header
     setContentDispositionHeader: function(channel, filename, court) {
+        log("Passing in setContentDispositionHeader");
         
 	var prefs = CCGS("@mozilla.org/preferences-service;1",
 			 "nsIPrefService").getBranch("extensions.recap.");
@@ -113,11 +114,22 @@ RequestObserver.prototype = {
 	var filename_style_choice = prefs.getCharPref("pretty_filenames_choice");
     
 	filename = this.coerceDocid(filename);
+	log("Filename: " + filename);
 	
 	// try to build a pretty filename - SS: need to add a pref for this
 	var prettyFilename;
 	var filenameSplit = filename.split(".");
 	var docid = filenameSplit[0];
+	
+	if (!/^[\d]+$/.test(docid)) {
+	    name = docid.match(/[=\/](\d+)/i);
+	    if (name) {
+            docid = name[1];
+        }
+	    
+    }
+	log("DocID: " + docid);
+	log("Metacache: " + JSON.stringify(this.metacache));
 
 	try {
 	    var docnum;
@@ -138,23 +150,27 @@ RequestObserver.prototype = {
 	    //docname = this.metacache.documents[docid]["docname"];
 	    //case_name = this.metacache.cases[casenum]["case_name"];
 	} catch (e) {
+	    log("Exception");
 	}
 	
 	if ((typeof casenum != 'undefined') && 
 	    (typeof officialcasenum != 'undefined')) {
 
 	    prettyFilename = PACER_TO_WEST_COURT[court];
+	    if (prettyFilename == undefined) {
+    	    prettyFilename = CA_PACER_TO_COURT_NAME[court];
+        }
 	    if (officialcasenum) {
-		prettyFilename = prettyFilename + "_" + officialcasenum;
+		    prettyFilename = prettyFilename + "_" + officialcasenum;
 	    }
 
 	    //prettyFilename = prettyFilename + "_" + docid;
 	    if (typeof docnum != 'undefined') {
-		prettyFilename = prettyFilename + "_" + docnum;
+		    prettyFilename = prettyFilename + "_" + docnum;
 	    }
 	    if ((typeof subdocnum != 'undefined') && 
 		subdocnum && subdocnum != 0) {
-		prettyFilename = prettyFilename + "_" + subdocnum;
+		    prettyFilename = prettyFilename + "_" + subdocnum;
 	    }
 	    
 	    prettyFilename = prettyFilename + ".pdf";
@@ -289,6 +305,7 @@ RequestObserver.prototype = {
             var refhost = referrer.asciiHost;
             var refpath = referrer.path;
         } catch(e) {
+            log("Return false in tryPDFmetaCA");
             return false;
         }
         var court = getCourtFromHost(refhost);
@@ -519,9 +536,9 @@ RequestObserver.prototype = {
 
     // Intercept the channel, and upload the data with metadata
     uploadChannelData: function(subject, metadata) {
-	var dlistener = new DownloadListener(metadata,this.metacache);
-	subject.QueryInterface(Ci.nsITraceableChannel);
-	dlistener.originalListener = subject.setNewListener(dlistener);
+    	var dlistener = new DownloadListener(metadata,this.metacache);
+    	subject.QueryInterface(Ci.nsITraceableChannel);
+    	dlistener.originalListener = subject.setNewListener(dlistener);
     },
 
     // Called on every HTTP response
@@ -622,7 +639,7 @@ RequestObserver.prototype = {
     	    var PDFmeta = this.tryPDFmeta(channel, mimetype);
 
     	    if (PDFmeta) {
-    		this.uploadChannelData(subject, PDFmeta);
+    		    this.uploadChannelData(subject, PDFmeta);
     	    }
 	    
     	} else if (isHTML(mimetype)) {
