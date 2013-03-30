@@ -26,7 +26,7 @@ def is_appellate(court):
     return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
 
 doc_re = re.compile(r'/doc1/(\d+)$')
-ca_doc_re = re.compile(r'(TransportRoom.*ShowDoc.*?dls_id.*?(\d+)|/docs1/(\d+)$)')
+ca_doc_re = re.compile(r'(?:TransportRoom.*ShowDoc(?:.*?dls_id.*?|/)(\d+)|/docs1/(\d+)$)')
 
 def parse_dktrpt(filebits, court, casenum):
 

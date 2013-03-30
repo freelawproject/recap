@@ -42,7 +42,7 @@ def docid_from_url_name(url):
     if doc_re.search(url):
         return ParsePacer.coerce_docid(doc_re.search(url).group(1))
     if ca_doc_re.search(url):
-        return ca_doc_re.search(url).group(2) or ca_doc_re.search(url).group(3)
+        return ca_doc_re.search(url).group(1) or ca_doc_re.search(url).group(2)
     raise ValueError('docid_from_url_name')
 
 
