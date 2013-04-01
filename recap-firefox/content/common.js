@@ -229,7 +229,7 @@ function updateStatusIcon() {
                        .getService(Components.interfaces.nsIWindowMediator);
     var browserWindow = wm.getMostRecentWindow("navigator:browser");
 
-    if (browserWindow === undefined){
+    if (browserWindow === undefined || browserWindow == null){
         return; // browser window is sometimes not defined on startup
     }
 
