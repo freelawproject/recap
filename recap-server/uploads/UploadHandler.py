@@ -42,7 +42,7 @@ def docid_from_url_name(url):
     if doc_re.search(url):
         return ParsePacer.coerce_docid(doc_re.search(url).group(1))
     if ca_doc_re.search(url):
-        return ca_doc_re.search(url).group(2) or ca_doc_re.search(url).group(3)
+        return ca_doc_re.search(url).group(1) or ca_doc_re.search(url).group(2)
     raise ValueError('docid_from_url_name')
 
 
@@ -187,8 +187,8 @@ def handle_cadkt(filebits, court, casenum, is_full=False):
     # Update the local DB
     DocumentManager.update_local_db(docket)
 
-    response = {"cases": {},
-                "documents": {},
+    response = {"cases": _get_cases_dict(casenum, docket),
+                "documents": _get_documents_dict(court, casenum),
                 "message":"DktRpt successfully parsed."}
     message = simplejson.dumps(response)
 
@@ -276,13 +276,9 @@ def handle_doc1(filebits, court, filename):
          # Update the local DB
         DocumentManager.update_local_db(docket)
 
-    if ParsePacer.is_appellate(court):
-        response = {"cases": {}, "documents": {},
-                    "message": "doc1 successfully parsed."}
-    else:
-        response = {"cases": _get_cases_dict(casenum, docket),
-                    "documents": _get_documents_dict(court, casenum),
-                    "message": "doc1 successfully parsed."}
+    response = {"cases": _get_cases_dict(casenum, docket),
+                "documents": _get_documents_dict(court, casenum),
+                "message": "doc1 successfully parsed."}
     message = simplejson.dumps(response)
     return message
 
@@ -397,7 +393,7 @@ def _get_documents_dict(court, casenum):
     """ Create a dict containing the info for the docs specified """
     documents = {}
 
-    query = Document.objects.filter(court=court, casenum=int(casenum))
+    query = Document.objects.filter(court=court, casenum=casenum)
     if query:
         for document in query:
             if document.docid:

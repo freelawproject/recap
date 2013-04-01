@@ -26,7 +26,7 @@ def is_appellate(court):
     return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
 
 doc_re = re.compile(r'/doc1/(\d+)$')
-ca_doc_re = re.compile(r'(TransportRoom.*ShowDoc.*?dls_id.*?(\d+)|/docs1/(\d+)$)')
+ca_doc_re = re.compile(r'(?:TransportRoom.*ShowDoc(?:.*?dls_id.*?|/)(\d+)|/docs1/(\d+)$)')
 
 def parse_dktrpt(filebits, court, casenum):
 
@@ -722,7 +722,10 @@ def _parse_cadkt_document_table(the_soup, is_full):
             docmeta["attachment_num"] = 0
             docmeta["pacer_doc_id"] = cells[1]("a")[0]["href"].split('/')[-1]
 
-            docmeta["doc_num"] = docmeta["pacer_doc_id"]  # FIXME
+            if cells[1]("a")[0].string and cells[1]("a")[0].string.strip().isdigit():
+                docmeta["doc_num"] = cells[1]("a")[0].string.strip()
+            else:
+                docmeta["doc_num"] = docmeta["pacer_doc_id"]
 
             docmeta["date_filed"] = cells[0].string
 
@@ -1745,7 +1748,7 @@ if __name__ == "__main__":
 
     def cadkt():
         import glob, json
-        for filename in glob.glob('dockets/*'):
+        for filename in glob.glob('dockets/*.dktrpt'):
             print '####################################'
             print filename
             print '####################################'
@@ -1762,12 +1765,12 @@ if __name__ == "__main__":
                 or not "originating_case_number" in docket.casemeta
                 or None in docket.casemeta.values()):
                 print json.dumps(docket.casemeta, indent=4)
-            # print json.dumps(docket.documents, indent=4)
+            print json.dumps(docket.documents, indent=4)
             print ''
             print ''
 
     def cadoc1():
-        filename = "multidoc-00802034315.html"
+        filename = "dockets/multidoc-00802034315.html"
         docketbits = open(filename).read()
         docket = parse_ca_doc1(docketbits, "ca8", 20131157, 802034315)
         print docket.casemeta
