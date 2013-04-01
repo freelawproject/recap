@@ -2,59 +2,26 @@
 // Copyright (C) 2013 Ying Lei <ying.lei@live.com>
 //
 // ------------------
-// JSON serializer using data contracts.
-//
-// Usage (DataContract definition):
-//
-//     using System.Runtime.Serialization;
-//
-//     [DataContract]
-//     public class CaseQueryRequest {
-//
-//         [DataMember]
-//         public string court;
-//         [DataMember]
-//         public string casenum;
-//
-//         public CaseQueryRequest(string court, string casenum) {
-//             this.court = court;
-//             this.casenum = casenum;
-//         }
-//
-//     }
-//
-// Usage (serialization):
-//
-//     string json = JSON.Stringify(new CaseQueryRequest("example-court", "example-case-number"));
-//
-// Usage (deserialization):
-//
-//     CaseQueryRequest request = (CaseQueryRequest) JSON.Parse(json, typeof(CaseQueryRequest));
+// JSON serialization.
 
 using System;
-using System.IO;
-using System.Runtime.Serialization;
-using System.Runtime.Serialization.Json;
+using System.Web.Script.Serialization;
 
 namespace RECAP {
     public static class JSON {
 
-        public static object Parse(string s, Type t) {
-            MemoryStream stream = new MemoryStream();
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(t);
-            (new StreamWriter(stream)).Write(s);
-            return serializer.ReadObject(stream);
-        }
-
-        public static string Stringify(object o, Type t) {
-            MemoryStream stream = new MemoryStream();
-            DataContractJsonSerializer serializer = new DataContractJsonSerializer(t);
-            serializer.WriteObject(stream, o);
-            return (new StreamReader(stream)).ReadToEnd();
-        }
+        private static JavaScriptSerializer serializer = new JavaScriptSerializer();
 
         public static string Stringify(object o) {
-            return Stringify(o, o.GetType());
+            return serializer.Serialize(o);
+        }
+
+        public static object Parse(string s) {
+            return serializer.DeserializeObject(s);
+        }
+
+        public static object Parse(string s, Type t) {
+            return serializer.Deserialize(s, t);
         }
 
     }
