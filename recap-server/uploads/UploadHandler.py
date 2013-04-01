@@ -160,7 +160,7 @@ def handle_docket(filebits, court, casenum, filename):
             return "upload: %s" % message
     elif dktrpt_re.match(filename):
         if casenum:
-            return handle_histdocqry(filebits, court, casenum)
+            return handle_dktrpt(filebits, court, casenum)
         else:
             message = "docket has no casenum."
             logging.error("handle_upload: %s" % message)
