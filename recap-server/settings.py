@@ -19,7 +19,7 @@ SERVER_EMAIL = "recaplogger@gmail.com"
 DEFULT_FROM_EMAIL = "recaplogger@gmail.com"
 EMAIL_HOST = 'smtp.gmail.com'
 EMAIL_HOST_USER = 'recaplogger@gmail.com'
-EMAIL_HOST_PASSWORD = 'REMOVED'
+EMAIL_HOST_PASSWORD = config['EMAIL_HOST_PASSWORD']
 EMAIL_PORT = '587'
 EMAIL_USE_TLS = True
 EMAIL_TLS = True
@@ -37,8 +37,8 @@ MANAGERS = ADMINS
 
 DATABASE_ENGINE = 'mysql'          # 'postgresql_psycopg2', 'postgresql', 'mysql', 'sqlite3' or 'ado_mssql'.
 DATABASE_NAME = config["DATABASE_NAME"]  # Or path to database file if using sqlite3.
-DATABASE_USER = 'recap'            # Not used with sqlite3.
-DATABASE_PASSWORD = 'recapper'   # Not used with sqlite3.
+DATABASE_USER = config["DATABASE_USER"]            # Not used with sqlite3.
+DATABASE_PASSWORD = config["DATABASE_PASSWORD"]   # Not used with sqlite3.
 DATABASE_HOST = ''                 # Set to empty string for localhost. Not used with sqlite3.
 DATABASE_PORT = ''                 # Set to empty string for default. Not used with sqlite3.
 
@@ -74,7 +74,7 @@ MEDIA_URL = ''
 ADMIN_MEDIA_PREFIX = '/media/'
 
 # Make this unique, and don't share it with anybody.
-SECRET_KEY = '$@!@#bst_vo!bie5ytnvrk5=_wm)3rm#rfkb--af4oe4bb6hm('
+SECRET_KEY = config['DJANGO_SECRET_KEY']
 
 # List of callables that know how to import templates from various sources.
 TEMPLATE_LOADERS = (
