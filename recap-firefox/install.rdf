@@ -4,14 +4,14 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>info@recapthelaw.org</em:id>
         <em:name>RECAP</em:name>
-        <em:version>0.8.1</em:version>
+        <em:version>0.9.1</em:version>
 		<em:iconURL>chrome://recap/skin/recap-icon-32.png</em:iconURL>
     	<em:optionsURL>chrome://recap/content/options.xul</em:optionsURL>
         <em:targetApplication>
       <Description>
         <em:id>{ec8030f7-c20a-464f-9b0e-13a3a9e97384}</em:id> <!-- firefox -->
         <em:minVersion>3.0.9</em:minVersion>
-        <em:maxVersion>4.0</em:maxVersion>
+        <em:maxVersion>19.0.2</em:maxVersion>
       </Description>
     </em:targetApplication>
     </Description>
