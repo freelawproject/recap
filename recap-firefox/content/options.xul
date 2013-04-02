@@ -25,11 +25,11 @@
 -->
 <?xml-stylesheet href="chrome://global/skin/" type="text/css"?> 
 <prefwindow id="recap-prefs"
-	    title="Recap Preferences"
+	    title="RECAP Preferences"
 	    xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
  
   <script src="chrome://recap/content/options.js"/>
-  <prefpane id="recap-pref-pane" label="Recap Preferences">
+  <prefpane id="recap-pref-pane" label="RECAP Preferences">
 
     <preferences>
       <preference id="pref_pretty_filenames" name="extensions.recap.pretty_filenames" type="bool"/>
@@ -43,7 +43,7 @@
       <caption label="Notifications"/>
       
       <hbox align="center">
-	<checkbox preference="pref_display_notifications" id="display_notifications" label="Display notifications when Recap becomes enabled or uploads a file"/>
+	<checkbox preference="pref_display_notifications" id="display_notifications" label="Display notifications when RECAP becomes enabled or uploads a file"/>
       </hbox>
       <description id="growlWarn" style="font-weight: bold;"/>  
     </groupbox>

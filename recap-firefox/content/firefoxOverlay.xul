@@ -39,7 +39,7 @@
   <script src="common.js"/>
   
   <menupopup id="menu_ToolsPopup">
-    <menuitem label="Recap Preferences..." oncommand="recap.openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
+    <menuitem label="RECAP Preferences..." oncommand="recap.openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
   </menupopup>
 
 
