@@ -1814,7 +1814,7 @@ if __name__ == "__main__":
             #     or not "originating_court_id" in docket.casemeta
             #     or not "originating_case_number" in docket.casemeta
             #     or None in docket.casemeta.values()):
-                print json.dumps(docket.casemeta, indent=4)
+            print json.dumps(docket.casemeta, indent=4)
             print json.dumps(docket.documents, indent=4)
             print ''
             print ''
