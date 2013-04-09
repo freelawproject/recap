@@ -121,8 +121,8 @@ RequestObserver.prototype = {
 	var filenameSplit = filename.split(".");
 	var docid = filenameSplit[0];
 	
-	if (!/^[\d]+$/.test(docid)) {
-	    name = docid.match(/[=\/](\d+)/i);
+	if (!/^[\d]{8,}$/.test(docid)) {
+	    name = docid.match(/[=\/](\d{8,})/i);
 	    if (name) {
             docid = name[1];
         }
@@ -138,7 +138,12 @@ RequestObserver.prototype = {
 	    
 	    casenum = this.metacache.documents[docid]["casenum"];
 	    officialcasenum = this.metacache.cases[casenum]["officialcasenum"];
-	    officialcasenum = officialcasenum.replace(/:/g, "-");
+	    if (officialcasenum == undefined) {
+	        officialcasenum = casenum;
+        }
+        else {
+	        officialcasenum = officialcasenum.replace(/:/g, "-");
+        }
 	    docnum = this.metacache.documents[docid]["docnum"];
 			
 	    // might fail if this wasn't in the db, so do essential
@@ -150,7 +155,7 @@ RequestObserver.prototype = {
 	    //docname = this.metacache.documents[docid]["docname"];
 	    //case_name = this.metacache.cases[casenum]["case_name"];
 	} catch (e) {
-	    log("Exception");
+	    log("Exception " + e.message);
 	}
 	
 	if ((typeof casenum != 'undefined') && 
