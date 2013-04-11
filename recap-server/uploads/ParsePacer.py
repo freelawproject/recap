@@ -333,7 +333,6 @@ def parse_doc1(filebits, court, casenum, main_docnum):
                 # No link text or not an integer
                 continue
 
-            #court = docmatch.group(1) # Unused
             directory = docmatch.group(2)
             docid = coerce_docid(docmatch.group(3))
 
@@ -799,7 +798,6 @@ def _parse_histdocqry_document_table(the_soup, court):
 
             if docmatchv3:
                 
-                #court = docmatchv3.group(1)        # TK: Unused
                 directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
                 docid = coerce_docid(docmatchv3.group(3))
@@ -1679,7 +1677,6 @@ def _parse_dktrpt_table_row(row, casenum):
             docmeta["doc_num"] = docnum
             docmeta["attachment_num"] = 0    # Primary document
 
-            #court = docmatchv3.group(1)        # TK: Unused
             directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
             docid = coerce_docid(docmatchv3.group(3))
