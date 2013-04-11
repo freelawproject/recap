@@ -19,6 +19,8 @@ import time
 
 from test_constants import TEST_SUPPORT_PATH, TEST_OPINION_PATH, TEST_DOC1_PATH
 
+from uploads.recap_config import config
+
 TEST_DOCKET_PATH  = TEST_SUPPORT_PATH + "testdockets/"
 TEST_DOCUMENT_PATH = TEST_SUPPORT_PATH + "testdocuments/"
 BANK_TEST_DOCKET_PATH = TEST_DOCKET_PATH + "bankruptcydockets/"
@@ -236,6 +238,17 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(parties[2]["name"], "Theresa Brady")
     self.assertEquals(parties[2]["type"], "Defendant")
 
+
+  def test_bankruptcy_relative_doc1_links(self):
+    relfilebits = open(BANK_TEST_DOCKET_PATH+ "flsb.575106" + ".html").read()
+    reldocket = PP.parse_dktrpt(relfilebits, "flsb", "575106")
+    self.assertEquals(len(reldocket.documents), 20)
+    document = reldocket.documents['1-0']
+    self.assertEquals("1", document['doc_num'])
+    self.assertEquals("0", document['attachment_num'])
+    self.assertEquals("050020328570", document['pacer_doc_id'])
+    self.assertEquals("2011-12-30", document['date_filed'])
+    self.assertEquals("Chapter 7 Voluntary Petition . [Fee Amount $306] (Segaul, John) (Entered: 12/30/2011)", document['long_desc'])
 
 
   def test_all_bankruptcy_dktrpts_for_parties_basics(self):
@@ -539,7 +552,7 @@ class TestViews(unittest.TestCase):
         d2 = Document(court='dcd', casenum='100', docnum='1', subdocnum='0')
         d2.save()
         yesterday = time.time() - 60 * 60 * 24
-        response = self.client.post('/recap/get_updated_cases/', {'key' : REMOVED, 
+        response = self.client.post('/recap/get_updated_cases/', {'key' : "REMOVED", 
                                                                  'tpq' : yesterday})
         self.assertEquals(200, response.status_code)
         self.assertEquals('%s,%s\r\n%s,%s\r\n' % (d1.court, d1.casenum, d2.court, d2.casenum), response.content)
@@ -556,7 +569,7 @@ class TestViews(unittest.TestCase):
         self.assertEquals(403, response.status_code)
     
     def test_heartbeat_correct_key_no_db_connection(self):
-        response = self.client.get('/recap/heartbeat/', {'key' : 'REMOVED'})
+        response = self.client.get('/recap/heartbeat/', {'key' : "REMOVED"})
         self.assertEquals(500, response.status_code)
         self.assertEquals("500 Server error: He's Dead Jim", response.content)
         
@@ -565,7 +578,7 @@ class TestViews(unittest.TestCase):
         document = Document(court='cand', casenum='215270', docnum='1', subdocnum='0')
         document.save()
 
-        response = self.client.get('/recap/heartbeat/', {'key' : 'REMOVED'})
+        response = self.client.get('/recap/heartbeat/', {'key' : "REMOVED"})
         self.assertEquals(200, response.status_code)
         self.assertEquals("It's Alive!", response.content)
 

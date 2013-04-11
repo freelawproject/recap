@@ -313,7 +313,7 @@ def parse_doc1(filebits, court, casenum, main_docnum):
 
     links = index_soup.findAll("a")
 
-    docre = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+    docre = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
 
     is_v4 = False
 
@@ -333,7 +333,7 @@ def parse_doc1(filebits, court, casenum, main_docnum):
                 # No link text or not an integer
                 continue
 
-            court = docmatch.group(1)
+            #court = docmatch.group(1) # Unused
             directory = docmatch.group(2)
             docid = coerce_docid(docmatch.group(3))
 
@@ -781,7 +781,7 @@ def _parse_histdocqry_document_table(the_soup, court):
         if link:
             # Get it from the link to the doc1 page
 
-            docrev3 = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+            docrev3 = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
             docrev4 = re.compile(r"^\/cgi-bin\/show_doc\.pl\?(.*)$")
             uri = link['href']
 
@@ -798,8 +798,8 @@ def _parse_histdocqry_document_table(the_soup, court):
             docmeta["attachment_num"] = 0    # Primary document
 
             if docmatchv3:
-
-                court = docmatchv3.group(1)        # TK: Unused
+                
+                #court = docmatchv3.group(1)        # TK: Unused
                 directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
                 docid = coerce_docid(docmatchv3.group(3))
@@ -1638,6 +1638,8 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
 def _parse_dktrpt_table_row(row, casenum):
     ''' Parse URLs of the form:
             https://ecf.laed.uscourts.gov/doc1/08501407159
+            or
+            /doc1/08501407159
         In this example, laed is the court code, and 08501407159 is the docid
     '''
 
@@ -1653,7 +1655,7 @@ def _parse_dktrpt_table_row(row, casenum):
     if link:
         # Get docnum and docid from link
 
-        docrev3 = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+        docrev3 = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
         docrev4 = re.compile(r"^\/cgi-bin\/show_doc\.pl\?(.*)$")
         uri = link['href']
 
@@ -1677,7 +1679,7 @@ def _parse_dktrpt_table_row(row, casenum):
             docmeta["doc_num"] = docnum
             docmeta["attachment_num"] = 0    # Primary document
 
-            court = docmatchv3.group(1)        # TK: Unused
+            #court = docmatchv3.group(1)        # TK: Unused
             directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
             docid = coerce_docid(docmatchv3.group(3))
