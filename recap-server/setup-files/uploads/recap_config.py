@@ -14,5 +14,6 @@ config = {"DATABASE_NAME": "recap_dev",
           "DJANGO_SECRET_KEY": "REMOVED",
           "DUMP_DOCKETS": False,
           "DUMP_DOCKETS_COURT_REGEX": "b-|b$",
-          "MAX_NUM_DUMP_DOCKETS": "100"
+          "MAX_NUM_DUMP_DOCKETS": "100",
+          "HEARTBEAT_KEY": "heartbeat_key_REMOVED"
 }

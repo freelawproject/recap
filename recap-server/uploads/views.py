@@ -14,6 +14,9 @@ import DocumentManager
 import ParsePacer
 import datetime
 
+from recap_config import config
+
+
 def index(request):
     return HttpResponse("Well hello, there's nothing to see here.")
 
@@ -479,7 +482,7 @@ def heartbeat(request):
         # Fail.  Missing required arguments.
         return HttpResponseForbidden("403 Forbidden")
 
-    if key != "REMOVED":
+    if key != config["HEARTBEAT_KEY"]:
         return HttpResponseForbidden("403 Forbidden")
 
     query = Document.objects.filter(court='cand', casenum='215270')
