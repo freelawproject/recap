@@ -313,7 +313,7 @@ def parse_doc1(filebits, court, casenum, main_docnum):
 
     links = index_soup.findAll("a")
 
-    docre = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+    docre = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
 
     is_v4 = False
 
@@ -333,7 +333,6 @@ def parse_doc1(filebits, court, casenum, main_docnum):
                 # No link text or not an integer
                 continue
 
-            court = docmatch.group(1)
             directory = docmatch.group(2)
             docid = coerce_docid(docmatch.group(3))
 
@@ -781,7 +780,7 @@ def _parse_histdocqry_document_table(the_soup, court):
         if link:
             # Get it from the link to the doc1 page
 
-            docrev3 = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+            docrev3 = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
             docrev4 = re.compile(r"^\/cgi-bin\/show_doc\.pl\?(.*)$")
             uri = link['href']
 
@@ -798,8 +797,7 @@ def _parse_histdocqry_document_table(the_soup, court):
             docmeta["attachment_num"] = 0    # Primary document
 
             if docmatchv3:
-
-                court = docmatchv3.group(1)        # TK: Unused
+                
                 directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
                 docid = coerce_docid(docmatchv3.group(3))
@@ -1107,6 +1105,10 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
     except (AttributeError, IndexError):
         pass
     try:
+        case_data["fee_status"] = the_soup(text="Fee Status:")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
         case_data["date_case_filed"] = the_soup(text="Docketed:")[0].next.strip()
     except (AttributeError, IndexError):
         pass
@@ -1118,18 +1120,35 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
         case_data["docket_num"] = the_soup(text="Court of Appeals Docket #: ")[0].next.strip()
     except (AttributeError, IndexError):
         pass
+    try:
+        case_data["appeal_from"] = the_soup(text="Appeal From:")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["originating_judge"] = the_soup(text="Originating Judge: ")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["originating_judge"] = the_soup(text="Trial Judge: ")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["court_reporter"] = the_soup(text="Court Reporter: ")[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
+    try:
+        case_data["originating_date_filed"] = the_soup(text=re.compile("Date Filed: "))[0].next.strip()
+    except (AttributeError, IndexError):
+        pass
 
     # This is a terrible heuristic, but seriously I couldn't find a better one
+    # Gets the first line without bold, like "USA v. Will Smith"
     for cell in the_soup(text="Court of Appeals Docket #: ")[0] \
                 .parent.parent.parent.parent.findAll('td'):
         if not cell.findAll('b'):
             case_data["case_name"] = cell.string
             break
 
-    try:
-        case_data["appeal_from"] = the_soup(text="Appeal From:")[0].next.strip()
-    except (AttributeError, IndexError):
-        pass
     try:
         href = the_soup("a", href=orig_case_re)[0]["href"]
         match = orig_case_re.search(href)
@@ -1138,6 +1157,35 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
     except (AttributeError, IndexError):
         pass
 
+    case_type_info = []
+    try:
+        for cell in the_soup(text="Case Type Information:")[0] \
+            .parent.parent.parent.parent.findAll('td'):
+            if cell.find('b'): cell.find('b').extract()
+            if (cell.renderContents() and cell.renderContents().strip() and
+                cell.renderContents().strip() not in ('null', 'none', '-')):
+                case_type_info.append(cell.renderContents().strip())
+    except (AttributeError, IndexError):
+        pass
+    if case_type_info:
+        case_data['case_type_info'] = ','.join(case_type_info)
+
+    try:
+        labels, dates = the_soup(text="Originating Court Information:")[0] \
+            .parent.parent.parent.parent.findAll('tr')[-2:]
+        for label, date in zip(labels.findAll('td'), dates.findAll('td')):
+            label = label.find('b').string.strip()
+            date = date.string.strip()
+            if label == 'Date Order/Judgment:':
+                case_data['originating_date_order_judgment'] = date
+            if label == 'Date Order/Judgment EOD:':
+                case_data['originating_date_order_judgment_EOD'] = date
+            if label == 'Date NOA Filed:':
+                case_data['originating_date_NOA_filed'] = date
+            if label == 'Date Rec\'d COA:':
+                case_data['originating_date_received_COA'] = date
+    except (AttributeError, IndexError):
+        pass
 
     return case_data
 
@@ -1588,6 +1636,8 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
 def _parse_dktrpt_table_row(row, casenum):
     ''' Parse URLs of the form:
             https://ecf.laed.uscourts.gov/doc1/08501407159
+            or
+            /doc1/08501407159
         In this example, laed is the court code, and 08501407159 is the docid
     '''
 
@@ -1603,7 +1653,7 @@ def _parse_dktrpt_table_row(row, casenum):
     if link:
         # Get docnum and docid from link
 
-        docrev3 = re.compile(r"^.*\.(\w*)\.uscourts\.gov\/(.*)\/(\w*)$")
+        docrev3 = re.compile(r"^(.*\.\w*\.uscourts\.gov)?\/([^\/]*)\/([^\/\W]*)$")
         docrev4 = re.compile(r"^\/cgi-bin\/show_doc\.pl\?(.*)$")
         uri = link['href']
 
@@ -1627,7 +1677,6 @@ def _parse_dktrpt_table_row(row, casenum):
             docmeta["doc_num"] = docnum
             docmeta["attachment_num"] = 0    # Primary document
 
-            court = docmatchv3.group(1)        # TK: Unused
             directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
             docid = coerce_docid(docmatchv3.group(3))
@@ -1755,16 +1804,16 @@ if __name__ == "__main__":
             docketbits = open(filename).read()
             court, casenum, x = filename.split('/', 1)[-1].split('.', 2)
             docket = parse_cadkt(docketbits, court, casenum, False)
-            if (not "nature_of_suit" in docket.casemeta
-                or not "date_case_filed" in docket.casemeta
-                or not "date_case_terminated" in docket.casemeta
-                or not "docket_num" in docket.casemeta
-                or not "case_name" in docket.casemeta
-                or not "appeal_from" in docket.casemeta
-                or not "originating_court_id" in docket.casemeta
-                or not "originating_case_number" in docket.casemeta
-                or None in docket.casemeta.values()):
-                print json.dumps(docket.casemeta, indent=4)
+            # if (not "nature_of_suit" in docket.casemeta
+            #     or not "date_case_filed" in docket.casemeta
+            #     or not "date_case_terminated" in docket.casemeta
+            #     or not "docket_num" in docket.casemeta
+            #     or not "case_name" in docket.casemeta
+            #     or not "appeal_from" in docket.casemeta
+            #     or not "originating_court_id" in docket.casemeta
+            #     or not "originating_case_number" in docket.casemeta
+            #     or None in docket.casemeta.values()):
+            print json.dumps(docket.casemeta, indent=4)
             print json.dumps(docket.documents, indent=4)
             print ''
             print ''
