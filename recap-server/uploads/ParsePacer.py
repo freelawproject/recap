@@ -22,6 +22,11 @@ def coerce_docid(docid):
     """
     return docid[:3]+"0"+docid[4:]
 
+def convert_date_format(date):
+    if not date: return date
+    if not re.match(r'\d{2}/\d{2}/\d{4}', date): return date
+    return date[6:10] + '-' + date[0:2] + '-' + date[3:5]
+
 def is_appellate(court):
     return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
 
@@ -727,6 +732,7 @@ def _parse_cadkt_document_table(the_soup, is_full):
                 docmeta["doc_num"] = docmeta["pacer_doc_id"]
 
             docmeta["date_filed"] = cells[0].string
+            docmeta["date_filed"] = convert_date_format(docmeta["date_filed"])
 
             if cells[2].string:
                 docmeta["long_desc"] = cells[2].string
@@ -1110,10 +1116,12 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
         pass
     try:
         case_data["date_case_filed"] = the_soup(text="Docketed:")[0].next.strip()
+        case_data["date_case_filed"] = convert_date_format(case_data["date_case_filed"])
     except (AttributeError, IndexError):
         pass
     try:
         case_data["date_case_terminated"] = the_soup(text="Termed:")[0].next.strip()
+        case_data["date_case_terminated"] = convert_date_format(case_data["date_case_terminated"])
     except (AttributeError, IndexError):
         pass
     try:
@@ -1138,6 +1146,7 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
         pass
     try:
         case_data["originating_date_filed"] = the_soup(text=re.compile("Date Filed: "))[0].next.strip()
+        case_data["originating_date_filed"] = convert_date_format(case_data["originating_date_filed"])
     except (AttributeError, IndexError):
         pass
 
@@ -1176,6 +1185,7 @@ def _get_case_metadata_from_ca_dktrpt(the_soup, is_full):
         for label, date in zip(labels.findAll('td'), dates.findAll('td')):
             label = label.find('b').string.strip()
             date = date.string.strip()
+            date = convert_date_format(date)
             if label == 'Date Order/Judgment:':
                 case_data['originating_date_order_judgment'] = date
             if label == 'Date Order/Judgment EOD:':
