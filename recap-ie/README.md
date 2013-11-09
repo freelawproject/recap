@@ -5,6 +5,17 @@
 
 
 
+Resources
+---------
+
+* [RECAP Home Page][1]
+* [RECAP Developer Slides][2]
+
+[1]: https://www.recapthelaw.org/
+[2]: https://docs.google.com/presentation/d/1khhCaQIC2bBSgZPmdskA5ONisDjiHU6a_50t7oYAKJU/
+
+
+
 Status
 ------
 
