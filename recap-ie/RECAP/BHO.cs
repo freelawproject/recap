@@ -72,7 +72,7 @@ namespace RECAP {
 
         public const string BHO_REGISTRY_KEY_NAME = "Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\Browser Helper Objects";
 
-        // Install command: `C://Windows/[.NET]/regasm.exe recap.dll`
+        // Install command: `C:\Windows\[.NET]\regasm.exe recap.dll`
         [ComRegisterFunction]
         public static void RegisterBHO(Type type) {
 
@@ -94,7 +94,7 @@ namespace RECAP {
 
         }
 
-        // Uninstall command: `C://Windows/[.NET]/regasm.exe /u recap.dll`
+        // Uninstall command: `C:\Windows\[.NET]\regasm.exe /u recap.dll`
         [ComUnregisterFunction]
         public static void UnregisterBHO(Type type) {
             RegistryKey registryKey = Registry.LocalMachine.OpenSubKey(BHO_REGISTRY_KEY_NAME, true);

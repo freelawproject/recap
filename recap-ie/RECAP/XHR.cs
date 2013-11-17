@@ -95,9 +95,9 @@ namespace RECAP {
                 this.response = (HttpWebResponse) this.request.EndGetResponse(result);
                 if (this.response.StatusCode == HttpStatusCode.OK) {
                     // Get response data
-                    Stream responseStream = this.response.GetResponseStream();
-                    byte[] responseBytes = new byte[responseStream.Length];
-                    responseStream.Read(responseBytes, 0, (int) responseStream.Length);
+                    MemoryStream memoryStream = new MemoryStream();
+                    this.response.GetResponseStream().CopyTo(memoryStream);
+                    byte[] responseBytes = memoryStream.ToArray();
                     // Execute callback
                     if (responseType == "text") {
                         string responseData = Encoding.UTF8.GetString(responseBytes);

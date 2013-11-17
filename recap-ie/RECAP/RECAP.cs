@@ -59,6 +59,7 @@ namespace RECAP {
             this.previous = this.url;
             this.url = this.browser.LocationURL.ToString();
             if (PACER.IsPacerUrl(this.url)) {
+                System.Windows.Forms.MessageBox.Show("Found PACER URL!", "Found PACER URL");
                 this.court = PACER.GetCourtFromUrl(this.url);
             } else {
                 this.court = null;
@@ -151,7 +152,7 @@ namespace RECAP {
 
             string[] urls = { this.url };
             GetAvailabilityForDocuments(urls, (responseData) => {
-                Hashtable queryResponse = (Hashtable) responseData;
+                Hashtable queryResponse = new Hashtable((Dictionary<string, object>) responseData);
                 if (queryResponse.Contains(this.url) && ((Hashtable) queryResponse[this.url]).Contains("filename")) {
 
                     // <a title="..." href="..."><img src="..."/> ... </a>
@@ -181,7 +182,7 @@ namespace RECAP {
             });
 
             foreach (IHTMLElement form in this.document.getElementsByTagName("form")) {
-                ((IHTMLFormElement) form).onsubmit += new HTMLFormElementEvents2_onsubmitEventHandler(this.SingleDocumentHandler);
+                ((HTMLFormElementEvents2_Event) form).onsubmit += new HTMLFormElementEvents2_onsubmitEventHandler(this.SingleDocumentHandler);
             }
 
         }
@@ -194,7 +195,6 @@ namespace RECAP {
                 if (PACER.IsDocumentUrl(url)) {
                     urls.Add(url);
                 }
-                link.onmouseover += new HTMLDocumentEvents2_onmouseoverEventHandler(this.LinkMouseOverHandler);
             }
             if (urls.Count > 0) {
                 GetAvailabilityForDocuments(urls.ToArray(), (responseData) => {
@@ -221,6 +221,7 @@ namespace RECAP {
                     }
                 });
             }
+            ((HTMLDocumentEvents2_Event) this.document).onmouseover += new HTMLDocumentEvents2_onmouseoverEventHandler(this.LinkMouseOverHandler);
         }
 
 
@@ -228,6 +229,9 @@ namespace RECAP {
 
         private void LinkMouseOverHandler(IHTMLEventObj e) {
             IHTMLElement a = e.srcElement;
+            if ((a == null) || (a.tagName.ToLower() != "a")) {
+                return;
+            }
             string url = a.getAttribute("href");
             if (PACER.IsConvertibleDocumentUrl(url)) {
                 PACER.ConvertDocumentUrl(url, (newurl, docid, caseid, deseqnum, dmid, docnum) => {
