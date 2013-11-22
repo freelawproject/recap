@@ -31,7 +31,7 @@ def date_yielder(start, stop):
     d = start + timedelta(days=1)
     while d >= stop:
         d = start - timedelta(days=1)
-        if d.weekday() in [6, 7]:
+        if d.weekday() in [5, 6]:
             continue
         yield d
 
