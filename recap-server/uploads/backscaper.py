@@ -28,7 +28,7 @@ def date_yielder(start, stop):
 
     Eliminate Saturday and Sunday.
     """
-    d = start
+    d = start + timedelta(days=1)
     while d >= stop:
         d = start - timedelta(days=1)
         if d.weekday() in [6, 7]:
