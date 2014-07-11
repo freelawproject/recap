@@ -303,7 +303,8 @@ module.exports = function (grunt) {
 
     grunt.registerTask('test', [
         'connect:test',
-        'mocha'
+        // 'mocha' // TODO: Add mocha tests.
+        'jshint'
     ]);
 
     grunt.registerTask('build', [
