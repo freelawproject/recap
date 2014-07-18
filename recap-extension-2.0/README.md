@@ -1,4 +1,4 @@
-recap-the-law-v2 [![Build Status](https://travis-ci.org/semenko/recap-the-law-v2.svg)](https://travis-ci.org/semenko/recap-the-law-v2) [![devDependency Status](https://david-dm.org/semenko/recap-the-law-v2/dev-status.svg?theme=shields.io)](https://david-dm.org/semenko/recap-the-law-v2#info=devDependencies)
-================
+recap-extension-2.0 [![Build Status](https://travis-ci.org/freelawproject/recap-extension-2.0.svg)](https://travis-ci.org/) [![devDependency Status](https://david-dm.org/freelawproject/recap-extension-2.0/dev-status.svg?theme=shields.io)](https://david-dm.org/freelawproject/recap-extension-2.0#info=devDependencies)
+===================
 
-An experimental refactoring of the RECAP extension.
+A new version of the RECAP extension that supports IE, Firefox and Chrome.
