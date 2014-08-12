@@ -16,10 +16,10 @@ def remove_document(document):
     delete_document_from_IA(document)
 
 def mark_document_as_unavailable(document):
-    if not document.available:
-        print "Exiting: This document isn't currently available on IA"
-        print usage()
-        exit()
+    #if not document.available:
+    #    print "Exiting: This document isn't currently available on IA"
+    #    print usage()
+    #    exit()
 
     document.available = 0
     document.lastdate = datetime.datetime.now() # this ensures that the archive.recapthelaw will get the update
@@ -49,11 +49,17 @@ def add_document_to_blacklist(document):
 
 def delete_document_from_IA(document):
     request = IACommon.make_pdf_delete_request(document.court, document.casenum, document.docnum, document.subdocnum)
+    print request
+    print request.get_full_url()
+    print request.get_method()
+    print dir(request)
     try:
        response = urllib2.urlopen(request)
+       print response
     except urllib2.HTTPError, e:
        if e.code != 204:
           print "   the response to the delete request was %s. This may not be an error" % e.code
+       print "  response: %s" % e.code
 
 
 def get_document_from_argv():

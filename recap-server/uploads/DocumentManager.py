@@ -1,7 +1,7 @@
 
 import logging
 
-from MySQLdb import IntegrityError
+from MySQLdb import IntegrityError, OperationalError
 
 from uploads.models import Document
 import InternetArchiveCommon as IACommon
@@ -28,6 +28,11 @@ def update_local_db(docket, ignore_available=1):
             # Add this new document to our DB
             docentry = Document(court=court, casenum=casenum,
                                 docnum=docnum, subdocnum=subdocnum)
+        except OperationalError:
+            logging.error("update_local_db: could not save %s %s %s %s"
+                          % (court, casenum, docnum, subdocnum))
+            return
+
         try:
             docentry.docid = docmeta["pacer_doc_id"]
         except KeyError:

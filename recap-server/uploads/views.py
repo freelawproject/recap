@@ -14,6 +14,8 @@ import DocumentManager
 import ParsePacer
 import datetime
 
+import os
+
 from recap_config import config
 
 
@@ -491,3 +493,7 @@ def heartbeat(request):
         return HttpResponse("It's Alive!")
     else:
         return HttpResponseServerError("500 Server error: He's Dead Jim")
+
+def load():
+    return HttpResponse(os.getloadavg().pop())
+

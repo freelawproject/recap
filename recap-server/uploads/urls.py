@@ -11,6 +11,7 @@ urlpatterns = patterns('uploads.views',
                        (r'^querylocks/$', 'querylocks'),
                        (r'^get_updated_cases/$', 'get_updated_cases'),
                        (r'^heartbeat/$', 'heartbeat'),
+                       (r'^load/$', 'load'),
 
     # Uncomment this for admin:
 #     (r'^admin/', include('django.contrib.admin.urls')),

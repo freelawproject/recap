@@ -57,6 +57,13 @@ class DocketXML(object):
             Requires the document to have a docnum (and a subdocnum).
         '''
 
+        # If docnum_s and subdocnum_s aren't integers, skip.
+        try:
+            int(docnum_s)
+            int(subdocnum_s)
+        except ValueError:
+            return
+
         dockey = "%s-%s" % (unicode(docnum_s), unicode(subdocnum_s))
         self.documents[dockey] = {"doc_num": unicode(docnum_s),
                                   "attachment_num": unicode(subdocnum_s)}

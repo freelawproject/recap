@@ -14,6 +14,8 @@ import signal
 import traceback
 import pdb
 
+from MySQLdb import IntegrityError, OperationalError
+
 from pyPdf import PdfFileReader
 from pyPdf.utils import PdfReadError
 
@@ -27,7 +29,7 @@ import InternetArchiveCommon as IACommon
 import DocumentManager
 from recap_config import config
 
-MAX_CONCURRENT_PROCESSES = 5
+MAX_CONCURRENT_PROCESSES = 1 
 
 BASE_PICKLE_JAR = ROOT_PATH + "/picklejar"
 LOCK_TIMEOUT = 86400 #seconds
@@ -360,16 +362,16 @@ def _cron_get_updates():
 
     # Set both ready and expired locks to the 'processing' state.
     readylocks = BucketLockManager.mark_ready_for_processing(timeout_cutoff)
-    expiredlocks = BucketLockManager.mark_expired_for_processing(timeout_cutoff)
+    #expiredlocks = BucketLockManager.mark_expired_for_processing(timeout_cutoff)
 
     # Then, go through the ready locks one-by-one with HTTP waiting.
     for lock in readylocks:
         _cron_fetch_update(lock)
-    for expiredlock in expiredlocks:
-        court = unicode(expiredlock.court)
-        casenum = unicode(expiredlock.casenum)
-        print "  %s.%s lock expired." % (court, casenum)
-        _cron_fetch_update(expiredlock)
+    #for expiredlock in expiredlocks:
+    #    court = unicode(expiredlock.court)
+    #    casenum = unicode(expiredlock.casenum)
+    #    print "  %s.%s lock expired." % (court, casenum)
+    #    _cron_fetch_update(expiredlock)
 
 def _cron_fetch_update(lock):
     court = unicode(lock.court)
@@ -514,6 +516,7 @@ def _cron_put_pickles():
 
         # Two cases for the unpickled object: Request or DocketXML
         if obj and ppentry.docket:
+            print "Processing docket: %s" % filename
             _cron_process_docketXML(obj, ppentry)
 
         elif obj:
