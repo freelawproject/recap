@@ -20,7 +20,7 @@
       "38": "images/icon-38.png"
     },
     "default_title": "RECAP The Law",
-    "default_popup": "popup.html"
+    "default_popup": "options.html"
   },
   "options_page": "options.html",
   "omnibox": {

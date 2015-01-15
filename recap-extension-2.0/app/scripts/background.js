@@ -23,7 +23,7 @@ chrome.storage.sync.get('options', function (items) {
 });
 
 // Make services callable from content scripts.
-exportInstance(Notifier);
-exportInstance(ToolbarButton);
-exportInstance(Pacer);
-exportInstance(Recap);
+// exportInstance(Notifier);
+// exportInstance(ToolbarButton);
+// exportInstance(Pacer);
+// exportInstance(Recap);
