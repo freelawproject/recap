@@ -46,7 +46,7 @@
         "notifications",
         "tabs",
         "storage",
-        "http://*/*",
-        "https://*/*"
+        "*://*.uscourts.gov/",
+        "*://*.recapextension.org/"
     ]
 }
