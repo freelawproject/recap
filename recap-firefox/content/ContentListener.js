@@ -273,10 +273,8 @@ ContentListener.prototype = {
 	var jsonout = { court: court, 
 	    	        casenum: casenum};
 
-	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	
 	// Serialize the JSON object to a string
-	var jsonouts = nativeJSON.encode(jsonout);
+	var jsonouts = JSON.stringify(jsonout);
 
         // Send the AJAX POST request
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
@@ -357,10 +355,9 @@ ContentListener.prototype = {
     	if (jsonout.urls.length == 0) {
     	    return;
 	    }
-	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
 	
 	// Serialize the JSON object to a string
-	var jsonouts = nativeJSON.encode(jsonout);
+	var jsonouts = JSON.stringify(jsonout);
 
         // Send the AJAX POST request
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
@@ -374,8 +371,7 @@ ContentListener.prototype = {
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
 
-	        var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	        var jsonin = nativeJSON.decode(req.responseText);
+	        var jsonin = JSON.parse(req.responseText);
 		that.handleResponse(jsonin, document, elements);
 	    }
 	};
@@ -438,10 +434,8 @@ ContentListener.prototype = {
     	    }
     	}
 
-	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	
 	// Serialize the JSON object to a string
-	var jsonouts = nativeJSON.encode(jsonout);
+	var jsonouts = JSON.stringify(jsonout);
 
         // Send the AJAX POST request
 	var req = CCIN("@mozilla.org/xmlextras/xmlhttprequest;1",
@@ -455,8 +449,7 @@ ContentListener.prototype = {
 	req.onreadystatechange = function() {
 	    if (req.readyState == 4 && req.status == 200) {
 
-	        var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	        var jsonin = nativeJSON.decode(req.responseText);
+	        var jsonin = JSON.parse(req.responseText);
 		that.handleResponse(jsonin, document, elements);
 	    }
 	};
@@ -553,8 +546,7 @@ ContentListener.prototype = {
 
     handleCaseResponse: function(req, document) {
 	
-	var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
-	var jsonin = nativeJSON.decode(req.responseText);
+	var jsonin = JSON.parse(req.responseText);
 
 	var docket_url = null;
 	try{
