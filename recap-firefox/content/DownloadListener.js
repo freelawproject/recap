@@ -164,10 +164,9 @@ DownloadListener.prototype = {
     handleResponse: function(req) {
 
         // handle json object and update metadata cache
-        var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
         var jsonin;
         try {
-            jsonin = nativeJSON.decode(req.responseText);
+            jsonin = JSON.parse(req.responseText);
         } catch (e) {
             return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
         }
