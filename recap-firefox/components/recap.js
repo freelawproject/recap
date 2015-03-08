@@ -1,13 +1,13 @@
-/* 
+/*
  *  This file is part of the RECAP Firefox Extension.
  *
  *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
  *  Website: http://www.recapthelaw.org
  *  E-mail: info@recapthelaw.org
  *
- *  The RECAP Firefox Extension is free software: you can redistribute it 
+ *  The RECAP Firefox Extension is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License as
- *  published by the Free Software Foundation, either version 3 of the 
+ *  published by the Free Software Foundation, either version 3 of the
  *  License, or (at your option) any later version.
  *
  *  The RECAP Firefox Extension is distributed in the hope that it will be
@@ -16,7 +16,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with the RECAP Firefox Extension.  If not, see 
+ *  along with the RECAP Firefox Extension.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -37,7 +37,7 @@ Components.utils.import("resource://gre/modules/XPCOMUtils.jsm");
 var Recap = {}; // New empty extension namespace
 
 //var jsLoader = CCGS("@mozilla.org/moz/jssubscript-loader;1",
-//		    "mozIJSSubScriptLoader");
+//                    "mozIJSSubScriptLoader");
 
 var jsLoader = Cc["@mozilla.org/moz/jssubscript-loader;1"].getService(Ci["mozIJSSubScriptLoader"]);
 
@@ -61,57 +61,57 @@ function RecapService() {
 RecapService.prototype = {
 
     initialized: false,
-    
+
     metacache: {"documents": {},"cases": {}},
 
     getContentListener: function() {
-	return Recap.gContentListener;
+        return Recap.gContentListener;
     },
 
     _init: function() {
-	if(!this.initialized) {
-	    var os = Recap.CCGS("@mozilla.org/observer-service;1",
-			  "nsIObserverService");
-	    os.addObserver(this, "xpcom-shutdown", false);
-	    os.addObserver(this, "quit-application", false);
-	    
-	    Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
-	    Recap.gContentListener = new Recap.ContentListener(this.metacache);
-	
-	    var myListener = new Recap.PrefListener("extensions.recap.",
-                                  function(branch, name)
-                                  {
-                                      switch (name) 
-                                      {
-                                          case "temp_disable":
-						Recap.handlePrefDisable();
-                                                break;
-                                      }
-                                  });
+        if(!this.initialized) {
+            var os = Recap.CCGS("@mozilla.org/observer-service;1",
+                                "nsIObserverService");
+            os.addObserver(this, "xpcom-shutdown", false);
+            os.addObserver(this, "quit-application", false);
 
-	    myListener.register();
-	    
-	    this.initialized = true;
-	    
-	}
+            Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
+            Recap.gContentListener = new Recap.ContentListener(this.metacache);
+
+            var myListener = new Recap.PrefListener("extensions.recap.",
+                                function(branch, name)
+                                {
+                                    switch (name)
+                                    {
+                                        case "temp_disable":
+                                            Recap.handlePrefDisable();
+                                            break;
+                                    }
+                                });
+
+            myListener.register();
+
+            this.initialized = true;
+
+        }
     },
-	
+
     _shutdown: function() {
         os.removeObserver(this, "xpcom-shutdown");
-	
-	if(this.initialized) {
-	    Recap.gRequestObserver.unregister();
+
+        if(this.initialized) {
+            Recap.gRequestObserver.unregister();
             Recap.gRequestObserver = null;
 
-	    Recap.gContentListener.unregister();
-	    Recap.gContentListener = null;
-	}
+            Recap.gContentListener.unregister();
+            Recap.gContentListener = null;
+        }
     },
-    
+
     _quit: function() {
         os.removeObserver(this, "quit-application");
     },
-    
+
     /**
      * Setting up and Registering the extension using XPCOMUtil
      */
@@ -121,55 +121,55 @@ RecapService.prototype = {
     classID:          Components.ID("{2ada744a-7368-4399-9321-f342637bca76}"),
     contractID:       "@cs.princeton.edu/recap;1",
     QueryInterface: XPCOMUtils.generateQI([Ci.nsIObserver,
-					   Ci.nsISupports]),
-					 
-		 
+                                           Ci.nsISupports]),
+
+
     /**
      * See nsIObserver
      */
     observe: function Recap_observe(subject, topic, data) {
-	var os = Recap.CCGS("@mozilla.org/observer-service;1", 
-		      "nsIObserverService");
-	
-	switch (topic) {
-	case "app-startup":
-	case "profile-after-change":
-	    Recap.log("startup observed");
-	    this._init();
-	    break;
-	case "xpcom-shutdown":
-	    Recap.log("shutdown observed");
-	    this._shutdown();
-	    break;
-	case "quit-application":
-	    Recap.log("quit observed");
-	    this._quit();
-	    break;
-	}
-	
-	os = null;
+        var os = Recap.CCGS("@mozilla.org/observer-service;1",
+                            "nsIObserverService");
+
+        switch (topic) {
+            case "app-startup":
+            case "profile-after-change":
+                Recap.log("startup observed");
+                this._init();
+                break;
+            case "xpcom-shutdown":
+                Recap.log("shutdown observed");
+                this._shutdown();
+                break;
+            case "quit-application":
+                Recap.log("quit observed");
+                this._quit();
+                break;
+        }
+
+        os = null;
     },
-  
+
     /**
      * See nsIFactory
      */
     //keep _instance and only return one instance of Recap
     _xpcom_factory: {
-	_instance: null,
-	createInstance: function (outer, iid) {
-	    if (outer != null)
-		throw Cr.NS_ERROR_NO_AGGREGATION;
-	    Recap.log("createInstance called");
-	    return this._instance == null ? 
-  	      this._instance = (new RecapService()).QueryInterface(iid) : 
-	      (this._instance).QueryInterface(iid);
-	}
+        _instance: null,
+        createInstance: function (outer, iid) {
+            if (outer != null)
+                throw Cr.NS_ERROR_NO_AGGREGATION;
+            Recap.log("createInstance called");
+            return this._instance == null ?
+                    this._instance = (new RecapService()).QueryInterface(iid) :
+                    (this._instance).QueryInterface(iid);
+        }
     },
-		
+
     _xpcom_categories: [{
-	    category: "app-startup",
-	    service: true
-	}]	
+        category: "app-startup",
+        service: true
+    }]
 };
 
 
