@@ -141,10 +141,10 @@ function getCourtFromHost(hostname) {
 
 // Checks whether we have a PACER cookie
 function havePACERCookie() {
-    
+
     // Debug
     return true;
-    
+
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 
@@ -168,10 +168,10 @@ function havePACERCookie() {
 }
 
 function hasECFCookie() {
-    
+
     // DEBUG
     // return false;
-    
+
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 

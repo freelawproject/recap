@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!--
-/* 
+/*
  *  This file is part of the RECAP Firefox Extension.
  *
  *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
  *  Website: http://www.recapthelaw.org
  *  E-mail: info@recapthelaw.org
  *
- *  The RECAP Firefox Extension is free software: you can redistribute it 
+ *  The RECAP Firefox Extension is free software: you can redistribute it
  *  and/or modify it under the terms of the GNU General Public License as
- *  published by the Free Software Foundation, either version 3 of the 
+ *  published by the Free Software Foundation, either version 3 of the
  *  License, or (at your option) any later version.
  *
  *  The RECAP Firefox Extension is distributed in the hope that it will be
@@ -18,7 +18,7 @@
  *  GNU General Public License for more details.
  *
  *  You should have received a copy of the GNU General Public License
- *  along with the RECAP Firefox Extension.  If not, see 
+ *  along with the RECAP Firefox Extension.  If not, see
  *  <http://www.gnu.org/licenses/>.
  *
  */
@@ -26,7 +26,7 @@
 <?xml-stylesheet href="chrome://recap/skin/overlay.css" type="text/css"?>
 <!DOCTYPE overlay SYSTEM "chrome://recap/locale/en-US/recap.dtd">
 
-<overlay id="recap-overlay" 
+<overlay id="recap-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
 
   <toolbarpalette id="BrowserToolbarPalette">
@@ -37,7 +37,7 @@
 
   <script src="overlay.js"/>
   <script src="common.js"/>
-  
+
   <menupopup id="menu_ToolsPopup">
     <menuitem label="RECAP Preferences..." oncommand="recap.openPrefs()" image="chrome://recap/skin/recap-icon-32.png" insertafter="javascriptConsole"/>
   </menupopup>
