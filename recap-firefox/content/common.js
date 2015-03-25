@@ -1,26 +1,3 @@
-/*
- *  This file is part of the RECAP Firefox Extension.
- *
- *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
- *  Website: http://www.recapthelaw.org
- *  E-mail: info@recapthelaw.org
- *
- *  The RECAP Firefox Extension is free software: you can redistribute it
- *  and/or modify it under the terms of the GNU General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  The RECAP Firefox Extension is distributed in the hope that it will be
- *  useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with the RECAP Firefox Extension.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
- */
-
 var ICON_LOGGED_IN = "chrome://recap/skin/recap-icon.png";
 var ICON_LOGGED_IN_32 = "chrome://recap/skin/recap-icon-32.png";
 var ICON_LOGGED_OUT = "chrome://recap/skin/recap-icon-grey.png";
@@ -141,10 +118,10 @@ function getCourtFromHost(hostname) {
 
 // Checks whether we have a PACER cookie
 function havePACERCookie() {
-    
+
     // Debug
     return true;
-    
+
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 
@@ -168,10 +145,10 @@ function havePACERCookie() {
 }
 
 function hasECFCookie() {
-    
+
     // DEBUG
     // return false;
-    
+
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 
@@ -285,7 +262,6 @@ function handlePrefDisable() {
             "RECAP deactivated.", "RECAP will stay deactivated even when logged into PACER.");
     } else {
         var URIhost = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
-
         if (isPACERHost(URIhost) && havePACERCookie()) {
             showAlert(ICON_LOGGED_IN_32,
                 "RECAP activated.", "You are logged into PACER.");
@@ -294,7 +270,6 @@ function handlePrefDisable() {
                 "RECAP activated.", "RECAP will be activated when logged into PACER.");
         }
     }
-
     return true;
 }
 
