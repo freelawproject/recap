@@ -6,13 +6,13 @@ DATABASE_NAME = 'recap_dev'
 DATABASE_USER = 'recap'
 DATABASE_PASSWORD = 'recapthelaw'
 
-BUCKET_PREFIX = '',
-SERVER_HOSTNAME = 'http://localhost:8000',
-SERVER_BASEDIR = 'recap/',
-UPLOAD_AUTHKEY = '',
-DJANGO_DEBUG = False,
-DUMP_DOCKETS = False,
-DUMP_DOCKETS_COURT_REGEX = 'b-|b$',
+BUCKET_PREFIX = ''
+SERVER_HOSTNAME = 'http://localhost:8000'
+SERVER_BASEDIR = 'recap/'
+UPLOAD_AUTHKEY = ''
+DJANGO_DEBUG = False
+DUMP_DOCKETS = False
+DUMP_DOCKETS_COURT_REGEX = 'b-|b$'
 MAX_NUM_DUMP_DOCKETS = '100'
 
 OPINIONS_UPLOADER_AUTHKEY = ''
@@ -20,7 +20,7 @@ PACER_USERNAME = ''
 PACER_PASSWORD = ''
 
 IA_S3_UPLOAD_KEY = ''
-IA_STORAGE_URL = 'http://s3.us.archive.org',
+IA_STORAGE_URL = 'http://s3.us.archive.org'
 IA_COLLECTION = ''
 
 HEARTBEAT_KEY = ''
