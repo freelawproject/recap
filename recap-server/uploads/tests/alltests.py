@@ -19,7 +19,9 @@ import time
 
 from test_constants import TEST_SUPPORT_PATH, TEST_OPINION_PATH, TEST_DOC1_PATH
 
-from uploads.recap_config import config
+SERVER_HOSTNAME = 'http://localhost:8000',
+SERVER_BASEDIR = 'recap/',
+
 
 TEST_DOCKET_PATH  = TEST_SUPPORT_PATH + "testdockets/"
 TEST_DOCUMENT_PATH = TEST_SUPPORT_PATH + "testdocuments/"

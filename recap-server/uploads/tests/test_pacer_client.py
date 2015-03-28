@@ -3,14 +3,14 @@ import urllib2
 from datetime import date
 
 from test_constants import TEST_SUPPORT_PATH, TEST_OPINION_PATH, TEST_PDF_PATH, TEST_DOC1_PATH
-from uploads.recap_config import config
+from django.conf import settings as config
 from uploads.pacer_client import PacerClient, PacerPageNotAvailableException
 import uploads.ParsePacer as PP
 
 import pdb
 
-PACER_USERNAME = config['PACER_USERNAME']
-PACER_PASSWORD = config['PACER_PASSWORD']
+PACER_USERNAME = config.PACER_USERNAME
+PACER_PASSWORD = config.PACER_PASSWORD
 
 class TestPacerClient(unittest.TestCase):
     def setUp(self):

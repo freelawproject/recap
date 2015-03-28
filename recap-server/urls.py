@@ -1,8 +1,8 @@
 from django.conf.urls.defaults import *
-from uploads.recap_config import config
+from django.conf import settings as config
 
 urlpatterns = patterns('',
-                       (r'^%s' % config["SERVER_BASEDIR"], 
+                       (r'^%s' % config.SERVER_BASEDIR, 
                         include('recap-server.uploads.urls')),
 
     # Uncomment this for admin:

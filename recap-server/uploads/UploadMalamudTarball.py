@@ -12,15 +12,15 @@ import socket
 import ParsePacer
 import DocketXML
 import InternetArchiveDirect as IADirect
-from recap_config import config
+from django.conf import settings as config
 
-SERVER_URL_BASE = "%s%s" % (config["SERVER_HOSTNAME"], config["SERVER_BASEDIR"])
+SERVER_URL_BASE = "%s%s" % (config.SERVER_HOSTNAME, config.SERVER_BASEDIR)
 if not SERVER_URL_BASE.endswith("/"):
     SERVER_URL_BASE += "/"
 LOCK_URL = SERVER_URL_BASE + "lock?"
 UNLOCK_URL = SERVER_URL_BASE + "unlock?"
 
-AUTH_KEY = config["UPLOAD_AUTHKEY"]
+AUTH_KEY = config.UPLOAD_AUTHKEY
 MAX_RETRIES = 10
 
 def lock(court, casenum):
