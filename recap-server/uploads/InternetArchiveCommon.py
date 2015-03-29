@@ -109,7 +109,7 @@ def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, make
     bucketname = get_bucketname(court, casenum)
     filename = get_pdfname(court, casenum, docnum, subdocnum)
 
-    storage_path = "%s/%s" % (bucketname, filename)
+    storage_path = ("%s/%s" % (bucketname, filename)).encode('utf-8')
     request = _init_put(storage_path)
 
     # Add the payload
