@@ -13,7 +13,7 @@ socket.setdefaulttimeout(60)
 
 def get_bucketname(court, casenum):
 
-    prefix = config["BUCKET_PREFIX"]
+    prefix = config.BUCKET_PREFIX
     bucketlist = ["gov", "uscourts", court, unicode(casenum)]
     if prefix:
         bucketlist.insert(0, prefix)
