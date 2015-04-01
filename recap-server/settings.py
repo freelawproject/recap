@@ -11,13 +11,13 @@ import glob
 import sys
 
 def _generate_secret_key(file_path):
-  import random
-  chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
-  def random_char():
-    return chars[int(len(chars)*random.random())]
-  rand_str = ''.join(random_char() for i in range(64))
-  with open(file_path, 'w') as f:
-    f.write('SECRET_KEY=%s\n' % repr(rand_str))
+    import random
+    chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+    def random_char():
+        return chars[int(len(chars)*random.random())]
+    rand_str = ''.join(random_char() for i in range(64))
+    with open(file_path, 'w') as f:
+        f.write('SECRET_KEY=%s\n' % repr(rand_str))
 
 ROOT_PATH = os.path.dirname(__file__)
 
