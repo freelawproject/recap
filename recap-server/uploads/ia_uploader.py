@@ -13,7 +13,7 @@ import InternetArchiveDirect as IADirect
 import InternetArchiveCommon as IACommon
 import DocketXML
 
-from recap_config import config
+from django.conf import settings as config
 import cPickle as pickle
 import pika
 
@@ -26,13 +26,13 @@ logging.basicConfig(
 )
 logger = logging.getLogger('ia_uploader')
 
-SERVER_URL_BASE = "%s%s" % (config["SERVER_HOSTNAME"], config["SERVER_BASEDIR"])
+SERVER_URL_BASE = "%s%s" % (config.SERVER_HOSTNAME, config.SERVER_BASEDIR)
 if not SERVER_URL_BASE.endswith("/"):
     SERVER_URL_BASE += "/"
 LOCK_URL = SERVER_URL_BASE + "lock/?"
 UNLOCK_URL = SERVER_URL_BASE + "unlock/?"
 
-RECAP_AUTH_KEY = config['OPINIONS_UPLOADER_AUTHKEY']
+RECAP_AUTH_KEY = config.OPINIONS_UPLOADER_AUTHKEY
 opener = urllib2.build_opener(urllib2.HTTPRedirectHandler())
 
 connection = pika.BlockingConnection(pika.ConnectionParameters(

@@ -27,13 +27,13 @@ import BucketLockManager
 import InternetArchiveDirect as IADirect
 import InternetArchiveCommon as IACommon
 import DocumentManager
-from recap_config import config
+from django.conf import settings as config
 
 MAX_CONCURRENT_PROCESSES = 1 
 
 BASE_PICKLE_JAR = ROOT_PATH + "/picklejar"
 LOCK_TIMEOUT = 86400 #seconds
-AUTH_KEY = config["UPLOAD_AUTHKEY"]
+AUTH_KEY = config.UPLOAD_AUTHKEY
 
 BLACKLIST_DICT = {}
 

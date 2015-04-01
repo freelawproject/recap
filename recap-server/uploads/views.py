@@ -16,7 +16,7 @@ import datetime
 
 import os
 
-from recap_config import config
+from django.conf import settings as config
 
 
 def index(request):
@@ -484,7 +484,7 @@ def heartbeat(request):
         # Fail.  Missing required arguments.
         return HttpResponseForbidden("403 Forbidden")
 
-    if key != config["HEARTBEAT_KEY"]:
+    if key != config.HEARTBEAT_KEY:
         return HttpResponseForbidden("403 Forbidden")
 
     query = Document.objects.filter(court='cand', casenum='215270')

@@ -9,11 +9,11 @@ import cPickle as pickle
 from test_constants import TEST_OPINION_PATH, TEST_PDF_PATH
 import uploads.ParsePacer as PP
 
-from uploads.recap_config import config
+from django.conf import settings as config
 from uploads.opinions_downloader import OpinionsDownloader
 
-PACER_USERNAME = config['PACER_USERNAME']
-PACER_PASSWORD = config['PACER_PASSWORD']
+PACER_USERNAME = config.PACER_USERNAME
+PACER_PASSWORD = config.PACER_PASSWORD
 
 """ This is currently not fuctional, just here so that I can think about interfaces to this opinions downloader thingy - DK"""
 class TestOpinionsDownloader(unittest.TestCase):

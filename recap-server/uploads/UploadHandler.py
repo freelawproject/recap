@@ -14,7 +14,7 @@ import DocketXML
 import DocumentManager
 import BucketLockManager
 
-from recap_config import config
+from django.conf import settings as config
 from settings import ROOT_PATH
 import os
 
@@ -197,7 +197,7 @@ def handle_cadkt(filebits, court, casenum, is_full=False):
 
 def handle_dktrpt(filebits, court, casenum):
 
-    if config['DUMP_DOCKETS'] and re.search(config['DUMP_DOCKETS_COURT_REGEX'], court):
+    if config.DUMP_DOCKETS and re.search(config.DUMP_DOCKETS_COURT_REGEX, court):
         logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (court, casenum))
         _dump_docket_for_debugging(filebits,court,casenum)
 

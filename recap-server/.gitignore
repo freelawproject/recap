@@ -2,7 +2,7 @@
 *.swp
 cron.log*
 debug.log*
-settings.py
-uploads/recap_config.py
+settings/05-private.py
 ia_upload_script.sh
 picklejar
+secret_key.py

@@ -11,7 +11,7 @@ import cPickle as pickle
 from datetime import date
 from datetime import datetime
 
-from uploads.recap_config import config
+from django.conf import settings as config
 from pacer_client import PacerClient, PacerPageNotAvailableException
 import ParsePacer as PP
 
@@ -99,14 +99,14 @@ def run_downloader(courts=['nysd'], start_date=date(2011, 06, 17), end_date=date
     logger.info('Starting opinion download for courts %s, date: %s to %s', courts, 
                                                                            start_date,
                                                                            end_date)
-    downloader = OpinionsDownloader(config['PACER_USERNAME'],
-                                    config['PACER_PASSWORD'])
+    downloader = OpinionsDownloader(config.PACER_USERNAME,
+                                    config.PACER_PASSWORD)
 
     failed_courts = []
 
     for court in courts:
-        downloader.reinit_pacer_client(config['PACER_USERNAME'], 
-                                       config['PACER_PASSWORD'])
+        downloader.reinit_pacer_client(config.PACER_USERNAME, 
+                                       config.PACER_PASSWORD)
         logger.info('Starting opinion download for court %s, date: %s to %s', court, 
                                                                            start_date,
                                                                            end_date)
