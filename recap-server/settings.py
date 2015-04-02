@@ -6,6 +6,7 @@ This results in the following concept:
  - any overrides to public settings can go in 20-private.py (you'll need to create this)
 """
 
+from __future__ import with_statement
 import os
 import glob
 import sys
