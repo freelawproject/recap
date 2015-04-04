@@ -69,10 +69,9 @@ DocLinkListener.prototype = {
         var that = this;
         req.onreadystatechange = function() {
             if (req.readyState == 4 && req.status == 200) {
-                var nativeJSON = CCIN("@mozilla.org/dom/json;1", "nsIJSON");
                 var jsonin;
                 try {
-                    jsonin = nativeJSON.decode(req.responseText);
+                    jsonin = JSON.parse(req.responseText);
                 } catch (e) {
                     log("JSON decoding failed. (req.responseText: " + req.responseText + ")");
                     return;
