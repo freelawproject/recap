@@ -34,7 +34,6 @@
 */
 
 function DocLinkListener(court, URIpath, metacache) {
-
     this.responsetext = "";
     this.court = court;
     this.URIpath = URIpath;

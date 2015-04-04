@@ -50,22 +50,23 @@ RecapService.prototype = {
 
     _init: function() {
         if(!this.initialized) {
-            var os = Recap.CCGS("@mozilla.org/observer-service;1",
-                  "nsIObserverService");
+            var os = Recap.CCGS(
+              "@mozilla.org/observer-service;1",
+              "nsIObserverService"
+            );
             os.addObserver(this, "xpcom-shutdown", false);
             os.addObserver(this, "quit-application", false);
             Recap.gRequestObserver = new Recap.RequestObserver(this.metacache);
             Recap.gContentListener = new Recap.ContentListener(this.metacache);
-            var myListener = new Recap.PrefListener("extensions.recap.",
-                                      function(branch, name)
-                                      {
-                                          switch (name)
-                                          {
-                                              case "temp_disable":
-                            Recap.handlePrefDisable();
-                                                    break;
-                                          }
-                                      });
+            var myListener = new Recap.PrefListener(
+              "extensions.recap.",
+              function(branch, name) {
+                  switch (name) {
+                      case "temp_disable":
+                          Recap.handlePrefDisable();
+                          break;
+                      }
+              });
             myListener.register();
             this.initialized = true;
         }
@@ -107,19 +108,19 @@ RecapService.prototype = {
               "nsIObserverService");
 
     switch (topic) {
-    case "app-startup":
-    case "profile-after-change":
-        Recap.log("startup observed");
-        this._init();
-        break;
-    case "xpcom-shutdown":
-        Recap.log("shutdown observed");
-        this._shutdown();
-        break;
-    case "quit-application":
-        Recap.log("quit observed");
-        this._quit();
-        break;
+        case "app-startup":
+        case "profile-after-change":
+            Recap.log("startup observed");
+            this._init();
+            break;
+        case "xpcom-shutdown":
+            Recap.log("shutdown observed");
+            this._shutdown();
+            break;
+        case "quit-application":
+            Recap.log("quit observed");
+            this._quit();
+            break;
     }
 
     os = null;
