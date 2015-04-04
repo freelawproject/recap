@@ -4,22 +4,24 @@
 
 <overlay id="recap-overlay"
          xmlns="http://www.mozilla.org/keymaster/gatekeeper/there.is.only.xul">
-  <statusbar id="status-bar">
-    <statusbarpanel id="recap-panel">
-      <image id="recap-panel-image"
-             src="chrome://recap/skin/recap-icon-grey.png"
-             onclick="recap.openPrefs();"
-             style="cursor: pointer;"/>
-    </statusbarpanel>
-  </statusbar>
 
-  <script src="overlay.js"/>
-  <script src="common.js"/>
+    <!-- Adds the button so it's part of the default collection -->
+    <toolbarpalette id="BrowserToolbarPalette">
+        <toolbarbutton id="recap-button"
+                       class="toolbarbutton-1
+                              chromeclass-toolbar-additional"
+                       label="RECAP"
+                       tooltiptext="RECAP the Law"
+                       oncommand="recap.openPrefs();"/>
+    </toolbarpalette>
 
-  <menupopup id="menu_ToolsPopup">
-    <menuitem label="RECAP Preferences..."
-              oncommand="recap.openPrefs()"
-              image="chrome://recap/skin/recap-icon-32.png"
-              insertafter="javascriptConsole"/>
-  </menupopup>
+    <script src="overlay.js"/>
+    <script src="common.js"/>
+
+    <menupopup id="menu_ToolsPopup">
+        <menuitem label="RECAP Preferences..."
+                  oncommand="recap.openPrefs()"
+                  image="chrome://recap/skin/recap-icon-32.png"
+                  insertafter="javascriptConsole"/>
+    </menupopup>
 </overlay>

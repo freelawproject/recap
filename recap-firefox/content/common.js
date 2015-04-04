@@ -91,11 +91,7 @@ function isPACERHost(hostname) {
     if (PACER_DOMAINS.indexOf(hostname) >= 0) {
         return true;
     }
-    if (CA_PACER_DOMAINS.indexOf(hostname) >= 0) {
-        return true;
-    }
-    return false;
-    // return (PACER_DOMAINS.indexOf(hostname) >= 0);
+    return CA_PACER_DOMAINS.indexOf(hostname) >= 0;
 }
 
 // RECAP currently only works on District and Bankruptcy courts
@@ -187,10 +183,10 @@ function showAlert(icon, headline, message) {
     if (prefs.getBoolPref("display_notifications") === false)
         return;
 
-    log(headline + ' - ' + message);
+    log(headline + " - " + message);
 
     try {
-        alertsService = CCGS("@mozilla.org/alerts-service;1",
+        var alertsService = CCGS("@mozilla.org/alerts-service;1",
                              "nsIAlertsService");
         alertsService.showAlertNotification(icon, headline, message);
     } catch (e) {
@@ -210,7 +206,7 @@ function updateStatusIcon() {
         return; // browser window is sometimes not defined on startup
     }
 
-    var statusIcon = browserWindow.document.getElementById("recap-panel-image");
+    var statusIcon = browserWindow.document.getElementById("recap-button");
     var hostname = browserWindow.gBrowser.selectedBrowser.contentDocument.domain;
 
     var prefs = CCGS("@mozilla.org/preferences-service;1",
@@ -218,7 +214,7 @@ function updateStatusIcon() {
 
     if (prefs.getBoolPref("temp_disable") === true) {
         // make a red icon and put it here!
-        statusIcon.src = ICON_DISABLED;
+        statusIcon.image = ICON_DISABLED;
         statusIcon.tooltipText = "RECAP is temporarily deactivated. Click to activate.";
         return;
     }
@@ -226,23 +222,24 @@ function updateStatusIcon() {
     if (isPACERHost(hostname)) {
         if (hasECFCookie() && havePACERCookie()) {
             statusIcon.tooltipText = "You are logged into both ECF and PACER, RECAP will activate on PACER pages only.";
-            statusIcon.src = ICON_EXCLAMATION;
+            statusIcon.image = ICON_EXCLAMATION;
         } else if (havePACERCookie()) {
             statusIcon.tooltipText = "You are logged into PACER.";
-            statusIcon.src = ICON_LOGGED_IN;
+            statusIcon.image = ICON_LOGGED_IN;
         } else {
             statusIcon.tooltipText = "You are logged out of PACER.";
-            statusIcon.src = ICON_LOGGED_OUT;
+            statusIcon.image = ICON_LOGGED_OUT;
         }
     } else if (isUnsupportedPACERHost(hostname) && havePACERCookie()) {
         statusIcon.tooltipText = "RECAP does not work on Appellate Courts";
-        statusIcon.src = ICON_EXCLAMATION;
+        statusIcon.image = ICON_EXCLAMATION;
     } else {
-        statusIcon.src = ICON_LOGGED_OUT;
+        statusIcon.image = ICON_LOGGED_OUT;
         statusIcon.tooltipText = "You are logged out of PACER.";
     }
 }
 
+/* mlr: This function does not appear to ever be used? */
 function handlePrefDisable() {
     var prefs = CCGS("@mozilla.org/preferences-service;1",
                      "nsIPrefService").getBranch("extensions.recap.");
