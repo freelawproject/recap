@@ -872,14 +872,14 @@ ContentListener.prototype = {
 
     loadjs: function(document) {
 
-        var jstext = this.localFileToString(RECAP_PATH + "jquery-1.3.2.js");
+        var jstext = this.localFileToString(RECAP_PATH + "jquery-1.11.2.js");
         jstext += this.localFileToString(RECAP_PATH + "jqModal.js");
         jstext += this.localFileToString(RECAP_PATH + "recapModal.js");
 
         var prefs = CCGS("@mozilla.org/preferences-service;1",
                          "nsIPrefService").getBranch("extensions.recap.");
 
-        if (prefs.getBoolPref("auto_check_pdf_headers") == true) {
+        if (prefs.getBoolPref("auto_check_pdf_headers") === true) {
             jstext += this.localFileToString(RECAP_PATH + "recapPDFHeaders.js");
         }
 
