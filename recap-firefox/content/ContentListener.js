@@ -2,7 +2,7 @@
  *  This file is part of the RECAP Firefox Extension.
  *
  *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
- *  Website: http://www.recapthelaw.org
+ *  Website: https://www.recapthelaw.org
  *  E-mail: info@recapthelaw.org
  *
  *  The RECAP Firefox Extension is free software: you can redistribute it
@@ -672,7 +672,7 @@ ContentListener.prototype = {
                      "This document is available for free!");
         this.addP(document, innerdiv);
         this.addTextLink(document, innerdiv, "RECAP",
-                         "http://www.recapthelaw.org", "_blank");
+                         "https://www.recapthelaw.org", "_blank");
         this.addText(document, innerdiv,
                      " cached this document on " + timestamp + ".");
         this.addP(document, innerdiv);
@@ -724,7 +724,7 @@ ContentListener.prototype = {
                      "This Docket is available for free!");
         this.addP(document, innerdiv);
         this.addTextLink(document, innerdiv, "RECAP",
-                         "http://www.recapthelaw.org", "_blank");
+                         "https://www.recapthelaw.org", "_blank");
         this.addText(document, innerdiv,
                      " cached this docket on " + timestamp + ".");
         this.addP(document, innerdiv);

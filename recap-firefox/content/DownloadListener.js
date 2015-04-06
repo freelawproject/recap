@@ -2,7 +2,7 @@
  *  This file is part of the RECAP Firefox Extension.
  *
  *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
- *  Website: http://www.recapthelaw.org
+ *  Website: https://www.recapthelaw.org
  *  E-mail: info@recapthelaw.org
  *
  *  The RECAP Firefox Extension is free software: you can redistribute it
@@ -149,7 +149,7 @@ DownloadListener.prototype = {
         var that = this;
         req.onreadystatechange = function() {
 
-            if (req.readyState == 4 && req.status == 200) {
+            if (req.readyState === 4 && req.status === 200) {
                 var message;
                 message = that.handleResponse(req) || req.responseText;
                 log(message); // XXX
@@ -171,7 +171,7 @@ DownloadListener.prototype = {
             return "JSON decoding failed. (req.responseText: " + req.responseText + ")";
         }
 
-        if (jsonin && typeof(jsonin.error) == "undefined") {
+        if (jsonin && typeof(jsonin.error) === "undefined") {
 
             if (isPDF(this.filemeta.mimetype)) {
                 // PDF upload notification

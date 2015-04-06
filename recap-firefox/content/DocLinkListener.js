@@ -2,7 +2,7 @@
  *  This file is part of the RECAP Firefox Extension.
  *
  *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
- *  Website: http://www.recapthelaw.org
+ *  Website: https://www.recapthelaw.org
  *  E-mail: info@recapthelaw.org
  *
  *  The RECAP Firefox Extension is free software: you can redistribute it
