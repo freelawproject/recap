@@ -7,8 +7,8 @@ var ICON_DISABLED_32 = "chrome://recap/skin/recap-icon-disabled-32.png";
 var ICON_EXCLAMATION = "chrome://recap/skin/recap-icon-exclamation.png";
 var ICON_EXCLAMATION_32 = "chrome://recap/skin/recap-icon-exclamation-32.png";
 
-// var SERVER_URL = "http://dev.recapextension.org/recap/";
-var SERVER_URL = "http://it.recapextension.org:8001/recap/";
+// var SERVER_URL = "https://recapextension.org/recap/";
+var SERVER_URL = "http://it.recapextension.org:8008/recap/";
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";
@@ -114,10 +114,6 @@ function getCourtFromHost(hostname) {
 
 // Checks whether we have a PACER cookie
 function havePACERCookie() {
-
-    // Debug
-    return true;
-
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 
@@ -141,10 +137,6 @@ function havePACERCookie() {
 }
 
 function hasECFCookie() {
-
-    // DEBUG
-    // return false;
-
     var cookieMan = CCGS("@mozilla.org/cookiemanager;1",
              "nsICookieManager");
 
