@@ -495,14 +495,16 @@ ContentListener.prototype = {
             //log("  File found: " + filename + " " + docURL);
 
             for (var i = 0; i < urlElements.length; i++) {
-                element = urlElements[i];
+                var element = urlElements[i];
 
                 // Ensure that the element isn't already modified
                 if (element.nextSibling) {
-                    nextElement = element.nextSibling;
-                    nextClass = nextElement.className;
-                    if (nextClass == "recapIcon" || nextClass == "recapTextLinkBox")
+                    var nextElement = element.nextSibling;
+                    var nextClass = nextElement.className;
+                    if (nextClass === "recapIcon" || nextClass === "recapTextLinkBox"){
                         continue;
+                    }
+
                 }
 
                 // Insert our link to the right of the PACER link
@@ -523,7 +525,7 @@ ContentListener.prototype = {
                 //when the element is a form, this is a doc 1 page, so we'll add some more text than we would
                 // on a docket page
                 // log(element.nodeName);
-                if(element.nodeName == "FORM"){
+                if(element.nodeName === "FORM"){
 
                     var textLink= document.createElement("a");
                     textLink.setAttribute("href", filename);
@@ -657,10 +659,10 @@ ContentListener.prototype = {
     // Make a dialog div and append it to the bottom of the document body
     makeDialogDiv: function(document, filename, timestamp, count, subDocuments) {
 
-        if(subDocuments == undefined){
+        if(subDocuments === undefined){
             subDocuments = false;
         }
-        var outerdiv = this.makeBasicDialogDiv(document, count)
+        var outerdiv = this.makeBasicDialogDiv(document, count);
 
         var innerdiv = document.createElement("div");
         innerdiv.setAttribute("class", "recapInnerDiv");
@@ -691,11 +693,11 @@ ContentListener.prototype = {
 
             this.addBr(document, innerdiv);
             for(var subDocNum in subDocuments){
-                sub_filename = subDocuments[subDocNum]["filename"]
-                sub_timestamp= subDocuments[subDocNum]["timestamp"]
+                var subFilename = subDocuments[subDocNum]["filename"]
+                var subTimestamp= subDocuments[subDocNum]["timestamp"]
                 this.addText(document, subDocDiv,
-                    "RECAP cached subdocument #" + subDocNum + " on " + sub_timestamp + " " )
-                var a = this.addTextLink(document, subDocDiv, "Download", sub_filename, null);
+                    "RECAP cached subdocument #" + subDocNum + " on " + subTimestamp + " " )
+                var a = this.addTextLink(document, subDocDiv, "Download", subFilename, null);
                 a.setAttribute("class", "recapDownloadButton");
                 this.addBr(document, subDocDiv);
             }
@@ -781,7 +783,7 @@ ContentListener.prototype = {
     addDisclaimerDiv: function(document, div){
 
         var disclaimerDiv = document.createElement("div");
-        disclaimerDiv.setAttribute("class","recapDisclaimer");
+        disclaimerDiv.setAttribute("class", "recapDisclaimer");
         this.addText(document, disclaimerDiv, "RECAP is not affiliated with the US Courts. The documents it makes available are voluntarily uploaded by PACER users.  RECAP cannot guarantee the authenticity of documents because the courts themselves have not implemented a document signing and authentication system.");
 
         div.appendChild(disclaimerDiv);
