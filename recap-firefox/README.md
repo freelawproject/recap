@@ -1,7 +1,7 @@
 Overview
 ========
 The RECAP Firefox Extension.
-Website: http://www.recapthelaw.org
+Website: https://www.recapthelaw.org
 Contact: info@recapthelaw.org
 
 
@@ -23,12 +23,19 @@ To set up a Firefox dev environment:
 1. Follow [the instructions on Mozilla's website][mdn] for setting up a development
    profile. You can mostly ignore the extensions that it wants you to install.
 
+1. To make it so you don't have to build and reinstall RECAP all the time, you
+   should create an ["Extension Proxy File"][proxy]. Once that's done, all you
+   have to do is restart Firefox to get updated code. That, in turn, can be
+   simplified with the [Restartless Restart Add-On][ramo].
+
 Tips
 -----
 1. Once you've got the settings above in place, you can debug the browser XUL
 and JavaScript by going to Tools > Web Developer > Browser Toolbox.
 
-1. 
+1. While it's true that every court has their own customized version of PACER,
+   there is [a PACER training site that does not charge fees][trainwreck]. You
+   can use this if you wish to work on the system without accruing charges.
 
 
 Copyright & License
@@ -52,3 +59,6 @@ License:
 
 
 [mdn]: https://developer.mozilla.org/en-US/Add-ons/Setting_up_extension_development_environment
+[trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
+[proxy]: http://stackoverflow.com/questions/1077719/fastest-way-to-debug-firefox-addons-during-development
+[ramo]: https://addons.mozilla.org/en-us/firefox/addon/restartless-restart/
