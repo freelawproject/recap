@@ -4,7 +4,7 @@
     <Description about="urn:mozilla:install-manifest">
         <em:id>info@recapthelaw.org</em:id>
         <em:name>RECAP</em:name>
-        <em:version>0.9.2.1</em:version>
+        <em:version>0.9.2.2</em:version>
 		<em:iconURL>chrome://recap/skin/recap-icon-32.png</em:iconURL>
     	<em:optionsURL>chrome://recap/content/options.xul</em:optionsURL>
         <em:targetApplication>

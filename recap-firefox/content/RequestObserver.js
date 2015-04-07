@@ -228,7 +228,7 @@ RequestObserver.prototype = {
         var method = channel.requestMethod;
         var host = channel.URI.asciiHost;
 
-        if (method == "POST") {
+        if (method === "POST") {
             ULchannel = subject.QueryInterface(Components.interfaces.nsIUploadChannel);
             ULchannel = ULchannel.uploadStream;
             ULchannel.QueryInterface(Components.interfaces.nsISeekableStream)
@@ -298,7 +298,6 @@ RequestObserver.prototype = {
         this.setContentDispositionHeader(channel, filename, court);
 
         return {mimetype: mimetype, court: court, name: filename, url: refpath};
-
     },
 
     // If this is a simple PDF (rather than a merged multidoc),
@@ -458,7 +457,7 @@ RequestObserver.prototype = {
 
 
     fileSuffixFromMime: function(mimetype) {
-        if (mimetype == "application/pdf") {
+        if (mimetype === "application/pdf") {
             return ".pdf";
         } else {
             return null;
@@ -517,6 +516,22 @@ RequestObserver.prototype = {
 
     // Intercept the channel, and upload the data with metadata
     uploadChannelData: function(subject, metadata) {
+        // Add the team name to the metadata of all items
+        try {
+            var prefs = CCGS("@mozilla.org/preferences-service;1",
+              "nsIPrefService").getBranch("extensions.recap.");
+            var team_name = prefs.getCharPref("team_name");
+            if (team_name) {
+                metadata.team_name = team_name;
+            }
+        } catch(e){
+            if (e instanceof ReferenceError) {
+                // team_name isn't set. All good.
+            } else {
+                log(e);
+            }
+        }
+
         var dlistener = new DownloadListener(metadata, this.metacache);
         subject.QueryInterface(Ci.nsITraceableChannel);
         dlistener.originalListener = subject.setNewListener(dlistener);
@@ -576,12 +591,10 @@ RequestObserver.prototype = {
 
         var mimetype = this.getMimetype(channel);
 
-        // If it is CA
+        // If it is Circuit Appeals Court
         if (pacerHostCA) {
             if (isPDF(mimetype)) {
-                log("Before getting META");
                 var PDFmeta = this.tryPDFmetaCA(channel, mimetype);
-                log("After getting META");
                 // PDFmeta['url'] = channel.URI.spec;
                 var name = PDFmeta.url.match(/(\d+)$/i);
                 if (name) {
@@ -593,7 +606,6 @@ RequestObserver.prototype = {
                         PDFmeta['name'] = name[1] + ".pdf";
                     }
                 }
-                log("After name");
 
                 // PDFmeta['url'] = "/cmecf/servlet/TransportRoom?servlet=ShowDoc/00802091769";
                 // PDFmeta['name'] = "00802091769.pdf";
@@ -614,7 +626,7 @@ RequestObserver.prototype = {
             }
         }
 
-        // Upload content to the server if the file is a PDF
+        // Not a Circuit Appeals Court
         else {
             if (isPDF(mimetype)) {
                 var PDFmeta = this.tryPDFmeta(channel, mimetype);
