@@ -334,20 +334,26 @@
               Make the anchor element using the DEV_BUCKET_PREFIX value.
               The choose statement is needed here so we can be sure to add
               the period after DEV_BUCKET_PREFIX if necessary.
+              BAD (from html page): http://    archive.org/download/case_details/case_details/pacer_case_num%7D/case_details/case_details/pacer_case_num%7D.%7B@doc_num%7D.%7B@attachment_num%7D.pdf
+              Good (from PACER):    http://www.archive.org/download/it.recap.gov.uscourts.ilnd.265309/gov.uscourts.ilnd.265309.4.0.pdf
             -->
+
             <xsl:choose>
                 <xsl:when test="string-length($DEV_BUCKET_PREFIX) > 0">
                     <xsl:element name="a">
                         <xsl:attribute name="href">
                             <xsl:value-of select="concat(
                               'http://www.archive.org/download/',
-                              $DEV_BUCKET_PREFIX,
-                              '.',
-                              'gov.uscourts.{../../case_details/court}.',
-                              '{../../case_details/pacer_case_num}/',
-                              'gov.uscourts.{../../case_details/court}.',
-                              '{../../case_details/pacer_case_num}.',
-                              '{@doc_num}.{@attachment_num}.pdf')"/>
+                                $DEV_BUCKET_PREFIX, '.',
+                                'gov.uscourts', '.',
+                                ../../case_details/court, '.',
+                                ../../case_details/pacer_case_num, '/',
+                                  'gov.uscourts', '.',
+                                  ../../case_details/court, '.',
+                                  ../../case_details/pacer_case_num, '.',
+                                  @doc_num, '.',
+                                  @attachment_num, '.pdf'
+                            )"/>
                         </xsl:attribute>
                         <xsl:value-of select="@doc_num"/>
                     </xsl:element>
