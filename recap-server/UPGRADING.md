@@ -1,4 +1,20 @@
-# Upgrading to the new settings system
+# Upgrade notes
+
+These notes should be reviewed whenever you get fresh code. Any manual tweaks
+or configurations that are needed will be documented here.
+
+
+# 2015-04-04
+
+In order to fix #59, the BUCKET_PREFIX variable was renamed DEV_BUCKET_PREFIX.
+
+If you have this variable defined a configuration that is not included in the
+repository (e.g. a private.py file), you will need to update the name of this
+variable in that file.
+
+
+# 2015-03-28
+## Upgrading to the new settings system
 
 Recently, this app has adopted a new settings system for configuring everything
 from database urls to Internet Archive keys. Formerly, these settings where in
@@ -13,21 +29,21 @@ the new. The basic steps are:
 0. Copy any modified settings from settings.py to `settings/20-private.py`.
 0. Copy any settings from `recap_config.py` to `settings/05-private.py`.
 
-## Shut down running server, but *do not* `git pull` yet.
+### Shut down running server, but *do not* `git pull` yet.
 
 This should be self explanatory. If you try to git pull and you have modified
 settings in `settings.py`, you will likely get some kind of merge conflict. If
 you try to `git stash` and then `git pull`, your stash will not apply cleanly to
 the new version.
 
-## Create `settings/05-private.py` and `settings/20-private.py`
+### Create `settings/05-private.py` and `settings/20-private.py`
 
 These files can start out empty. The file `05-private.py` contains settings that
-aren't specified in `10-public.py` and could be overriden, or at the least
+aren't specified in `10-public.py` and could be overridden, or at the least
 utilized, by that file. The other file, `20-private.py` contains overrides to
 the public settings.
 
-## Copy any modified settings from settings.py to `settings/20-private.py`.
+### Copy any modified settings from settings.py to `settings/20-private.py`.
 
 You should be able to do a `git diff` and see what lines have changed. Any such
 line should be copied into `20-private.py`. The standard set of settings from
@@ -37,7 +53,7 @@ the previous incarnation of `settings.py` have been copied into
 a standard python file, with variable declarations in
 `THIS_VARIABLE = 'format'`, which matches the format of the old `settings.py`.
 
-## Copy any settings from `recap_config.py` to `settings/05-private.py`.
+### Copy any settings from `recap_config.py` to `settings/05-private.py`.
 
 The file `recap_config.py` formerly contained additional private details of the
 server like `DATABASE_USER` and `DATABASE_PASSWORD`. The format of this file was
@@ -71,7 +87,7 @@ are just bare variables in the new setup. Also make sure that there are no
 commas trailing the values, which might happen if you copied and pasted. This
 would cause the values to turn into tuples, which we do not want.
 
-## Cleaning up
+### Cleaning up
 
 Now that you've copied the new files into place, you should copy your old
 `settings.py` to `settings.py.bak` and then `git checkout settings.py`. Now you

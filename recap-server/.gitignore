@@ -3,6 +3,7 @@
 cron.log*
 debug.log*
 settings/05-private.py
+settings/20-private.py
 ia_upload_script.sh
 picklejar
 secret_key.py

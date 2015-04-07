@@ -1,4 +1,3 @@
-
 import os
 import logging
 import datetime
@@ -7,27 +6,31 @@ import string
 import random
 import re
 import cStringIO as StringIO
+from django.conf import settings
 
 from lxml.etree import Element, SubElement, tostring, \
-    XMLParser, fromstring, XMLSyntaxError, XSLT, parse
+    fromstring, XMLSyntaxError, XSLT, parse
 
 THIS_DIR = os.path.dirname(__file__)
 XSL_PATH = THIS_DIR + "/docket.xsl"
 
-class DocketXML(object):
-    ''' See docket.dtd for metadata fields. '''
 
-    def __init__(self, court_s, casenum_s, metadict={}):
-        ''' A U.S. federal court case docket.
+class DocketXML(object):
+    """ See docket.dtd for metadata fields. """
+
+    def __init__(self, court_s, casenum_s, meta_dict=None):
+        """ A U.S. federal court case docket.
             Requires the docket to have a court and a case number.
-        '''
+        """
+        if not meta_dict:
+            meta_dict = {}
 
         # Case-level metadata
         self.casemeta = {"court": unicode(court_s),
                          "pacer_case_num": unicode(casenum_s)}
-        for k,v in metadict.items():
-            metadict[k] = unicode(v)
-        self.casemeta.update(metadict)
+        for k, v in meta_dict.items():
+            meta_dict[k] = unicode(v)
+        self.casemeta.update(meta_dict)
 
         # List of parties, including party and attorney info
         self.parties = []
@@ -48,14 +51,16 @@ class DocketXML(object):
         return self.casemeta
 
     def __eq__(self, other):
-        if other == None:
+        if other is None:
             return False
         return self.to_xml() == other.to_xml()
 
-    def add_document(self, docnum_s, subdocnum_s="0", metadict={}):
-        ''' Add a document to the list.
+    def add_document(self, docnum_s, subdocnum_s="0", meta_dict=None):
+        """ Add a document to the list.
             Requires the document to have a docnum (and a subdocnum).
-        '''
+        """
+        if not meta_dict:
+            meta_dict = {}
 
         # If docnum_s and subdocnum_s aren't integers, skip.
         try:
@@ -67,13 +72,13 @@ class DocketXML(object):
         dockey = "%s-%s" % (unicode(docnum_s), unicode(subdocnum_s))
         self.documents[dockey] = {"doc_num": unicode(docnum_s),
                                   "attachment_num": unicode(subdocnum_s)}
-        for k,v in metadict.items():
-            metadict[k] = unicode(v)
-        self.documents[dockey].update(metadict)
+        for k, v in meta_dict.items():
+            meta_dict[k] = unicode(v)
+        self.documents[dockey].update(meta_dict)
 
     def add_document_object(self, theDocument):
-        ''' Adds a document object (taken from db, generally) to the list
-        '''
+        """ Adds a document object (taken from db, generally) to the list
+        """
         metadatadict = theDocument.__dict__
 
         # We'll store the docnum and subdocnum differently inside add_document
@@ -101,7 +106,6 @@ class DocketXML(object):
         del metadatadict["casenum"]
         del metadatadict["id"]
 
-
         # Clean up any other None value keys
         for k, v in metadatadict.items():
             if not v:
@@ -111,14 +115,14 @@ class DocketXML(object):
                           subdocnum,
                           metadatadict)
 
-### Not used.
-#    def update_document(self, docnum_s, subdocnum_s="0", metadict={}):
-#        ''' Merge document-level metadata with pairs in metadict. '''
-#
-#        dockey = "%s-%s" % (unicode(docnum_s), unicode(subdocnum_s))
-#        for k,v in metadict.items():
-#            metadict[k] = unicode(v)
-#        self.documents[dockey].update(metadict)
+    ### Not used.
+    # def update_document(self, docnum_s, subdocnum_s="0", metadict={}):
+    # ''' Merge document-level metadata with pairs in metadict. '''
+    #
+    # dockey = "%s-%s" % (unicode(docnum_s), unicode(subdocnum_s))
+    # for k,v in metadict.items():
+    # metadict[k] = unicode(v)
+    #        self.documents[dockey].update(metadict)
 
     def get_document_metadict(self, docnum, subdocnum):
         dockey = "%s-%s" % (unicode(docnum), unicode(subdocnum))
@@ -139,7 +143,7 @@ class DocketXML(object):
             return ""
 
     def remove_document(self, docnum_s, subdocnum_s="0"):
-        ''' Remove a document from the list. '''
+        """ Remove a document from the list. """
 
         dockey = "%s-%s" % (unicode(docnum_s), unicode(subdocnum_s))
 
@@ -148,12 +152,15 @@ class DocketXML(object):
         except KeyError:
             pass
 
-    def add_party(self, metadict={}):
+    def add_party(self, metadict=None):
+        if not metadict:
+            metadict = {}
         if metadict:
             self.parties.append(metadict)
 
-
-    def update_parties(self, party_list=[]):
+    def update_parties(self, party_list=None):
+        if not party_list:
+            party_list = []
         if party_list:
             if not self.parties:
                 self.parties = party_list
@@ -165,38 +172,35 @@ class DocketXML(object):
                     index = self.find_party_index_by_name(party.get("name"))
 
                     if index is not None:
-                       self.parties[index].update(party)
+                        self.parties[index].update(party)
                     else:
-                       self.parties.append(party)
+                        self.parties.append(party)
 
     def find_party_index_by_name(self, name=""):
         for i, s in enumerate(self.parties):
             if s.get("name") == name:
-               return i
+                return i
 
         return None
 
-
-
-
     def update_case(self, metadict={}):
-        ''' Merge case-level metadata with pairs in metadict. '''
+        """ Merge case-level metadata with pairs in metadict. """
 
-        for k,v in metadict.items():
+        for k, v in metadict.items():
             metadict[k] = unicode(v)
         self.casemeta.update(metadict)
 
     def merge_docket(self, new_docket):
-        ''' Merges contents of new_docket into this docket. '''
+        """ Merges contents of new_docket into this docket. """
 
         # Sanity check that these two dockets are from the same case
         if self.get_court() != new_docket.get_court() or \
-           self.get_casenum() != new_docket.get_casenum():
-
-            logging.error("merge_docket failed sanity check: (%s,%s) != (%s %s)"
-                          % (self.get_court(), self.get_casenum(),
-                             new_docket.get_court(),
-                             new_docket.get_casenum()))
+                        self.get_casenum() != new_docket.get_casenum():
+            logging.error(
+                "merge_docket failed sanity check: (%s,%s) != (%s %s)"
+                % (self.get_court(), self.get_casenum(),
+                   new_docket.get_court(),
+                   new_docket.get_casenum()))
 
         # Merge case metadata
         self.update_case(new_docket.casemeta)
@@ -207,7 +211,6 @@ class DocketXML(object):
         except AttributeError:
             self.update_parties([])
 
-
         # Merge document metadata
         for dockey in new_docket.documents.keys():
 
@@ -216,9 +219,8 @@ class DocketXML(object):
             except KeyError:
                 self.documents[dockey] = new_docket.documents[dockey]
 
-
     def get_root(self):
-        ''' Actually create and return the nested Element. '''
+        """ Actually create and return the nested Element. """
 
         root = Element("gov_uscourts_docket")
 
@@ -233,8 +235,7 @@ class DocketXML(object):
                      "date_case_terminated", "date_last_filing",
                      "assigned_to", "referred_to", "case_cause",
                      "nature_of_suit", "jury_demand", "jurisdiction",
-                     "demand"
-                     ]
+                     "demand", ]
 
         for k in case_keys:
             try:
@@ -261,10 +262,13 @@ class DocketXML(object):
                     except KeyError:
                         pass
 
-                    except ValueError: #lxml doesn't like hex escape characters
+                    except ValueError:  # lxml doesn't like hex escape chars
                         try:
-                            printable_characters_only = "".join([char for char in party[p_key] if char in string.printable])
-                            SubElement(party_e, p_key).text = unicode(printable_characters_only)
+                            printable_characters_only = "".join(
+                                [char for char in party[p_key] if
+                                 char in string.printable])
+                            SubElement(party_e, p_key).text = unicode(
+                                printable_characters_only)
                         except ValueError:
                             pass
 
@@ -276,15 +280,18 @@ class DocketXML(object):
                 else:
 
                     if attorneys_list:
-                        attorneys_e = SubElement(party_e,"attorney_list")
-                        att_meta_keys = ["attorney_name", "contact", "attorney_role"]
+                        attorneys_e = SubElement(party_e, "attorney_list")
+                        att_meta_keys = ["attorney_name", "contact",
+                                         "attorney_role"]
 
                         for attdict in attorneys_list:
 
                             att_e = SubElement(attorneys_e, "attorney")
                             for att_meta_key in att_meta_keys:
                                 try:
-                                    SubElement(att_e, att_meta_key).text = unicode(attdict[att_meta_key])
+                                    SubElement(att_e,
+                                               att_meta_key).text = unicode(
+                                        attdict[att_meta_key])
                                 except KeyError:
                                     pass
 
@@ -312,16 +319,17 @@ class DocketXML(object):
 
     def to_xml(self):
         retstr = '<?xml version="1.0" encoding="utf-8"?>\n'
-        #retstr += tostring(PI("xml-stylesheet",
-        #                      'type="text/xsl" href="docket.xsl"')) + "\n"
         retstr += '<!DOCTYPE gov_uscourts_docket ' + \
                   'SYSTEM "docket.dtd">\n'
-        retstr += tostring(self.get_root(), encoding='utf-8', pretty_print=True)
-
+        retstr += tostring(
+            self.get_root(),
+            encoding='utf-8',
+            pretty_print=True
+        )
         return retstr
 
     def to_html(self):
-        ''' Transforms XML to HTML using the docket XSLT '''
+        """ Transforms XML to HTML using the docket XSLT """
 
         xml_string = self.to_xml()
 
@@ -334,13 +342,18 @@ class DocketXML(object):
         docket_xsl_transform = XSLT(docket_xsl)
 
         xmldoc = parse(StringIO.StringIO(xml_string))
-        html = unicode(docket_xsl_transform(xmldoc)).encode("utf-8")
+        html = unicode(
+            docket_xsl_transform(
+                xmldoc,
+                DEV_BUCKET_PREFIX=settings.DEV_BUCKET_PREFIX,
+            )
+        ).encode("utf-8")
 
         return html
 
 
 def dockey_compare(key1, key2):
-    ''' Compare two dockeys, for sorting dockeys. '''
+    """ Compare two dockeys, for sorting dockeys. """
     key1docnum, key1subdocnum = key1.split("-")
     key2docnum, key2subdocnum = key2.split("-")
     if key1docnum != key2docnum:
@@ -349,9 +362,9 @@ def dockey_compare(key1, key2):
         return int(key1subdocnum) - int(key2subdocnum)
 
 
-
 def parse_xml_string(xml_string):
-    ''' Parse an existing docket XML string and return the DocketXML object. '''
+    """ Parse an existing docket XML string and return the DocketXML object.
+    """
 
     # TK: DTD validation
     try:
@@ -388,7 +401,7 @@ def do_parse_xml(root):
     # Parse the nonce
     try:
         docket.nonce = root.find("nonce").text.strip()
-    except AttributeError:   # There's no nonce
+    except AttributeError:  # There's no nonce
         docket.nonce = None
 
     # Parse the parties list
@@ -401,7 +414,8 @@ def do_parse_xml(root):
 
             for node in party_e:
 
-                # Each party optionally contains an attorney list, with info on each attorney
+                # Each party optionally contains an attorney list, with info
+                # on each attorney
                 if node.tag == "attorney_list":
                     partymeta["attorneys"] = []
 
@@ -409,7 +423,8 @@ def do_parse_xml(root):
                         attmeta = {}
 
                         for att_info_node in att_e:
-                            attmeta[att_info_node.tag] = att_info_node.text.strip()
+                            attmeta[
+                                att_info_node.tag] = att_info_node.text.strip()
 
                         if attmeta:
                             partymeta["attorneys"].append(attmeta)
@@ -442,8 +457,8 @@ def do_parse_xml(root):
 
 
 def generate_new_nonce():
-    return "".join([random.choice(string.letters+string.digits)
-                    for i in xrange(6)])
+    return "".join([random.choice(string.letters + string.digits)
+                    for _ in xrange(6)])
 
 
 def make_docket_for_pdf(filebits, court, casenum, docnum, subdocnum,
@@ -454,7 +469,8 @@ def make_docket_for_pdf(filebits, court, casenum, docnum, subdocnum,
 
     docket = DocketXML(court, casenum)
 
-    docmeta = {"available": available, "upload_date": lastdate, "free_import": free_import}
+    docmeta = {"available": available, "upload_date": lastdate,
+               "free_import": free_import}
     if filebits:
         sha1 = get_sha1(filebits)
         docmeta["sha1"] = sha1
@@ -465,16 +481,14 @@ def make_docket_for_pdf(filebits, court, casenum, docnum, subdocnum,
 
 
 def get_sha1(filebits):
-    ''' Get the SHA1 for these filebits '''
+    """ Get the SHA1 for these filebits """
 
     h = hashlib.sha1()
     h.update(filebits)
     return h.hexdigest()
 
 
-
 if __name__ == "__main__":
-
     # Here is a basic case:
 
     court = "cand"
@@ -509,10 +523,10 @@ if __name__ == "__main__":
 
     # Add three documents
     docnum = 1
-    docket.add_document(docnum, metadict=docmeta1)
+    docket.add_document(docnum, meta_dict=docmeta1)
     docnum = 2
     subdocnum = 1
-    docket.add_document(docnum, subdocnum, metadict=docmeta2)
+    docket.add_document(docnum, subdocnum, meta_dict=docmeta2)
     subdocnum = 2
     docket.add_document(docnum, subdocnum)
 
@@ -536,8 +550,8 @@ if __name__ == "__main__":
     docket3 = DocketXML(court, pacer_case_num,
                         {"date_case_terminated": "2009-04-03",
                          "date_last_filing": "2009-04-10"})
-    docket3.add_document(2,3)
-    docket3.add_document(2,4)
+    docket3.add_document(2, 3)
+    docket3.add_document(2, 4)
     # Should be a no-op
     docket3.add_attorney({"representing": "Innocent",
                           "contact": "!@#$%^&*() Princeton"})
@@ -546,8 +560,8 @@ if __name__ == "__main__":
 
     print docket2.to_xml()
 
-    docket2.remove_document(2,4)
-    docket2.remove_document(2,1)
+    docket2.remove_document(2, 4)
+    docket2.remove_document(2, 1)
 
     parse_xml_string(docket2.to_xml())
 
