@@ -734,7 +734,7 @@ def _already_running(process_name):
     For more detail, see: http://stackoverflow.com/a/7758075/64911
     """
     global lock_socket  # Without this our lock gets garbage collected
-    lock_socket - socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+    lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     try:
         lock_socket.bind('\0' + process_name)
         return True
