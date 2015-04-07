@@ -9,8 +9,7 @@ DATABASE_PASSWORD = 'recapthelaw'
 # See issue #59 for details on this variable. In a production environment it
 # should be unset. In a DEV environment, it is used to put uploaded items in
 # a separate bucket from legitimate items by giving them a custom namespace.
-# Note that this value must be quoted with both double and single quotes.
-DEV_BUCKET_PREFIX = "''"
+DEV_BUCKET_PREFIX = ""
 SERVER_HOSTNAME = 'http://localhost:8000'
 SERVER_BASEDIR = 'recap/'
 UPLOAD_AUTHKEY = ''

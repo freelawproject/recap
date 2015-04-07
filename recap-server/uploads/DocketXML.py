@@ -345,7 +345,7 @@ class DocketXML(object):
         html = unicode(
             docket_xsl_transform(
                 xmldoc,
-                DEV_BUCKET_PREFIX=settings.DEV_BUCKET_PREFIX,
+                DEV_BUCKET_PREFIX="'%s'" % settings.DEV_BUCKET_PREFIX,
             )
         ).encode("utf-8")
 
