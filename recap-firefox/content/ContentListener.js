@@ -1,26 +1,3 @@
-/*
- *  This file is part of the RECAP Firefox Extension.
- *
- *  Copyright 2009 Harlan Yu, Timothy B. Lee, Stephen Schultze.
- *  Website: https://www.recapthelaw.org
- *  E-mail: info@recapthelaw.org
- *
- *  The RECAP Firefox Extension is free software: you can redistribute it
- *  and/or modify it under the terms of the GNU General Public License as
- *  published by the Free Software Foundation, either version 3 of the
- *  License, or (at your option) any later version.
- *
- *  The RECAP Firefox Extension is distributed in the hope that it will be
- *  useful, but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
- *
- *  You should have received a copy of the GNU General Public License
- *  along with the RECAP Firefox Extension.  If not, see
- *  <http://www.gnu.org/licenses/>.
- *
- */
-
 function ContentListener(metacache) {
     this._register(metacache);
     this.active = false;
@@ -42,16 +19,13 @@ ContentListener.prototype = {
 
         var retdict = {};
 
-        var srcs = new Array("recap-icon.png",
-                             "close-x-button.png",
-                             "recap-logo.png");
+        var srcs = ["recap-icon.png", "close-x-button.png", "recap-logo.png"];
 
         for (var i in srcs) {
             var src = srcs[i];
             var embeddedImageSrc = "data:image/png;base64,";
             embeddedImageSrc += this.localFileToBase64(RECAP_SKIN_PATH + src);
             retdict[src] = embeddedImageSrc;
-
         }
 
         return retdict;
@@ -94,8 +68,8 @@ ContentListener.prototype = {
 
         var temp_disabled = prefs.getBoolPref("temp_disable");
 
-        if ( isPACERHost(URIhost) || isUnsupportedPACERHost(URIhost) ) {
-            if(temp_disabled == true &&
+        if (isPACERHost(URIhost) || isUnsupportedPACERHost(URIhost)) {
+            if(temp_disabled === true &&
                (
                 (!this.active && havePACERCookie()) ||
                 (!this.ECFLoggedIn && hasECFCookie())
@@ -268,7 +242,7 @@ ContentListener.prototype = {
     //Check our server to see if a docket page exists,
     //   and modify the page with link to docket page
     caseCheckAndModify: function(document, court, casenum){
-        if (casenum == undefined){
+        if (casenum === undefined){
             return
         }
         //Casenum is defined, so this is a pre-docket show page
@@ -295,16 +269,12 @@ ContentListener.prototype = {
         };
 
         req.send(params);
-
-
     },
-
 
     docCheckAndModifyCA: function(document, court, id) {
 
         // Construct the JSON object parameter
-        var jsonout = { court: court,
-                urls: [] };
+        var jsonout = { court: court, urls: [] };
 
         try {
             var body = document.getElementsByTagName("body")[0];
@@ -355,7 +325,7 @@ ContentListener.prototype = {
             }
         }
 
-        if (jsonout.urls.length == 0) {
+        if (jsonout.urls.length === 0) {
             return;
         }
 
@@ -372,7 +342,7 @@ ContentListener.prototype = {
 
         var that = this;
         req.onreadystatechange = function() {
-            if (req.readyState == 4 && req.status == 200) {
+            if (req.readyState === 4 && req.status === 200) {
 
                 var jsonin = JSON.parse(req.responseText);
                 that.handleResponse(jsonin, document, elements);
@@ -419,7 +389,7 @@ ContentListener.prototype = {
         }
 
         // if no linked docs, don't bother sending docCheck
-        if (jsonout.urls.length == 0) {
+        if (jsonout.urls.length === 0) {
 
             var form= this.findDoc1Form(body);
 
@@ -996,5 +966,4 @@ ContentListener.prototype = {
         this._webProgressService.removeProgressListener(this);
     },
 
-}
-
+};

@@ -17,12 +17,14 @@ function PrefListener(branchName, func) {
     };
 
     this.unregister = function unregister() {
-        if (branch)
+        if (branch) {
             branch.removeObserver("", this);
+        }
     };
 
     this.observe = function(subject, topic, data) {
-        if (topic == "nsPref:changed")
+        if (topic === "nsPref:changed"){
             func(branch, data);
+        }
     };
 }
