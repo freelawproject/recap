@@ -14,6 +14,7 @@ except ImportError:
 else:
     BASE_ERROR_JAR = ROOT_PATH + "/errorjar"
 
+
 def coerce_docid(docid):
     """ Some PACERs use the fourth digit of the docid to flag whether
         the user has been shown a receipt page. We don't care about that,
@@ -22,13 +23,16 @@ def coerce_docid(docid):
     """
     return docid[:3]+"0"+docid[4:]
 
+
 def convert_date_format(date):
     if not date: return date
     if not re.match(r'\d{2}/\d{2}/\d{4}', date): return date
     return date[6:10] + '-' + date[0:2] + '-' + date[3:5]
 
+
 def is_appellate(court):
     return court in ["ca1", "ca2", "ca3", "ca4", "ca5", "ca6", "ca7", "ca8", "ca9", "ca10", "ca11", "cadc", "cafc"]
+
 
 doc_re = re.compile(r'/doc1/(\d+)')
 ca_doc_re = re.compile(r'(?:TransportRoom.*ShowDoc(?:.*?dls_id.*?|/)(\d+)|/docs1/(\d+)$)')
@@ -803,7 +807,7 @@ def _parse_histdocqry_document_table(the_soup, court):
             docmeta["attachment_num"] = 0    # Primary document
 
             if docmatchv3:
-                
+
                 directory = docmatchv3.group(2)    # TK: Unused, usually "doc1"
 
                 docid = coerce_docid(docmatchv3.group(3))

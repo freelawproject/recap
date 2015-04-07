@@ -1,7 +1,6 @@
 # Public django settings for recap-server project. This file is dynamically
 # read by settings.py in the root directory. All values in this file are
 # essentially transcluded into that file.
-import os 
 import logging
 
 DEBUG = True

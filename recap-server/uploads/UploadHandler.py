@@ -1,4 +1,3 @@
-
 import re
 import logging
 
@@ -18,27 +17,34 @@ from django.conf import settings as config
 from settings import ROOT_PATH
 import os
 
+
 def is_pdf(mimetype):
     return mimetype == "application/pdf"
+
 
 def is_html(mimetype):
     return mimetype.find("text/html") >= 0
 
+
 doc_re = ParsePacer.doc_re
 ca_doc_re = ParsePacer.ca_doc_re
+
+
 def is_doc1_path(path):
     """ Returns true if path is exactly a doc1 path.
           e.g. /doc1/1234567890
     """
     return bool(doc_re.search(path) or ca_doc_re.search(path))
 
+
 def is_doc1_html(filename, mimetype, url, casenum):
     """ Returns true if the metadata indicates a doc1 HTML file. """
     return is_doc1_path(filename) and is_html(mimetype) \
         and url is None and casenum is None
 
+
 def docid_from_url_name(url):
-    """ Extract the docid from a PACER URL name. """
+    """ Extract the docid from a PACER URL name."""
     if doc_re.search(url):
         return ParsePacer.coerce_docid(doc_re.search(url).group(1))
     if ca_doc_re.search(url):
@@ -87,7 +93,7 @@ def handle_pdf(filebits, court, url):
         return "upload: pdf failed. no url supplied."
 
     # Lookup based on docid b/c it's the only metadata we have
-    #  Document exists if we've previously parsed the case's docket
+    # Document exists if we've previously parsed the case's docket
     query = Document.objects.filter(docid=docid)
     try:
         doc = query[0]
@@ -111,7 +117,7 @@ def handle_pdf(filebits, court, url):
                                            docnum, subdocnum, available=0)
     DocumentManager.update_local_db(docket)
 
-    if docket.get_document_sha1(docnum ,subdocnum) != sha1:
+    if docket.get_document_sha1(docnum, subdocnum) != sha1:
 
         # Upload the file -- either doesn't exist on IA or has different sha1
 
@@ -142,12 +148,13 @@ def handle_pdf(filebits, court, url):
 
     return jsonout
 
+
 def handle_docket(filebits, court, casenum, filename):
-    ''' Parse HistDocQry and DktRpt HTML files for metadata.'''
+    """ Parse HistDocQry and DktRpt HTML files for metadata."""
 
     logging.debug('handle_docket: %s %s %s', court, casenum, filename)
 
-    #TK: Remove ^.* from regex when upgrading test client
+    # TK: Remove ^.* from regex when upgrading test client
     histdocqry_re = re.compile(r"HistDocQry_?\d*\.html$")
     dktrpt_re = re.compile(r".*DktRpt_?\d*\.html$")
 
@@ -189,17 +196,18 @@ def handle_cadkt(filebits, court, casenum, is_full=False):
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
-                "message":"DktRpt successfully parsed."}
+                "message": "DktRpt successfully parsed."}
     message = simplejson.dumps(response)
 
     return message
 
 
 def handle_dktrpt(filebits, court, casenum):
-
-    if config.DUMP_DOCKETS and re.search(config.DUMP_DOCKETS_COURT_REGEX, court):
-        logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (court, casenum))
-        _dump_docket_for_debugging(filebits,court,casenum)
+    if config.DUMP_DOCKETS and re.search(config.DUMP_DOCKETS_COURT_REGEX,
+                                         court):
+        logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (
+            court, casenum))
+        _dump_docket_for_debugging(filebits, court, casenum)
 
     docket = ParsePacer.parse_dktrpt(filebits, court, casenum)
 
@@ -214,13 +222,13 @@ def handle_dktrpt(filebits, court, casenum):
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
-                "message":"DktRpt successfully parsed."}
+                "message": "DktRpt successfully parsed."}
     message = simplejson.dumps(response)
 
     return message
 
-def handle_histdocqry(filebits, court, casenum):
 
+def handle_histdocqry(filebits, court, casenum):
     docket = ParsePacer.parse_histdocqry(filebits, court, casenum)
 
     if not docket:
@@ -266,14 +274,15 @@ def handle_doc1(filebits, court, filename):
             return "upload: doc1 metadata mismatch."
 
     if ParsePacer.is_appellate(court):
-        docket = ParsePacer.parse_ca_doc1(filebits, court, casenum, main_docnum)
+        docket = ParsePacer.parse_ca_doc1(filebits, court, casenum,
+                                          main_docnum)
     else:
         docket = ParsePacer.parse_doc1(filebits, court, casenum, main_docnum)
 
     if docket:
         # Merge the docket with IA
         do_me_up(docket)
-         # Update the local DB
+        # Update the local DB
         DocumentManager.update_local_db(docket)
 
     response = {"cases": _get_cases_dict(casenum, docket),
@@ -282,8 +291,9 @@ def handle_doc1(filebits, court, filename):
     message = simplejson.dumps(response)
     return message
 
+
 def do_me_up(docket):
-    ''' Download, merge and update the docket with IA. '''
+    """ Download, merge and update the docket with IA. """
     # Pickle this object for do_me_up by the cron process.
 
     court = docket.get_court()
@@ -347,7 +357,8 @@ def do_me_up(docket):
                     # Merged and ready.
                     ppentry.ready = 1
                     ppentry.save()
-                    logging.info("do_me_up: merged and ready. %s" %(docketname))
+                    logging.info(
+                        "do_me_up: merged and ready. %s" % (docketname))
                 else:
                     # Re-pickle failed, delete.
                     ppentry.delete()
@@ -362,7 +373,7 @@ def do_me_up(docket):
 
 
         # Ignore if in any of the other three possible state...
-        #   because another cron job is already doing work on this entity
+        # because another cron job is already doing work on this entity
         # Don't delete DB entry or pickle file.
         elif ppentry.ready and locked:
             pass
@@ -375,6 +386,7 @@ def do_me_up(docket):
         else:
             logging.error("do_me_up: %s discarded, inconsistent state." %
                           (docketname))
+
 
 def _get_cases_dict(casenum, docket):
     """ Create a dict containing the info for the case specified """
@@ -389,6 +401,7 @@ def _get_cases_dict(casenum, docket):
 
     return cases
 
+
 def _get_documents_dict(court, casenum):
     """ Create a dict containing the info for the docs specified """
     documents = {}
@@ -402,25 +415,25 @@ def _get_documents_dict(court, casenum):
                            "subdocnum": document.subdocnum}
 
                 if document.available:
-                    docmeta.update({"filename": IACommon.get_pdf_url(document.court,
-                                                 document.casenum,
-                                                 document.docnum,
-                                                 document.subdocnum),
-                                    "timestamp": document.lastdate.strftime("%m/%d/%y")})
+                    docmeta.update(
+                        {"filename": IACommon.get_pdf_url(document.court,
+                                                          document.casenum,
+                                                          document.docnum,
+                                                          document.subdocnum),
+                         "timestamp": document.lastdate.strftime("%m/%d/%y")})
                 documents[document.docid] = docmeta
     return documents
 
-def _dump_docket_for_debugging(filebits, court, casenum):
 
+def _dump_docket_for_debugging(filebits, court, casenum):
     docketdump_dir = ROOT_PATH + '/debugdockets/'
 
     if len(os.listdir(docketdump_dir)) > config['MAX_NUM_DUMP_DOCKETS']:
         return
 
-
     dumpfilename = ".".join([court, casenum, "html"])
 
-    f = open( docketdump_dir + dumpfilename, 'w')
+    f = open(docketdump_dir + dumpfilename, 'w')
     f.write(filebits)
     f.close()
 

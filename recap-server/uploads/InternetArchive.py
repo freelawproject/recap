@@ -29,7 +29,7 @@ import InternetArchiveCommon as IACommon
 import DocumentManager
 from django.conf import settings as config
 
-MAX_CONCURRENT_PROCESSES = 1 
+MAX_CONCURRENT_PROCESSES = 1
 
 BASE_PICKLE_JAR = ROOT_PATH + "/picklejar"
 LOCK_TIMEOUT = 86400 #seconds
@@ -721,6 +721,7 @@ def _silence_emails():
 
     return silence_emails
 
+
 def _get_number_of_running_jobs():
     # The cron job runs as user recap info (UID 1008)
     return int(os.popen("ps -eu harlanyu |grep python2.5| wc -l").read())
@@ -728,7 +729,6 @@ def _get_number_of_running_jobs():
 
 def _check_for_long_running_jobs():
     long_running_jobs = os.popen("ps -o etime,pid,comm -u 1008 | grep python | grep -e '\([0-9][0-9]:\)\?[5-9][0-9]:[0-9][0-9]'").read()
-
 
     if long_running_jobs and _silence_emails():
         print " Found long running job(s) %s... but emails have been silenced, so NOT sending email" % long_running_jobs.strip()
@@ -747,7 +747,6 @@ def _check_for_long_running_jobs():
         os.popen(" ".join(emailmessagecmd))
 
 
-
 def _run_cron():
 
     # Fetch updates from external uploaders.
@@ -755,8 +754,10 @@ def _run_cron():
     # Put all pickled requests to IA.
     _cron_put_pickles()
 
+
 def enter_pdb(sig, frame):
     pdb.set_trace()
+
 
 def print_stacktrace(sig, frame):
     f = open("/var/django/recap_prod/recap-server/crash.log", "a")

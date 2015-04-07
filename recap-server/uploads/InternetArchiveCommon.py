@@ -1,32 +1,33 @@
-
 import urllib2
 import socket
 
-from django.conf import settings as config
+from django.conf import settings
 
-AUTH_HEADER = config.IA_S3_UPLOAD_KEY
-STORAGE_URL = config.IA_STORAGE_URL
-COLLECTION = config.IA_COLLECTION
+AUTH_HEADER = settings.IA_S3_UPLOAD_KEY
+STORAGE_URL = settings.IA_STORAGE_URL
+COLLECTION = settings.IA_COLLECTION
 BASE_DOWNLOAD_URL = "http://www.archive.org/download"
 
 socket.setdefaulttimeout(60)
 
-def get_bucketname(court, casenum):
 
-    prefix = config.BUCKET_PREFIX
+def get_bucketname(court, casenum):
+    prefix = settings.DEV_BUCKET_PREFIX
     bucketlist = ["gov", "uscourts", court, unicode(casenum)]
     if prefix:
         bucketlist.insert(0, prefix)
 
-    #return "court-test-20"
+    # return "court-test-20"
     #return "NOBUCKET" # safeguard so nothing gets pushed to IA
     #return "court-test.gov.uscourts.mad.102407"
     return ".".join(bucketlist)
+
 
 def get_pdfname(court, casenum, docnum, subdocnum):
     namelist = ["gov", "uscourts", court, unicode(casenum),
                 unicode(docnum), unicode(subdocnum), "pdf"]
     return ".".join(namelist)
+
 
 def get_docketxml_url(court, casenum):
     bucketname = get_bucketname(court, casenum)
@@ -34,15 +35,18 @@ def get_docketxml_url(court, casenum):
 
     return "%s/%s/%s" % (BASE_DOWNLOAD_URL, bucketname, docketname)
 
+
 def get_dockethtml_url(court, casenum):
     bucketname = get_bucketname(court, casenum)
     docketname = get_dockethtml_name(court, casenum)
 
     return "%s/%s/%s" % (BASE_DOWNLOAD_URL, bucketname, docketname)
 
+
 def get_bucketcheck_url(court, casenum):
     bucketname = get_bucketname(court, casenum)
     return "%s/%s" % (STORAGE_URL, bucketname)
+
 
 def get_pdf_url(court, casenum, docnum, subdocnum):
     bucketname = get_bucketname(court, casenum)
@@ -50,13 +54,16 @@ def get_pdf_url(court, casenum, docnum, subdocnum):
 
     return "%s/%s/%s" % (BASE_DOWNLOAD_URL, bucketname, filename)
 
+
 def get_docketxml_name(court, casenum):
     namelist = ["gov", "uscourts", court, casenum, "docket.xml"]
     return ".".join(namelist)
 
+
 def get_dockethtml_name(court, casenum):
     namelist = ["gov", "uscourts", court, casenum, "docket.html"]
     return ".".join(namelist)
+
 
 def get_meta_from_filename(filename):
     namelist = filename.split(".")
@@ -68,33 +75,36 @@ def get_meta_from_filename(filename):
         meta["casenum"] = namelist.pop()
         meta["court"] = namelist.pop()
     elif suffix == "xml":
-        namelist.pop() # "docket"
+        namelist.pop()  # "docket"
         meta["casenum"] = namelist.pop()
         meta["court"] = namelist.pop()
 
     return meta
 
+
 def _return_put():
     return 'PUT'
+
 
 def _return_delete():
     return 'DELETE'
 
-def _init_put(storage_path):
 
+def _init_put(storage_path):
     request = urllib2.Request("%s/%s" % (STORAGE_URL, storage_path))
 
     request.add_header('authorization', AUTH_HEADER)
     request.add_header('x-archive-meta-collection', COLLECTION)
     request.add_header('x-archive-meta-mediatype', 'texts')
     request.add_header('x-archive-meta-language', 'eng')
-#    request.add_header('x-archive-meta-noindex', 'true')
-#    request.add_header('x-archive-meta-neverindex', 'true')
+    # request.add_header('x-archive-meta-noindex', 'true')
+    #    request.add_header('x-archive-meta-neverindex', 'true')
     request.add_header('x-archive-queue-derive', '0')
     # Don't use a lambda function here-- it's not pickleable.
     request.get_method = _return_put
 
     return request
+
 
 def _init_delete(storage_path):
     request = urllib2.Request("%s/%s" % (STORAGE_URL, storage_path))
@@ -104,8 +114,8 @@ def _init_delete(storage_path):
     return request
 
 
-def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, makenew=False):
-
+def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict,
+                     makenew=False):
     bucketname = get_bucketname(court, casenum)
     filename = get_pdfname(court, casenum, docnum, subdocnum)
 
@@ -126,7 +136,7 @@ def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, make
         add_description_header(request, court, casenum)
 
     # Add the HTTP meta headers
-    for k,v in metadict.items():
+    for k, v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
         except AttributeError:
@@ -136,8 +146,8 @@ def make_pdf_request(filebits, court, casenum, docnum, subdocnum, metadict, make
 
     return request
 
-def make_pdf_delete_request(court, casenum, docnum, subdocnum):
 
+def make_pdf_delete_request(court, casenum, docnum, subdocnum):
     bucketname = get_bucketname(court, casenum)
     filename = get_pdfname(court, casenum, docnum, subdocnum)
 
@@ -147,8 +157,8 @@ def make_pdf_delete_request(court, casenum, docnum, subdocnum):
 
     return request
 
-def make_docketxml_delete_request(court, casenum):
 
+def make_docketxml_delete_request(court, casenum):
     bucketname = get_bucketname(court, casenum)
     filename = get_docketxml_name(court, casenum)
 
@@ -158,8 +168,8 @@ def make_docketxml_delete_request(court, casenum):
 
     return request
 
-def make_dockethtml_delete_request(court, casenum):
 
+def make_dockethtml_delete_request(court, casenum):
     bucketname = get_bucketname(court, casenum)
     filename = get_dockethtml_name(court, casenum)
 
@@ -168,6 +178,7 @@ def make_dockethtml_delete_request(court, casenum):
     request.add_header('x-archive-cascade-delete', '1')
 
     return request
+
 
 def make_docketxml_request(docketbits, court, casenum, metadict={}, makenew=0):
     """  """
@@ -182,7 +193,7 @@ def make_docketxml_request(docketbits, court, casenum, metadict={}, makenew=0):
         request.add_header('x-archive-auto-make-bucket', '1')
         add_description_header(request, court, casenum)
 
-    for k,v in metadict.items():
+    for k, v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
         except AttributeError:
@@ -196,15 +207,15 @@ def make_docketxml_request(docketbits, court, casenum, metadict={}, makenew=0):
 
     return request
 
-def make_dockethtml_request(docketbits, court, casenum, metadict={}):
 
+def make_dockethtml_request(docketbits, court, casenum, metadict={}):
     bucketname = get_bucketname(court, casenum)
     filename = get_dockethtml_name(court, casenum)
 
     storage_path = "%s/%s" % (bucketname, filename)
     request = _init_put(storage_path)
 
-    for k,v in metadict.items():
+    for k, v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
         except AttributeError:
@@ -217,6 +228,7 @@ def make_dockethtml_request(docketbits, court, casenum, metadict={}):
     request.add_data(docketbits)
 
     return request
+
 
 def make_bucket_request(court, casenum, metadict={}, makenew=0):
     """ Make an new Internet Archive bucket. """
@@ -233,7 +245,7 @@ def make_bucket_request(court, casenum, metadict={}, makenew=0):
 
     add_description_header(request, court, casenum)
 
-    for k,v in metadict.items():
+    for k, v in metadict.items():
         try:
             v = v.encode("ascii", "replace")
         except AttributeError:
@@ -252,18 +264,17 @@ def make_casemeta_request(court, casenum, metadict={}):
 
 
 def add_description_header(request, court, casenum):
-
     url = get_dockethtml_url(court, casenum)
 
     description = '<a href="%s">Click here</a> to see available docket information and document downloads for this case.  If you need the complete docket, you should consult PACER directly.' % url
 
     request.add_header('x-archive-meta-description', description)
 
-if __name__ == "__main__":
 
+if __name__ == "__main__":
     request = urllib2.Request("http://monocle.princeton.edu")
     add_description_header(request, "mad", "123456")
 
-    #print request.headers
+    # print request.headers
     #print make_casemeta_request("asdf", "123454").headers
     #print make_docketxml_request("", "asdf", "123455", makenew=1).headers

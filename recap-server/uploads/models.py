@@ -1,6 +1,7 @@
 
 from django.db import models
 
+
 class Document(models.Model):
     court = models.CharField(maxlength=10)
     casenum = models.CharField(maxlength=30)
@@ -18,11 +19,13 @@ class Document(models.Model):
     class Meta:
         unique_together = (("court", "casenum", "docnum", "subdocnum"),)
 
+
 class PickledPut(models.Model):
     filename = models.CharField(maxlength=128, primary_key=True)
     docket = models.BooleanField(default=0)
     ready = models.BooleanField(default=0)
     processing = models.BooleanField(default=0)
+
 
 class BucketLock(models.Model):
     court = models.CharField(maxlength=10)
@@ -38,6 +41,7 @@ class BucketLock(models.Model):
 
     def __str__(self):
         return str(self.court) + "." + str(self.casenum)
+
 
 class Uploader(models.Model):
     # implicit 'id' IntegerField being used.
