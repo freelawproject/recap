@@ -45,3 +45,6 @@ welcome!
 
 - Running python syncdb should have created a default Uploader row in the db. You'll need to get the 'key' from either the db or initial_data.json and set `UPLOAD_AUTHKEY` to that value.
 - Be sure to set the DEV_BUCKET_PREFIX to a good value to namespace your uploads.
+- You will also need a temp directory in the directory of the application for
+  storing Python pickles. The path should be './picklejar' and it should be
+  writable to the user that the server runs as.
