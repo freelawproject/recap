@@ -1,9 +1,12 @@
-"""Settings are derived by compiling any files ending in .py in the settings directory, in alphabetical order.
+"""Settings are derived by compiling any files ending in .py in the settings
+directory, in alphabetical order.
 
 This results in the following concept:
  - default settings are in 10-public.py (this should contain most settings)
- - custom settings are in 05-private.py (an example of this file is here for you)
- - any overrides to public settings can go in 20-private.py (you'll need to create this)
+ - custom settings are in 05-private.py (an example of this file is here for
+   you)
+ - any overrides to public settings can go in 20-private.py (you'll need to
+   create this)
 """
 
 from __future__ import with_statement
@@ -11,9 +14,11 @@ import os
 import glob
 import sys
 
+
 def _generate_secret_key(file_path):
     import random
     chars = 'abcdefghijklmnopqrstuvwxyz0123456789!@#$%^&*(-_=+)'
+
     def random_char():
         return chars[int(len(chars)*random.random())]
     rand_str = ''.join(random_char() for i in range(64))
@@ -28,7 +33,7 @@ try:
     from secret_key import SECRET_KEY
 except ImportError:
     _generate_secret_key(os.path.join(ROOT_PATH, 'secret_key.py'))
-    from secret_key import *
+    from secret_key import SECRET_KEY
 
 # Load the conf files.
 conf_files = glob.glob(os.path.join(
