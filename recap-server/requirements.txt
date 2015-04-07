@@ -1,3 +1,6 @@
 Django==0.96.5
 lxml==3.4.2
 MySQL-python==1.2.5
+argparse==1.2.1
+mock==1.0.1
+wsgiref==0.1.2
