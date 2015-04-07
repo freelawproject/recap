@@ -737,9 +737,9 @@ def _already_running(process_name):
     lock_socket = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
     try:
         lock_socket.bind('\0' + process_name)
-        return True
-    except socket.error:
         return False
+    except socket.error:
+        return True
 
 
 def _check_for_long_running_jobs():
