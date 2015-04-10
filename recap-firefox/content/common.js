@@ -11,6 +11,7 @@ var ICON_EXCLAMATION_32 = "chrome://recap/skin/recap-icon-exclamation-32.png";
 var RECAP_DEVELOPER = CCGS("@mozilla.org/preferences-service;1",
   "nsIPrefService").getBranch("extensions.recap.").getBoolPref("developer_mode");
 
+var SERVER_URL;
 if (RECAP_DEVELOPER){
     SERVER_URL = "http://it.recapextension.org:8008/recap/";
 } else {
