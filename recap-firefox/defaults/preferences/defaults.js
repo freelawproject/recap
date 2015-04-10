@@ -6,3 +6,4 @@ pref("extensions.recap.display_notifications", true);
 pref("extensions.recap.temp_disable", false);
 pref("extensions.recap.has_been_initialized", false);
 pref("extensions.recap.team_name", "");
+pref("extensions.recap.developer_mode", false);

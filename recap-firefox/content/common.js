@@ -7,8 +7,15 @@ var ICON_DISABLED_32 = "chrome://recap/skin/recap-icon-disabled-32.png";
 var ICON_EXCLAMATION = "chrome://recap/skin/recap-icon-exclamation.png";
 var ICON_EXCLAMATION_32 = "chrome://recap/skin/recap-icon-exclamation-32.png";
 
-var SERVER_URL = "https://recapextension.org/recap/";
-//var SERVER_URL = "http://it.recapextension.org:8008/recap/";
+
+var RECAP_DEVELOPER = CCGS("@mozilla.org/preferences-service;1",
+  "nsIPrefService").getBranch("extensions.recap.").getBoolPref("developer_mode");
+
+if (RECAP_DEVELOPER){
+    SERVER_URL = "http://it.recapextension.org:8008/recap/";
+} else {
+    SERVER_URL = "https://recapextension.org/recap/";
+}
 
 var UPLOAD_URL = SERVER_URL + "upload/";
 var QUERY_URL = SERVER_URL + "query/";
@@ -48,8 +55,9 @@ function isPDF(mimetype) {
 }
 
 function isHTML(mimetype) {
-    if (typeof mimetype == 'undefined' || mimetype === null)
+    if (typeof mimetype === "undefined" || mimetype === null) {
         return false;
+    }
     return (mimetype.indexOf("text/html") >= 0);
 }
 
@@ -81,7 +89,7 @@ function coerce_docid(docid){
     return docid.slice(0,3) + "0" + docid.slice(4);
 }
 
-// Checks whether hostname is a CA domain
+// Checks whether hostname is a Circuit of Appeals domain
 function isCAHost(hostname) {
     return (CA_PACER_DOMAINS.indexOf(hostname) >= 0);
 }
@@ -102,7 +110,7 @@ function isUnsupportedPACERHost(hostname) {
 // Get court name from hostname
 function getCourtFromHost(hostname) {
     var court = null;
-    if (hostname == "recap.apnetwork.it") {
+    if (hostname === "recap.apnetwork.it") {
         return "pavia";
     }
     try {
@@ -231,7 +239,6 @@ function updateStatusIcon() {
     }
 }
 
-/* mlr: This function does not appear to ever be used? */
 function handlePrefDisable() {
     var prefs = CCGS("@mozilla.org/preferences-service;1",
                      "nsIPrefService").getBranch("extensions.recap.");
@@ -273,7 +280,7 @@ function updateMetaCache(metacache, documents, cases) {
     for (var caseid in cases) {
         var thecase = cases[caseid];
 
-        if (typeof(metacache.cases[caseid]) == "undefined") {
+        if (typeof(metacache.cases[caseid]) === "undefined") {
             metacache.cases[caseid] = {};
         }
         officialcasenum = thecase["officialcasenum"];

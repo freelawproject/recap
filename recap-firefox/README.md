@@ -20,6 +20,12 @@ please update this section.
 
 To set up a Firefox dev environment:
 
+1. Once you've got RECAP installed, go to [about:config][about] and search for 
+   the option extensions.recap.developer_mode and toggle it to true. This 
+   changes the extension so that your uploads and experiments do not hit the 
+   live API and instead are sent to our development machine. This was [fixed in
+   issue #24][24].
+
 1. Follow [the instructions on Mozilla's website][mdn] for setting up a development
    profile. You can mostly ignore the extensions that it wants you to install.
 
@@ -62,3 +68,5 @@ License:
 [trainwreck]: https://dcecf.psc.uscourts.gov/cgi-bin/login.pl
 [proxy]: http://stackoverflow.com/questions/1077719/fastest-way-to-debug-firefox-addons-during-development
 [ramo]: https://addons.mozilla.org/en-us/firefox/addon/restartless-restart/
+[about]: http://about:config
+[24]: https://github.com/freelawproject/recap-firefox/issues/24
