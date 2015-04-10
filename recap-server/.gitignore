@@ -1,5 +1,6 @@
 *.pyc
 *.swp
+*.patch
 cron.log*
 debug.log*
 settings/05-private.py

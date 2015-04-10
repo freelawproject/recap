@@ -15,7 +15,7 @@ Thus:
 1. Pull
 1. Add the field to the database with:
 
-        ALTER TABLE "uploads_document" ADD "team_name" varchar(40) NULL;
+        ALTER TABLE uploads_document ADD team_name varchar(40) NULL;
     
 1. Restart your server
 
