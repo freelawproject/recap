@@ -1648,12 +1648,12 @@ def _get_case_metadata_from_histdocqry(the_soup, court):
         return case_data
 
 def _parse_dktrpt_table_row(row, casenum):
-    ''' Parse URLs of the form:
+    """ Parse URLs of the form:
             https://ecf.laed.uscourts.gov/doc1/08501407159
             or
             /doc1/08501407159
         In this example, laed is the court code, and 08501407159 is the docid
-    '''
+    """
 
     docmeta = {}
 

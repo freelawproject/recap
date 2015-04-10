@@ -1,4 +1,4 @@
-import unittest 
+import unittest
 import urllib2
 from datetime import date
 
@@ -16,7 +16,7 @@ class TestPacerClient(unittest.TestCase):
     def setUp(self):
         # we need to create a pacer client each time, since some courts have a different login
         self.pacer_client = PacerClient(username=PACER_USERNAME, password=PACER_PASSWORD)
-    
+
     def test_pacer_client_creation(self):
         self.pacer_client.username = PACER_USERNAME
         self.pacer_client.password = PACER_PASSWORD
@@ -36,7 +36,7 @@ class TestPacerClient(unittest.TestCase):
         #TODO: Change this test to only use html tests.
         # Pacer client tests shouldn't depend on parse pacer
         test_date = date(2011, 06, 17)
-        
+
         expected_html = open(TEST_OPINION_PATH + "nysd.2011_06_17.opinions.html").read()
         expected_dockets = PP.parse_opinions(expected_html, 'nysd')
 
@@ -51,20 +51,20 @@ class TestPacerClient(unittest.TestCase):
         for d in dockets:
             self.assertTrue(d.get_casenum() in [e.get_casenum() for e in expected_dockets])
             casemeta = d.get_casemeta()
-            self.assertTrue(casemeta['case_name'] in [e.get_casemeta()['case_name'] 
+            self.assertTrue(casemeta['case_name'] in [e.get_casemeta()['case_name']
                                                             for e in expected_dockets])
 
     def test_opinion_html_download_fails_security_exception(self):
         self.assertRaises(PacerPageNotAvailableException, self.pacer_client.get_opinions_html, 'iasd')
-    
+
     def test_parse_cookies_from_login_response(self):
         response_html = open(TEST_SUPPORT_PATH + "nysd.login_response.html").read()
         pacer_cookie_header = self.pacer_client._parse_cookie_header_from_login_response(response_html)
         #PacerUser is really the only thing we care about
         expected_header='PacerUser="pc357201308498844                                REMOVED"; PacerPref="receipt=Y"; PacerClient=""; ClientDesc=""; MENU=slow'
-        
+
         self.assertEquals(expected_header, pacer_cookie_header)
-        
+
     def test_parse_cookies_from_alnd_login_response(self):
         response_html = open(TEST_SUPPORT_PATH + "alnd.login_response.html").read()
         pacer_cookie_header = self.pacer_client._parse_cookie_header_from_login_response(response_html)
@@ -76,20 +76,20 @@ class TestPacerClient(unittest.TestCase):
     def test_parse_cookies_from_bad_login_response(self):
         pacer_cookie_header = self.pacer_client._parse_cookie_header_from_login_response("")
         self.assertEquals(None, pacer_cookie_header)
-    
+
     def test_download_show_doc_pdf_no_iframe(self):
-        '''
+        """
         Some courts have a slightly different workflow on the show doc page - they don't have an iframe
-        '''
-        court = 'njd'; casenum = '224278'; doc_num = 21 
+        """
+        court = 'njd'; casenum = '224278'; doc_num = 21
         de_seq_num = '59'
         dm_id = '5368016'
 
         response_pdf_bits = self.pacer_client.get_pdf_show_doc(court, casenum, de_seq_num, dm_id, doc_num)
         expected_pdf_bits = open(TEST_PDF_PATH + 'gov.uscourts.njd.224278.21.0.pdf').read()
         self.assertEquals(expected_pdf_bits, response_pdf_bits)
-        
-   
+
+
     def test_download_show_doc_pdf(self):
         court = 'nysd'; casenum = '351385'; doc_num = 14
         de_seq_num = '65'
@@ -104,7 +104,7 @@ class TestPacerClient(unittest.TestCase):
         show_doc_html = open(TEST_DOC1_PATH + "ecf.cand.uscourts.gov.03517852828").read()
         docid = self.pacer_client._parse_docid_from_show_doc_page(show_doc_html)
         self.assertEquals('03517852828', docid)
-    
+
     def test_parse_show_temp_filename_from_doc1_page(self):
         doc1_html = open(TEST_DOC1_PATH + "ecf.nysd.uscourts.gov.12719373604").read()
         docid = self.pacer_client._parse_show_temp_filename_from_doc1_page(doc1_html)

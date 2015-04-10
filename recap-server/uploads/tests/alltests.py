@@ -1,8 +1,8 @@
 from uploads.BeautifulSoup import BeautifulSoup,HTMLParseError, Tag, NavigableString
 import uploads.ParsePacer as PP
 import uploads.DocketXML as DocketXML
-import re, os
-from lxml import etree
+import os
+import re
 
 from mock import patch, Mock
 
@@ -29,23 +29,23 @@ BANK_TEST_DOCKET_PATH = TEST_DOCKET_PATH + "bankruptcydockets/"
 
 TEST_DOCKET_LIST = ["cacd", "deb", "almb", "almd", "alsd", "cit", "cit2", "cit7830", "cit7391", "cand", "cand2", "cand3", "caed", "ded", "flsb", "txed"] #akd doesn't parse
 
+
 class TestParsePacer(unittest.TestCase):
   def setUp(self):
       pass
 
-
   def test_docket_output(self):
     docket_list = ["nysd.39589.html"]
-    
+
     for filename in docket_list:
       court, casenum = filename.split(".")[:2]
       f = open("/".join([TEST_DOCKET_PATH, filename]))
       filebits = f.read()
-      
+
       docket = PP.parse_dktrpt(filebits, court, casenum)
 
       docket_xml = docket.to_xml()
-    
+
   def test_parse_dktrpt(self):
     test_dockets = ['mieb.600286.html']
 
@@ -53,9 +53,8 @@ class TestParsePacer(unittest.TestCase):
       court, casenum = filename.split(".")[:2]
       f = open("/".join([BANK_TEST_DOCKET_PATH, filename]))
       filebits = f.read()
-      
+
       docket = PP.parse_dktrpt(filebits, court, casenum)
-    
 
   def test_all_bankruptcy_dockets_for_case_metadata(self):
     count =0
@@ -69,12 +68,12 @@ class TestParsePacer(unittest.TestCase):
 
        court, casenum = filename.split(".")[:2]
        case_data = PP._get_case_metadata_from_dktrpt(soup, court)
-	    
+
        try:
            print count, filename, court, casenum, case_data["docket_num"], case_data["case_name"],"::", case_data["assigned_to"]
        except KeyError:
 	  pass
-	    
+
        #self.assertTrue("date_case_filed" in case_data)
        self.assertTrue("docket_num" in case_data)
        self.assertTrue("case_name" in case_data)
@@ -82,7 +81,7 @@ class TestParsePacer(unittest.TestCase):
 
        if filename not in no_assigned_to_dockets:
 	    self.assertTrue("assigned_to" in case_data)
-	    
+
        if "date_case_filed" not in case_data:
             no_date_filed.append(filename)
 
@@ -94,7 +93,7 @@ class TestParsePacer(unittest.TestCase):
     print "No Date filed:"
     for filename in no_date_filed:
 	    print filename
-	    
+
     print "\nUnknown casename cases:"
     for filename, name in unknown_cases:
        print filename, name
@@ -109,7 +108,6 @@ class TestParsePacer(unittest.TestCase):
 	no_parties_filebits[xml] = f.read()
 	f.close()
     docketfilebits = {}
-     
 
     for docket in TEST_DOCKET_LIST:
 	    f = open(TEST_DOCKET_PATH + docket + "docket.html")
@@ -118,7 +116,7 @@ class TestParsePacer(unittest.TestCase):
 
     # Test merging with no parties in original (olddocket)
     docket = PP.parse_dktrpt(docketfilebits["cit7830"],"cit", "7830")
-    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["cit7830"]) 
+    olddocket, err = DocketXML.parse_xml_string(no_parties_filebits["cit7830"])
 
     # Sanity Check
     self.assertNotEquals([], docket.parties)
@@ -126,10 +124,8 @@ class TestParsePacer(unittest.TestCase):
     olddocket.merge_docket(docket)
     self.assertEquals(olddocket.parties, docket.parties)
 
-
-    
     docket = PP.parse_dktrpt(docketfilebits["cit7391"],"cit", "7391")
-    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["cit7391"]) 
+    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["cit7391"])
 
     # Sanity Check
     self.assertNotEquals([], docket.parties)
@@ -137,10 +133,9 @@ class TestParsePacer(unittest.TestCase):
     olddocket.merge_docket(docket)
     self.assertEquals(olddocket.parties, docket.parties)
 
-    
     # Test merging with some parties in original (olddocket)
     docket = PP.parse_dktrpt(docketfilebits["caed"],"caed", "7830")
-    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["caedSomeParties"]) 
+    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["caedSomeParties"])
     # Sanity Check
     self.assertEquals(6, len(docket.parties))
     self.assertEquals(4, len(olddocket.parties))
@@ -152,7 +147,7 @@ class TestParsePacer(unittest.TestCase):
 
     # Test merging with same num of parties but different number of attorneys
     docket = PP.parse_dktrpt(docketfilebits["cand2"],"cand2", "7830")
-    olddocket, err =  DocketXML.parse_xml_string(no_parties_filebits["candSomeAttys"]) 
+    olddocket, err = DocketXML.parse_xml_string(no_parties_filebits["candSomeAttys"])
 
     # Sanity
     self.assertEquals("James Brady", olddocket.parties[0]["name"])
@@ -189,7 +184,7 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(len(parties[1]["attorneys"]), 1)
     self.assertEquals(parties[1]["attorneys"][0]["attorney_name"], "Sopo Ngwa")
     self.assertEquals(parties[2]["type"], "Trustee")
-     
+
     parties = PP._get_parties_info_from_dkrpt(bank_soups["nvb.242643"], "nvb")
     self.assertEquals(len(parties), 4)
     self.assertEquals(parties[0]["name"], "PAUL OGALESCO")
@@ -219,14 +214,14 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(parties[0]["extra_info"], "101 W. Burnsville Pkwy., Suite 201\nBurnsville, MN 55337")
     self.assertEquals(len(parties[0]["attorneys"]), 1)
     self.assertEquals(parties[0]["attorneys"][0]["attorney_name"], "Matthew R. Burton")
-    
+
     parties = PP._get_parties_info_from_dkrpt(bank_soups["mieb.600286"], "mieb")
-    
+
 
     miebfilebits = open(BANK_TEST_DOCKET_PATH+ "mieb.600286" + ".html").read()
 
     miebdocket = PP.parse_dktrpt(miebfilebits, "mieb", "600286")
-    
+
     # mdb Adversary proceedings have slightly different formats, more similar to normal bank, but still different enough to crash parsepacer
     parties = PP._get_parties_info_from_dkrpt(bank_soups["mdb.541423"], "mdb")
     self.assertEquals(len(parties), 3)
@@ -263,11 +258,11 @@ class TestParsePacer(unittest.TestCase):
        court, casenum = filename.split(".")[:2]
        soup = _open_soup("/".join([BANK_TEST_DOCKET_PATH, filename]))
 
-       parties = PP._get_parties_info_from_dkrpt(soup,court) 
+       parties = PP._get_parties_info_from_dkrpt(soup,court)
 
-       if len(parties)==0:
+       if len(parties) == 0:
            no_parties_dockets.append(filename)
-       if len(parties) == 1: 
+       if len(parties) == 1:
 	   one_parties_dockets.append(filename)
 
     print ""
@@ -279,10 +274,8 @@ class TestParsePacer(unittest.TestCase):
     for filename in one_parties_dockets:
 	 print filename
 
-	  
 
-
-  def test_get_parties_info_from_dkrpt(self): 
+  def test_get_parties_info_from_dkrpt(self):
     testdockets = {}
     for docket in TEST_DOCKET_LIST:
 	    testdockets[docket] = _open_soup(TEST_DOCKET_PATH + docket + "docket.html")
@@ -305,7 +298,6 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(len(parties[1]["attorneys"]), 11)
     self.assertEquals(len(parties[1]["attorneys"]), 11)
 
-    
     parties = PP._get_parties_info_from_dkrpt(testdockets["almb"], "almb")
 
     self.assertEquals(len(parties), 2)
@@ -325,7 +317,7 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(len(parties[1]["attorneys"]), 3)
     # Should be no extra_info
     self.assertEquals(parties[0].get("extra_info"), None)
-    
+
     parties = PP._get_parties_info_from_dkrpt(testdockets["cit"], "cit")
     self.assertEquals(len(parties), 4)
     self.assertEquals(parties[0]["name"], "New Hampshire Ball Bearing, Inc.")
@@ -335,7 +327,7 @@ class TestParsePacer(unittest.TestCase):
     self.assertEquals(parties[0]["attorneys"][0]["attorney_role"], "LEAD ATTORNEY\nATTORNEY TO BE NOTICED")
 #    self.assertEquals(parties[2]["name"], "United States Customs and Border Protection")
     self.assertEquals(len(parties[2]["attorneys"]), 1)
-    
+
     # This document has no parties, but it shouldn't break anything when doing that
     parties = PP._get_parties_info_from_dkrpt(testdockets["cit2"], "cit")
     self.assertEquals(len(parties), 0)
@@ -411,14 +403,14 @@ class TestParseOpinions(unittest.TestCase):
         f = open(TEST_OPINION_PATH + opinion_file + ".opinions.html")
         filebits[opinion_file] = f.read()
         f.close()
-    
+
     #test valid opinion file with no entries
     dockets = PP.parse_opinions(filebits["akd.1900"], "akd")
-    self.assertEquals([], dockets) 
+    self.assertEquals([], dockets)
 
     dockets = PP.parse_opinions(filebits["akd.2010"], "akd")
     self.assertEquals(78, len(dockets) ) # number of entries in the opinions table
-    
+
     #check basic metadata
     self.assertEquals("akd", dockets[0].get_court())
     self.assertEquals("12460", dockets[0].get_casenum())
@@ -496,7 +488,7 @@ class TestParseOpinions(unittest.TestCase):
     dockets = PP.parse_opinions(filebits["nysd.2009"], "nysd")
     self.assertEquals(5916, len(dockets) ) # number of entries in the opinions table
 
-    
+
     self.assertEquals("nysd", dockets[0].get_court())
     self.assertEquals("53122", dockets[0].get_casenum())
     casemeta = dockets[0].get_casemeta()
@@ -505,7 +497,7 @@ class TestParseOpinions(unittest.TestCase):
     self.assertEquals("15:78m(a) Securities Exchange Act", casemeta["case_cause"])
     self.assertEquals("Securities/Commodities", casemeta["nature_of_suit"])
     self.assertEquals(1, len(dockets[0].documents))
-    
+
     document = dockets[0].documents['380-0']
     self.assertEquals("380", document['doc_num'])
     self.assertEquals("0", document['attachment_num'])
@@ -513,7 +505,7 @@ class TestParseOpinions(unittest.TestCase):
     self.assertEquals("5453339", document['pacer_dm_id'])
     self.assertEquals("2009-01-05", document['date_filed'])
     self.assertEquals("Memorandum & Opinion", document['long_desc'])
-    
+
 
     # Some sanity checks about iquery type opinion pages
 
@@ -543,38 +535,37 @@ class TestViews(unittest.TestCase):
     def test_get_updated_cases_no_key(self):
         response = self.client.get('/recap/get_updated_cases/')
         self.assertEquals(403, response.status_code)
-    
+
     def test_get_updated_cases_incorrect_key(self):
         response = self.client.get('/recap/get_updated_cases/', {'key' : 'incorrect_key'})
         self.assertEquals(403, response.status_code)
-    
+
     def test_get_updated_cases_valid_request(self):
         d1 = Document(court='nysd', casenum='1234', docnum='1', subdocnum='0')
         d1.save()
         d2 = Document(court='dcd', casenum='100', docnum='1', subdocnum='0')
         d2.save()
         yesterday = time.time() - 60 * 60 * 24
-        response = self.client.post('/recap/get_updated_cases/', {'key' : "REMOVED", 
-                                                                 'tpq' : yesterday})
+        response = self.client.post('/recap/get_updated_cases/', {'key': "REMOVED",
+                                                                 'tpq': yesterday})
         self.assertEquals(200, response.status_code)
         self.assertEquals('%s,%s\r\n%s,%s\r\n' % (d1.court, d1.casenum, d2.court, d2.casenum), response.content)
         self.assertEquals({'Content-Type': 'text/csv'}, response.headers)
-                
-    
+
     # heartbeat view tests
     def test_heartbeat_view_no_key(self):
         response = self.client.get('/recap/heartbeat/')
         self.assertEquals(403, response.status_code)
-    
+
     def test_heartbeat_view_incorrect_key(self):
         response = self.client.get('/recap/heartbeat/', {'key' : 'incorrect_key'})
         self.assertEquals(403, response.status_code)
-    
+
     def test_heartbeat_correct_key_no_db_connection(self):
         response = self.client.get('/recap/heartbeat/', {'key' : "REMOVED"})
         self.assertEquals(500, response.status_code)
         self.assertEquals("500 Server error: He's Dead Jim", response.content)
-        
+
     def test_heartbeat_correct_key_with_db_connection(self):
 
         document = Document(court='cand', casenum='215270', docnum='1', subdocnum='0')
@@ -588,27 +579,27 @@ class TestUploadView(unittest.TestCase):
     def setUp(self):
         self.client = Client()
         self.f = open(TEST_DOCKET_PATH + 'DktRpt_111111.html')
-        self.valid_params = {'court': 'nysd', 
+        self.valid_params = {'court': 'nysd',
                              'casenum' : '1234',
                              'mimetype' : 'text/html',
-                             'data': self.f} 
+                             'data': self.f}
         self.f_pdf = open(TEST_DOCUMENT_PATH + 'gov.uscourts.cand.206019.18.0.pdf')
-        self.valid_params_pdf = {'court': 'cand', 
+        self.valid_params_pdf = {'court': 'cand',
                                  'casenum': '206019',
                                  'mimetype': 'application/pdf',
                                  'url': 'https://ecf.cand.uscourts.gov/doc1/123456', #docid
-                                 'data': self.f_pdf} 
+                                 'data': self.f_pdf}
 
         #Doc id is 'coerced', so doesn't match one above
-        self.pdf_doc = Document(court='cand', casenum='206019', 
+        self.pdf_doc = Document(court='cand', casenum='206019',
                                 docnum='18', subdocnum='0', docid=123056)
         self.pdf_doc.save()
-        
+
         self.f_doc1 = open(TEST_DOC1_PATH + 'ecf.cand.uscourts.gov.03517852828')
-        self.valid_params_doc1 = {'court': 'cand', 
+        self.valid_params_doc1 = {'court': 'cand',
                                  'casenum': '206019',
                                  'mimetype': 'text/html',
-                                 'data': self.f_doc1} 
+                                 'data': self.f_doc1}
 
     def tearDown(self):
         self.f.close()
@@ -618,35 +609,35 @@ class TestUploadView(unittest.TestCase):
             IA.delete_pickle(p.filename)
             p.delete()
         Document.objects.all().delete()
-    
+
     def test_upload_post_request_only(self):
         response = self.client.get('/recap/upload/', {'blah' : 'foo'})
         self.assertEquals('upload: Not a POST request.', response.content)
-    
+
     def test_upload_no_params(self):
         response = self.client.post('/recap/upload/')
         self.assertEquals("upload: No request.FILES attribute.", response.content)
-    
+
     def test_upload_docket_no_court_param(self):
         del self.valid_params['court']
         response = self.client.post('/recap/upload/', self.valid_params)
         self.assertEquals("upload: No POST 'court' attribute.", response.content)
-    
+
     def test_upload_docket_invalid_casenum_param(self):
         self.valid_params['casenum'] = 'garbage_data'
         response = self.client.post('/recap/upload/', self.valid_params)
         self.assertEquals("upload: 'casenum' is not an integer: garbage_data", response.content)
-    
+
     def test_upload_docket_no_casenum_param(self):
         del self.valid_params['casenum']
         response = self.client.post('/recap/upload/', self.valid_params)
         self.assertEquals("upload: docket has no casenum.", response.content)
-    
+
     def test_upload_docket_no_mimetype_param(self):
         del self.valid_params['mimetype']
         response = self.client.post('/recap/upload/', self.valid_params)
         self.assertEquals("upload: No POST 'mimetype' attribute.", response.content)
-    
+
     def test_upload_docket_report(self):
         response = self.client.post('/recap/upload/', self.valid_params)
         output = simplejson.loads(response.content)
@@ -657,7 +648,7 @@ class TestUploadView(unittest.TestCase):
         self.assertEquals(1, PickledPut.objects.all().count())
         pp = PickledPut.objects.all()[0]
         self.assertEquals(1, pp.ready)
-    
+
     def test_upload_docket_report_for_unlocked_bucket(self):
         # Setup - Upload a docket
         response = self.client.post('/recap/upload/', self.valid_params)
@@ -671,36 +662,36 @@ class TestUploadView(unittest.TestCase):
         self.assertEquals(1, PickledPut.objects.all().count())
         pp = PickledPut.objects.all()[0]
         self.assertEquals(1, pp.ready)
-    
+
     #TK: This case seems wrong, we discard the newer docket if an old docket
     # on the same case is being uploaded. Might be too edge casey to worry about
-    # The function test behavior is the same as the one above, so going to leave it 
+    # The function test behavior is the same as the one above, so going to leave it
     # unimplemented for now
     def test_upload_docket_report_for_locked_bucket(self):
         pass
-    
+
     def test_upload_document_without_url(self):
         del self.valid_params_pdf['url']
         response = self.client.post('/recap/upload/', self.valid_params_pdf)
         self.assertEquals('upload: pdf failed. no url supplied.', response.content)
-    
+
     #TK: Handle this case better? Most likely isn't possible
     def test_upload_document_no_associated_document_with_docid(self):
         self.pdf_doc.delete()
         response = self.client.post('/recap/upload/', self.valid_params_pdf)
         self.assertEquals('upload: pdf ignored.', response.content)
-    
+
     def test_upload_document_no_record_of_docid(self):
         self.pdf_doc.docid=99999
         self.pdf_doc.save()
         response = self.client.post('/recap/upload/', self.valid_params_pdf)
         self.assertEquals('upload: pdf ignored.', response.content)
-    
+
     def test_upload_document_metadata_mismatch(self):
         self.valid_params_pdf['court'] = 'azb'
         response = self.client.post('/recap/upload/', self.valid_params_pdf)
         self.assertEquals('upload: pdf metadata mismatch.', response.content)
-    
+
     def test_upload_document(self):
         response = self.client.post('/recap/upload/', self.valid_params_pdf)
         output = simplejson.loads(response.content)
@@ -709,7 +700,7 @@ class TestUploadView(unittest.TestCase):
         self.pdf_doc = Document.objects.all()[0]
         self.assertTrue(self.pdf_doc.sha1 != None)
         self.assertEquals("5741373aff552f22fa2f14f2bd39fea4564aa49c", self.pdf_doc.sha1)
-    
+
     def test_upload_document_no_sha1_difference(self):
         #set the sha1 to what we know it to be
         self.pdf_doc.sha1 = "5741373aff552f22fa2f14f2bd39fea4564aa49c"
@@ -719,14 +710,14 @@ class TestUploadView(unittest.TestCase):
         self.assertEquals('pdf uploaded.', output['message'])
         # we only upload a docket update if the doc is the same
         self.assertEquals(1, PickledPut.objects.all().count())
-    
+
     # have to do some patching to get around the filename issue
     @patch('uploads.UploadHandler.is_doc1_html', Mock(return_value=True))
     @patch('uploads.UploadHandler.docid_from_url_name', Mock(return_value='9999999'))
     def test_upload_doc1_no_matching_docid(self):
         response = self.client.post('/recap/upload/', self.valid_params_doc1)
         self.assertEquals('upload: doc1 ignored.', response.content)
-    
+
     # have to do some patching to get around the filename issue
     @patch('uploads.UploadHandler.is_doc1_html', Mock(return_value=True))
     @patch('uploads.UploadHandler.docid_from_url_name', Mock(return_value='123056'))
@@ -741,31 +732,31 @@ class TestUploadView(unittest.TestCase):
 class TestQueryCasesView(unittest.TestCase):
     def setUp(self):
         self.client = Client()
-        self.valid_params = {'court': 'nysd', 
-                             'casenum' : '1234'} 
-        
-        self.available_doc = Document(court='nysd', casenum='1234', docnum='2', subdocnum='0', 
+        self.valid_params = {'court': 'nysd',
+                             'casenum' : '1234'}
+
+        self.available_doc = Document(court='nysd', casenum='1234', docnum='2', subdocnum='0',
                                         dm_id = '1234', de_seq_num = '111', docid = '1230445')
         self.available_doc.available = '1'
         self.available_doc.lastdate = datetime.datetime.now()
         self.available_doc.save()
-    
+
     def tearDown(self):
         Document.objects.all().delete()
 
     def test_query_cases_post_request_only(self):
         response = self.client.get('/recap/query_cases/', {'blah' : 'foo'})
         self.assertEquals('query_cases: Not a POST request.', response.content)
-    
+
     def test_query_cases_no_params(self):
         response = self.client.post('/recap/query_cases/')
         self.assertEquals("query_cases: no 'json' POST argument", response.content)
-    
+
     def test_query_cases_missing_court_param(self):
         del self.valid_params['court']
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
         self.assertEquals("query_cases: missing json 'court' argument.", response.content)
-    
+
     def test_query_cases_missing_casenum_param(self):
         del self.valid_params['casenum']
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
@@ -775,12 +766,12 @@ class TestQueryCasesView(unittest.TestCase):
 
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
         self.assertEquals("{}", response.content)
-    
+
     def test_valid_query_cases_response_no_match(self):
         self.valid_params['casenum'] = '99999'
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
         self.assertEquals("{}", response.content)
-    
+
     def test_valid_query_cases_response_available_doc_match(self):
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
         output= simplejson.loads(response.content)
@@ -788,7 +779,7 @@ class TestQueryCasesView(unittest.TestCase):
         self.assertEquals(2, len(output))
         self.assertEquals(self.available_doc.lastdate.strftime("%m/%d/%y"), output['timestamp'])
         self.assertEquals(IACommon.get_dockethtml_url('nysd', '1234'), output['docket_url'])
-    
+
     def test_valid_query_cases_response_unavailable_doc_currently_uploading(self):
         self.available_doc.available = 0
         self.available_doc.save()
@@ -797,7 +788,7 @@ class TestQueryCasesView(unittest.TestCase):
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
         self.assertEquals("{}", response.content)
         PickledPut.objects.all().delete()
-    
+
     def test_valid_query_cases_response_old_doc_currently_uploading(self):
         self.available_doc.available = 0
         two_days_ago = datetime.datetime.now() - datetime.timedelta(2)
@@ -807,7 +798,7 @@ class TestQueryCasesView(unittest.TestCase):
         ppquery = PickledPut(filename=IACommon.get_docketxml_name('nysd', '1234'))
         ppquery.save()
         response = self.client.post('/recap/query_cases/', {'json': simplejson.dumps(self.valid_params)})
-        
+
         output= simplejson.loads(response.content)
 
         self.assertEquals(2, len(output))
@@ -816,16 +807,14 @@ class TestQueryCasesView(unittest.TestCase):
         PickledPut.objects.all().delete()
 
 
-
-
-class TestQueryView(unittest.TestCase): 
+class TestQueryView(unittest.TestCase):
     def setUp(self):
         self.client = Client()
-        self.not_avail_doc= Document(court='nysd', casenum='1234', docnum='1', subdocnum='0', 
+        self.not_avail_doc= Document(court='nysd', casenum='1234', docnum='1', subdocnum='0',
                                         dm_id = '1234', de_seq_num = '111', docid = '12304213')
         self.not_avail_doc.save()
 
-        self.available_doc = Document(court='nysd', casenum='1234', docnum='2', subdocnum='0', 
+        self.available_doc = Document(court='nysd', casenum='1234', docnum='2', subdocnum='0',
                                         dm_id = '1234', de_seq_num = '111', docid = '1230445')
         self.available_doc.available = '1'
         self.available_doc.lastdate = datetime.datetime.now()
@@ -833,12 +822,12 @@ class TestQueryView(unittest.TestCase):
 
         self.docs = [self.not_avail_doc, self.available_doc]
 
-        self.valid_params = {'court': 'nysd', 
+        self.valid_params = {'court': 'nysd',
                              'urls' : [self._show_doc_url_for_document(d) for d in self.docs]}
-        
-        self.valid_params_doc1 = {'court': 'nysd', 
+
+        self.valid_params_doc1 = {'court': 'nysd',
                                  'urls' : [self._doc1_url_for_document(d) for d in self.docs]}
-    
+
     def tearDown(self):
         Document.objects.all().delete()
 
@@ -853,7 +842,7 @@ class TestQueryView(unittest.TestCase):
                             'dm_id': doc.dm_id, 'docnum': doc.docnum}
 
         return show_doc_url % show_doc_dict
-    
+
     def _doc1_url_for_document(self, doc):
         return "/doc1/%s" % doc.docid
 
@@ -864,11 +853,11 @@ class TestQueryView(unittest.TestCase):
     def test_query_post_request_only(self):
         response = self.client.get('/recap/query/', {'blah' : 'foo'})
         self.assertEquals('query: Not a POST request.', response.content)
-    
+
     def test_query_no_params(self):
         response = self.client.post('/recap/query/')
         self.assertEquals("query: no 'json' POST argument", response.content)
-    
+
     def test_query_invalid_json(self):
         response = self.client.post('/recap/query/', {'json': 'dkkfkdk'})
         self.assertEquals("query: malformed 'json' POST argument", response.content)
@@ -882,17 +871,17 @@ class TestQueryView(unittest.TestCase):
         del self.valid_params['urls']
         response = self.client.post('/recap/query/', {'json': simplejson.dumps(self.valid_params)})
         self.assertEquals("query: missing json 'urls' argument.", response.content)
-    
+
     def test_valid_show_doc_query_response(self):
         response = self.client.post('/recap/query/', {'json': simplejson.dumps(self.valid_params)})
-       
+
         output = simplejson.loads(response.content)
         avail_show_doc_url = self._show_doc_url_for_document(self.available_doc)
         self.assertTrue(avail_show_doc_url in output)
         self.assertFalse(self._show_doc_url_for_document(self.not_avail_doc) in output)
         self.assertEquals(self.available_doc.lastdate.strftime("%m/%d/%y"), output[avail_show_doc_url]['timestamp'])
         self.assertEquals(self._ia_url_for_doc(self.available_doc), output[avail_show_doc_url]['filename'])
-    
+
     def test_valid_doc1_url_query_response(self):
         response = self.client.post('/recap/query/', {'json': simplejson.dumps(self.valid_params_doc1)})
         output = simplejson.loads(response.content)
@@ -901,9 +890,9 @@ class TestQueryView(unittest.TestCase):
         self.assertFalse(self._doc1_url_for_document(self.not_avail_doc) in output)
         self.assertEquals(self.available_doc.lastdate.strftime("%m/%d/%y"), output[avail_show_doc_url]['timestamp'])
         self.assertEquals(self._ia_url_for_doc(self.available_doc), output[avail_show_doc_url]['filename'])
-    
+
     def test_valid_query_response_with_subdocuments(self):
-        subdoc1 = Document(court='nysd', casenum='1234', docnum='2', subdocnum='1', 
+        subdoc1 = Document(court='nysd', casenum='1234', docnum='2', subdocnum='1',
                                     available=1, lastdate = datetime.datetime.now())
         subdoc2 = Document(court='nysd', casenum='1234', docnum='2', subdocnum='2',
                                     available=1, lastdate = datetime.datetime.now())
@@ -911,10 +900,10 @@ class TestQueryView(unittest.TestCase):
         subdoc1.save()
         subdoc2.save()
         subdoc3.save()
-        
+
         response = self.client.post('/recap/query/', {'json': simplejson.dumps(self.valid_params)})
         output = simplejson.loads(response.content)
-        
+
         avail_show_doc_url = self._show_doc_url_for_document(self.available_doc)
         self.assertTrue(avail_show_doc_url in output)
         self.assertTrue('subDocuments' in output[avail_show_doc_url])
@@ -922,23 +911,23 @@ class TestQueryView(unittest.TestCase):
         self.assertEquals(2, len(subdoc_dict))
         self.assertEquals(self._ia_url_for_doc(subdoc1), subdoc_dict['1']['filename'])
 
-class TestAddDocMetaView(unittest.TestCase): 
+class TestAddDocMetaView(unittest.TestCase):
     def setUp(self):
         self.client = Client()
         self.existing_document  = Document(court='nysd', casenum='1234', docnum='1', subdocnum='0')
         self.existing_document.save()
-        self.adddocparams =  { 'court': 'nysd', 'casenum': '1234', 
+        self.adddocparams =  { 'court': 'nysd', 'casenum': '1234',
                                'docnum': '1', 'de_seq_num': '1111',
                                'dm_id': '2222', 'docid': '3330'}
     def tearDown(self):
         Document.objects.all().delete()
 
 
-    
+
     def test_adddoc_only_post_requests_allowed(self):
         response = self.client.get('/recap/adddocmeta/')
         self.assertEquals("adddocmeta: Not a POST request.", response.content)
-    
+
     def test_adddoc_request_data_missing(self):
         response = self.client.post('/recap/adddocmeta/', {'docid': '1234'})
         self.assertTrue(response.content.startswith("adddocmeta: \"Key 'court' not found"))
@@ -947,41 +936,41 @@ class TestAddDocMetaView(unittest.TestCase):
         self.assertEquals(None, self.existing_document.docid)
         response = self.client.post('/recap/adddocmeta/', self.adddocparams)
         self.assertEquals("adddocmeta: DB updated for docid=3330", response.content)
-        query = Document.objects.filter(court='nysd', casenum='1234', 
+        query = Document.objects.filter(court='nysd', casenum='1234',
                                         docnum='1', subdocnum='0')
 
         saved_document = query[0]
         self.assertEquals(1111, saved_document.de_seq_num)
         self.assertEquals(2222, saved_document.dm_id)
         self.assertEquals('3330', saved_document.docid)
-    
+
     def test_adddoc_coerces_doc_id(self):
         self.adddocparams['docid'] = '123456789'
         response = self.client.post('/recap/adddocmeta/', self.adddocparams)
-        query = Document.objects.filter(court='nysd', casenum='1234', 
+        query = Document.objects.filter(court='nysd', casenum='1234',
                                         docnum='1', subdocnum='0')
 
         saved_document = query[0]
         self.assertEquals('123056789', saved_document.docid)
-    
+
     def test_adddoc_creates_new_document(self):
-        query = Document.objects.filter(court='nysd', casenum='5678', 
+        query = Document.objects.filter(court='nysd', casenum='5678',
                                         docnum='1', subdocnum='0')
 
         self.adddocparams['casenum'] = '5678'
-        self.assertEquals(0, query.count()) 
+        self.assertEquals(0, query.count())
         response = self.client.post('/recap/adddocmeta/', self.adddocparams)
-        self.assertEquals(1, query.count()) 
+        self.assertEquals(1, query.count())
         created_doc = query[0]
         created_doc.docid = self.adddocparams['docid']
-    
+
     def test_adddoc_responds_with_document_dict(self):
         self.adddocparams['add_case_info'] = True
         response = self.client.post('/recap/adddocmeta/', self.adddocparams)
         response_dict = simplejson.loads(response.content)
         self.assertEquals(1, len(response_dict['documents']))
         self.assertTrue(self.adddocparams['docid'] in response_dict['documents'])
-        
+
 
 
 class TestThirdPartyViews(unittest.TestCase):
@@ -999,39 +988,39 @@ class TestThirdPartyViews(unittest.TestCase):
         response = self.client.get('/recap/lock/', {'court' : 'nysd', 'casenum' : 1234})
         self.assertEquals("0<br>Missing arguments.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_lock_invalid_key(self):
-        response = self.client.get('/recap/lock/', {'key' : 'invalid_key', 
-                                                    'court' : 'nysd', 
+        response = self.client.get('/recap/lock/', {'key' : 'invalid_key',
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
         self.assertEquals("0<br>Authentication failed.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_lock_valid_request(self):
-        response = self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        response = self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
         created_lock = BucketLock.objects.all()[0]
         self.assertEquals("1<br>%s" % created_lock.nonce, response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_lock_already_locked_bucket_same_requester(self):
         #lock a case
-        self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
-        
+
         created_lock = BucketLock.objects.all()[0]
-        response = self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        response = self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
         self.assertEquals("1<br>%s" % created_lock.nonce, response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_lock_ready_but_not_processing(self):
         #lock a case
-        self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
 
         # unlock it, it should be marked ready for upload
@@ -1043,28 +1032,28 @@ class TestThirdPartyViews(unittest.TestCase):
         created_lock = BucketLock.objects.all()[0]
         self.assertEquals(1, created_lock.ready)
         self.assertEquals(0, created_lock.processing)
-        
+
         #lock it again
-        self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
-        
+
         created_lock = BucketLock.objects.all()[0]
         self.assertEquals(0, created_lock.ready)
         self.assertEquals(0, created_lock.processing)
 
-    
+
     def test_lock_already_locked_bucket_different_requester(self):
         other_guy = Uploader(key='otherkey', name='imposter')
         other_guy.save()
 
         #lock a case
-        self.client.get('/recap/lock/', {'key' : self.uploader.key, 
-                                                    'court' : 'nysd', 
+        self.client.get('/recap/lock/', {'key' : self.uploader.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
-        
-        response = self.client.get('/recap/lock/', {'key' : other_guy.key, 
-                                                    'court' : 'nysd', 
+
+        response = self.client.get('/recap/lock/', {'key' : other_guy.key,
+                                                    'court' : 'nysd',
                                                     'casenum' : 1234})
         self.assertEquals("0<br>Locked by another user.", response.content)
         self.assertEquals(200, response.status_code)
@@ -1074,7 +1063,7 @@ class TestThirdPartyViews(unittest.TestCase):
         response = self.client.get('/recap/unlock/', {'court' : 'nysd', 'casenum' : 1234})
         self.assertEquals("0<br>Missing arguments.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_unlock_invalid_key(self):
         response = self.client.get('/recap/unlock/', {'key' : 'invalid_key',
                                                     'court' : 'nysd',
@@ -1083,7 +1072,7 @@ class TestThirdPartyViews(unittest.TestCase):
                                                     'nononce' : 0})
         self.assertEquals("0<br>Authentication failed.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_unlock_valid_nonexisting_lock(self):
         response = self.client.get('/recap/unlock/', {'key' : self.uploader.key,
                                                     'court' : 'nysd',
@@ -1092,7 +1081,7 @@ class TestThirdPartyViews(unittest.TestCase):
                                                     'nononce' : 0})
         self.assertEquals('1', response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_unlock_valid_not_modified(self):
         #create a lock
         self.client.get('/recap/lock/', {'key' : self.uploader.key,
@@ -1110,7 +1099,7 @@ class TestThirdPartyViews(unittest.TestCase):
         self.assertEquals('1', response.content)
         self.assertEquals(200, response.status_code)
         self.assertEquals(0, BucketLock.objects.count())
-    
+
     def test_unlock_valid_modified(self):
         #create a lock
         self.client.get('/recap/lock/', {'key' : self.uploader.key,
@@ -1138,7 +1127,7 @@ class TestThirdPartyViews(unittest.TestCase):
         self.client.get('/recap/lock/', {'key' : self.uploader.key,
                                                     'court' : 'nysd',
                                                     'casenum' : 1234})
-        
+
         response = self.client.get('/recap/unlock/', {'key' : other_guy.key,
                                                     'court' : 'nysd',
                                                     'casenum' : 1234,
@@ -1152,17 +1141,17 @@ class TestThirdPartyViews(unittest.TestCase):
         response = self.client.get('/recap/querylocks/')
         self.assertEquals("0<br>Missing arguments.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_querylocks_invalid_key(self):
         response = self.client.get('/recap/querylocks/', {'key' : 'invalid_key'})
         self.assertEquals("0<br>Authentication failed.", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_querylocks_valid_no_locks(self):
         response = self.client.get('/recap/querylocks/', {'key' : self.uploader.key})
         self.assertEquals("0<br>", response.content)
         self.assertEquals(200, response.status_code)
-    
+
     def test_querylocks_valid_two_locks(self):
         response = self.client.get('/recap/lock/', {'key' : self.uploader.key,
                                                     'court' : 'nysd',
@@ -1191,7 +1180,7 @@ def print_parties(parties):
 
 def print_attorney(att):
 	   print "  Attorney: "
-	   print "   %s " % att['attorney_name'] 
+	   print "   %s " % att['attorney_name']
 	   try:
 	      print "   %s " % att['contact']
 	   except KeyError:
@@ -1202,7 +1191,7 @@ def print_attorney(att):
 	   except KeyError:
 		print "   NO ROLE"
 	   print ""
-    
+
 def _open_soup(filename):
     f = open(filename)
     filebits = f.read()
@@ -1210,18 +1199,18 @@ def _open_soup(filename):
     try:
         the_soup = BeautifulSoup(filebits, convertEntities="html")
     except TypeError:
-        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType' 
+        # Catch bug in BeautifulSoup: tries to concat 'str' and 'NoneType'
         #  when unicode coercion fails.
         message = "DktRpt BeautifulSoup error %s.%s" % \
             (court, casenum)
         logging.warning(message)
-        
+
         filename = "%s.%s.dktrpt" % (court, casenum)
         try:
             error_to_file(filebits, filename)
         except NameError:
             pass
-        
+
         return None
 
     except HTMLParseError:
@@ -1231,9 +1220,9 @@ def _open_soup(filename):
         badre = re.compile("<A HREF=\/cgi-bin\/.*\.pl[^>]*</A>")
         filebits = badre.sub('', filebits)
 
-        filebits = filebits.replace("&#037; 20", 
+        filebits = filebits.replace("&#037; 20",
                                     "&#037;20")
-        filebits = filebits.replace(" name=send_to_file<HR><CENTER>", 
+        filebits = filebits.replace(" name=send_to_file<HR><CENTER>",
                                     " name=send_to_file><HR><CENTER>")
 
 	bad_end_tag_re = re.compile("</font color=.*>")
@@ -1248,12 +1237,12 @@ def _open_soup(filename):
             print message
 
 	    print court
-        
+
             return None
 
     return the_soup
 
-def suite(): 
+def suite():
      suite = unittest.TestSuite()
 #     suite.addTest(TestParsePacer('test_parse_dktrpt'))
 #     suite.addTest(TestParsePacer('test_bankruptcy_parties_info_from_dkrpt'))
@@ -1263,14 +1252,14 @@ def suite():
 #     suite.addTest(TestParsePacer('test_docket_output'))
 #     suite.addTest(TestParsePacer('test_parse_opinions'))
 
-#    Test everything: 
+#    Test everything:
 #     suite.addTest(unittest.makeSuite(TestParsePacer))
      suite.addTest(unittest.makeSuite(TestViews))
-     
+
      return suite
 
 
- 
+
 if __name__ == '__main__':
 	unittest.TextTestRunner(verbosity=2).run(suite())
 
@@ -1301,13 +1290,13 @@ if __name__ == '__main__':
 			 attdict['attorney_name'] = node.string.strip()
 		 elif node.name == 'i':
 			 try:
-			   attdict['attorney_role'] += "\n" + node.string.strip() 
+			   attdict['attorney_role'] += "\n" + node.string.strip()
 			 except KeyError:
 		           if node.string.strip():
 			     attdict['attorney_role'] = node.string.strip()
 	 elif(isinstance(node, NavigableString)):
 		if node.string:
-		 try: 
+		 try:
 		   attdict['contact'] += "\n" + node.string.strip()
 		 except KeyError:
 		   if node.string.strip():
@@ -1318,7 +1307,7 @@ if __name__ == '__main__':
 
     for att in att_list:
 	   print "Attorney: "
-	   print att['attorney_name'] 
+	   print att['attorney_name']
 	   try:
 	      print att['contact']
 	   except KeyError:
