@@ -4,6 +4,22 @@ These notes should be reviewed whenever you get fresh code. Any manual tweaks
 or configurations that are needed will be documented here.
 
 
+# 2015-04-08
+
+Adds the team_name feature to the backend, which requires a new field be added
+to the database.
+
+Thus:
+
+1. Before pulling, shut down your server to avoid errors.
+1. Pull
+1. Add the field to the database with:
+
+        ALTER TABLE "uploads_document" ADD "team_name" varchar(40) NULL;
+    
+1. Restart your server
+
+
 # 2015-04-04
 
 In order to fix #59, the BUCKET_PREFIX variable was renamed DEV_BUCKET_PREFIX.

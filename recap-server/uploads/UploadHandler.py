@@ -52,7 +52,7 @@ def docid_from_url_name(url):
     raise ValueError('docid_from_url_name')
 
 
-def handle_upload(filedata, court, casenum, mimetype, url):
+def handle_upload(filedata, court, casenum, mimetype, url, team_name):
     """ Main handler for uploaded data. """
 
     logging.debug('handle_upload %s %s %s %s', court, casenum, mimetype, url)
@@ -66,13 +66,13 @@ def handle_upload(filedata, court, casenum, mimetype, url):
         return "upload: %s" % message
 
     if is_pdf(mimetype):
-        message = handle_pdf(filebits, court, url)
+        message = handle_pdf(filebits, court, url, team_name)
 
     elif is_doc1_html(filename, mimetype, url, casenum):
-        message = handle_doc1(filebits, court, filename)
+        message = handle_doc1(filebits, court, filename, team_name)
 
     elif is_html(mimetype):
-        message = handle_docket(filebits, court, casenum, filename)
+        message = handle_docket(filebits, court, casenum, filename, team_name)
 
     else:
         message = "couldn't recognize file type %s" % (mimetype)
@@ -82,7 +82,7 @@ def handle_upload(filedata, court, casenum, mimetype, url):
     return message
 
 
-def handle_pdf(filebits, court, url):
+def handle_pdf(filebits, court, url, team_name):
     """ Write PDF file metadata into the database. """
 
     # Parse coerced docid out of url
@@ -98,8 +98,8 @@ def handle_pdf(filebits, court, url):
     try:
         doc = query[0]
     except IndexError:
-        logging.info("handle_pdf: haven't yet seen docket %s" % (docid))
-        return "upload: pdf ignored."
+        logging.info("handle_pdf: haven't yet seen docket %s" % docid)
+        return "upload: pdf ignored because we don't have docket %s" % docid
     else:
         # Sanity check
         if doc.court != court:
@@ -115,7 +115,7 @@ def handle_pdf(filebits, court, url):
     # Docket with updated sha1, available, and upload_date
     docket = DocketXML.make_docket_for_pdf(filebits, court, casenum,
                                            docnum, subdocnum, available=0)
-    DocumentManager.update_local_db(docket)
+    DocumentManager.update_local_db(docket, team_name=team_name)
 
     if docket.get_document_sha1(docnum, subdocnum) != sha1:
 
@@ -142,14 +142,12 @@ def handle_pdf(filebits, court, url):
                                                            docnum, subdocnum))
     message = "pdf uploaded."
 
-    response = {}
-    response["message"] = message
-    jsonout = simplejson.dumps(response)
+    response = {"message": message}
 
-    return jsonout
+    return simplejson.dumps(response)
 
 
-def handle_docket(filebits, court, casenum, filename):
+def handle_docket(filebits, court, casenum, filename, team_name):
     """ Parse HistDocQry and DktRpt HTML files for metadata."""
 
     logging.debug('handle_docket: %s %s %s', court, casenum, filename)
@@ -160,29 +158,29 @@ def handle_docket(filebits, court, casenum, filename):
 
     if histdocqry_re.match(filename):
         if casenum:
-            return handle_histdocqry(filebits, court, casenum)
+            return handle_histdocqry(filebits, court, casenum, team_name)
         else:
             message = "docket has no casenum."
             logging.error("handle_upload: %s" % message)
             return "upload: %s" % message
     elif dktrpt_re.match(filename):
         if casenum:
-            return handle_dktrpt(filebits, court, casenum)
+            return handle_dktrpt(filebits, court, casenum, team_name)
         else:
             message = "docket has no casenum."
             logging.error("handle_upload: %s" % message)
             return "upload: %s" % message
     elif filename == 'Summary':
-        return handle_cadkt(filebits, court, casenum)
+        return handle_cadkt(filebits, court, casenum, team_name)
     elif filename == 'FullDocketReport':
-        return handle_cadkt(filebits, court, casenum, True)
+        return handle_cadkt(filebits, court, casenum, team_name, is_full=True)
 
     message = "unrecognized docket file."
     logging.error("handle_docket: %s %s" % (message, filename))
-    return "upload: %s" % (message)
+    return "upload: %s" % message
 
 
-def handle_cadkt(filebits, court, casenum, is_full=False):
+def handle_cadkt(filebits, court, casenum, team_name, is_full=False):
     docket = ParsePacer.parse_cadkt(filebits, court, casenum, is_full)
 
     if not docket:
@@ -192,7 +190,7 @@ def handle_cadkt(filebits, court, casenum, is_full=False):
     do_me_up(docket)
 
     # Update the local DB
-    DocumentManager.update_local_db(docket)
+    DocumentManager.update_local_db(docket, team_name=team_name)
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
@@ -202,7 +200,7 @@ def handle_cadkt(filebits, court, casenum, is_full=False):
     return message
 
 
-def handle_dktrpt(filebits, court, casenum):
+def handle_dktrpt(filebits, court, casenum, team_name):
     if config.DUMP_DOCKETS and re.search(config.DUMP_DOCKETS_COURT_REGEX,
                                          court):
         logging.info("handle_dktrpt: Dumping docket %s.%s for debugging" % (
@@ -218,7 +216,7 @@ def handle_dktrpt(filebits, court, casenum):
     do_me_up(docket)
 
     # Update the local DB
-    DocumentManager.update_local_db(docket)
+    DocumentManager.update_local_db(docket, team_name=team_name)
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
@@ -228,7 +226,7 @@ def handle_dktrpt(filebits, court, casenum):
     return message
 
 
-def handle_histdocqry(filebits, court, casenum):
+def handle_histdocqry(filebits, court, casenum, team_name):
     docket = ParsePacer.parse_histdocqry(filebits, court, casenum)
 
     if not docket:
@@ -238,7 +236,7 @@ def handle_histdocqry(filebits, court, casenum):
     do_me_up(docket)
 
     # Update the local DB
-    DocumentManager.update_local_db(docket)
+    DocumentManager.update_local_db(docket, team_name=team_name)
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),
@@ -249,7 +247,7 @@ def handle_histdocqry(filebits, court, casenum):
     return message
 
 
-def handle_doc1(filebits, court, filename):
+def handle_doc1(filebits, court, filename, team_name):
     """ Write HTML (doc1) file metadata into the database. """
 
     logging.debug('handle_doc1 %s %s', court, filename)
@@ -283,7 +281,7 @@ def handle_doc1(filebits, court, filename):
         # Merge the docket with IA
         do_me_up(docket)
         # Update the local DB
-        DocumentManager.update_local_db(docket)
+        DocumentManager.update_local_db(docket, team_name=team_name)
 
     response = {"cases": _get_cases_dict(casenum, docket),
                 "documents": _get_documents_dict(court, casenum),

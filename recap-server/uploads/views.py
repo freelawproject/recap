@@ -22,7 +22,6 @@ from django.conf import settings as config
 def index(request):
     return HttpResponse("Well hello, there's nothing to see here.")
 
-### File upload functions ###
 
 def upload(request):
     """ Public upload view for all incoming data. """
@@ -90,11 +89,15 @@ def upload(request):
     except KeyError:
         url = None
 
-    message = UploadHandler.handle_upload(data, court, casenum,
-                                          mimetype, url)
+    try:
+        team_name = request.POST['team_name'].strip()
+    except KeyError:
+        team_name = None
+
+    message = UploadHandler.handle_upload(data, court, casenum, mimetype, url,
+                                          team_name)
 
     return HttpResponse(message)
-
 
 
 def query(request):

@@ -15,6 +15,7 @@ class Document(models.Model):
     lastdate = models.DateTimeField(null=True, blank=True, db_index=True)
     modified = models.DateTimeField(null=True, blank=True, auto_now_add=True, db_index=True)
     free_import = models.BooleanField(default=0, db_index=True)
+    team_name = models.CharField(maxlength=40, null=True, blank=True)
 
     class Meta:
         unique_together = (("court", "casenum", "docnum", "subdocnum"),)
@@ -41,7 +42,6 @@ class BucketLock(models.Model):
 
     def __str__(self):
         return str(self.court) + "." + str(self.casenum)
-
 
 class Uploader(models.Model):
     # implicit 'id' IntegerField being used.

@@ -1,4 +1,3 @@
-
 import logging
 
 from MySQLdb import IntegrityError, OperationalError
@@ -8,8 +7,8 @@ import InternetArchiveCommon as IACommon
 import ParsePacer
 from DocketXML import DocketXML
 
-def update_local_db(docket, ignore_available=1):
 
+def update_local_db(docket, ignore_available=1, team_name=None):
     court = docket.casemeta["court"]
     casenum = docket.casemeta["pacer_case_num"]
     for docmeta in docket.documents.values():
@@ -25,7 +24,7 @@ def update_local_db(docket, ignore_available=1):
         try:
             docentry = docquery[0]
         except IndexError:
-            # Add this new document to our DB
+            # New item: Add it to our DB
             docentry = Document(court=court, casenum=casenum,
                                 docnum=docnum, subdocnum=subdocnum)
         except OperationalError:
@@ -64,19 +63,23 @@ def update_local_db(docket, ignore_available=1):
         except KeyError:
             pass
 
+        if team_name is not None:
+            docentry.team_name = team_name
+
         try:
             docentry.save()
         except IntegrityError:
             logging.error("update_local_db: could not save %s %s %s %s"
                           % (court, casenum, docnum, subdocnum))
 
+
 def mark_as_available(filename):
     docmeta = IACommon.get_meta_from_filename(filename)
 
-    docquery =  Document.objects.filter(court=docmeta["court"],
-                                        casenum=docmeta["casenum"],
-                                        docnum=docmeta["docnum"],
-                                        subdocnum=docmeta["subdocnum"])
+    docquery = Document.objects.filter(court=docmeta["court"],
+                                       casenum=docmeta["casenum"],
+                                       docnum=docmeta["docnum"],
+                                       subdocnum=docmeta["subdocnum"])
 
     try:
         docentry = docquery[0]
@@ -89,11 +92,11 @@ def mark_as_available(filename):
             docentry.save()
         except IntegrityError:
             logging.error("mark_as_available: could not save %s."
-                              % (filename))
+                          % (filename))
+
 
 def handle_adddocmeta(docid, court, casenum, de_seq_num, dm_id,
                       docnum, subdocnum):
-
     docid = ParsePacer.coerce_docid(docid)
 
     query = Document.objects.filter(court=court, casenum=casenum,
@@ -117,14 +120,12 @@ def handle_adddocmeta(docid, court, casenum, de_seq_num, dm_id,
         logging.error("handle_adddocmeta: could not save docid %s" % (docid))
 
 
-
 def create_docket_from_local_documents(court, casenum, removedocket=None):
-
     docket = DocketXML(court, casenum)
     localdocs = Document.objects.filter(court=court, casenum=casenum)
 
     try:
-        currdoc = localdocs[0]
+        localdocs[0]
     except IndexError:
         return None
 
@@ -132,12 +133,14 @@ def create_docket_from_local_documents(court, casenum, removedocket=None):
         docket.add_document_object(doc)
 
     if not removedocket:
-       return docket
+        return docket
 
-    # We've already added the information in 'removedocket' to the local db, hence the information shows up in local
-    #   so we want to remove any conflicts before merging local_docket - this will give us
-    #   accurate readings of when we are actually adding locally stored information
-    #   Note that this isn't perfect - information added through adddocmeta will be included in docket uploads as well
+    # We've already added the information in 'removedocket' to the local db,
+    # hence the information shows up in local so we want to remove any
+    # conflicts before merging local_docket - this will give us accurate
+    # readings of when we are actually adding locally stored information. Note
+    # that this isn't perfect - information added through adddocmeta will be
+    # included in docket uploads as well
     for dockey in removedocket.documents.keys():
         for metakey in removedocket.documents[dockey].keys():
             try:
