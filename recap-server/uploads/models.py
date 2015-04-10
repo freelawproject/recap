@@ -25,19 +25,19 @@ class Document(models.Model):
 
     """
     court = models.CharField(
-        max_length=10,
+        maxlength=10,
     )
     casenum = models.CharField(
-        max_length=30,
+        maxlength=30,
     )
     docnum = models.CharField(
-        max_length=30,
+        maxlength=30,
     )
     subdocnum = models.CharField(
-        max_length=30,
+        maxlength=30,
     )
     docid = models.CharField(
-        max_length=32,
+        maxlength=32,
         null=True,
         blank=True,
         db_index=True,
@@ -51,7 +51,7 @@ class Document(models.Model):
         blank=True,
     )
     sha1 = models.CharField(
-        max_length=40,
+        maxlength=40,
         null=True,
         blank=True,
     )
@@ -92,7 +92,7 @@ class Document(models.Model):
 
 class PickledPut(models.Model):
     filename = models.CharField(
-        max_length=128,
+        maxlength=128,
         primary_key=True,
     )
     docket = models.BooleanField(
@@ -108,14 +108,14 @@ class PickledPut(models.Model):
 
 class BucketLock(models.Model):
     court = models.CharField(
-        max_length=10,
+        maxlength=10,
     )
     casenum = models.CharField(
-        max_length=30,
+        maxlength=30,
     )
     uploaderid = models.IntegerField()
     nonce = models.CharField(
-        max_length=6,
+        maxlength=6,
     )
     ready = models.BooleanField(
         default=0,
@@ -142,8 +142,8 @@ class BucketLock(models.Model):
 class Uploader(models.Model):
     # implicit 'id' IntegerField being used.
     key = models.CharField(
-        max_length=8,
+        maxlength=8,
     )
     name = models.CharField(
-        max_length=64,
+        maxlength=64,
     )
