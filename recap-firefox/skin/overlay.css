@@ -1,0 +1,7 @@
+#recap-button {
+    list-style-image: url("chrome://recap/skin/recap-icon-grey-32.png");
+}
+
+toolbar[iconsize="small"] #recap-button.icon-logged-out {
+    list-style-image: url("chrome://recap/skin/recap-icon-grey-32.png");
+}
