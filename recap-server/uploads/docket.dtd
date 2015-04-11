@@ -1,0 +1,49 @@
+<?xml encoding="UTF-8"?>
+
+<!ELEMENT gov_uscourts_docket (nonce, case_details, party_list?, document_list)>
+
+<!ELEMENT nonce (#PCDATA)>
+
+<!ELEMENT case_details (court, docket_num?, case_name?, pacer_case_num, date_case_filed?, date_case_terminated?, date_last_filing?, assigned_to?, referred_to?, case_cause?, nature_of_suit?, jury_demand?, jurisdiction?, demand?)>
+<!ELEMENT court (#PCDATA)>
+<!ELEMENT docket_num (#PCDATA)>
+<!ELEMENT pacer_case_num (#PCDATA)>
+<!ELEMENT case_name (#PCDATA)>
+<!ELEMENT date_case_filed (#PCDATA)>
+<!ELEMENT date_case_terminated (#PCDATA)>
+<!ELEMENT date_last_filing (#PCDATA)>
+<!ELEMENT assigned_to (#PCDATA)>
+<!ELEMENT referred_to (#PCDATA)>
+<!ELEMENT case_cause (#PCDATA)>
+<!ELEMENT nature_of_suit (#PCDATA)>
+<!ELEMENT jury_demand (#PCDATA)>
+<!ELEMENT jurisdiction (#PCDATA)>
+<!ELEMENT demand (#PCDATA)>
+
+<!ELEMENT party_list (party*)>
+<!ELEMENT party (name?, type?, extra_info?, attorney_list?)>
+<!ELEMENT name (#PCDATA)>
+<!ELEMENT type (#PCDATA)>
+<!ELEMENT extra_info (#PCDATA)>
+<!ELEMENT attorney_list (attorney*)>
+<!ELEMENT attorney (attorney_name, contact?, attorney_role?)>
+<!ELEMENT attorney_name (#PCDATA)>
+<!ELEMENT contact (#PCDATA)>
+<!ELEMENT attorney_role (#PCDATA)>
+
+<!ELEMENT document_list (document*)>
+<!ELEMENT document (pacer_doc_id?, pacer_de_seq_num?, pacer_dm_id?, date_filed?, date_entered?, long_desc?, short_desc?, upload_date?, available?, sha1?)>
+<!ATTLIST document
+    doc_num NMTOKEN #REQUIRED
+    attachment_num NMTOKEN #REQUIRED>
+<!ELEMENT pacer_doc_id (#PCDATA)>
+<!ELEMENT pacer_de_seq_num (#PCDATA)>
+<!ELEMENT pacer_dm_id (#PCDATA)>
+<!ELEMENT date_filed (#PCDATA)>
+<!ELEMENT date_entered (#PCDATA)>
+<!ELEMENT long_desc (#PCDATA)>
+<!ELEMENT short_desc (#PCDATA)>
+<!ELEMENT upload_date (#PCDATA)>
+<!ELEMENT available (#PCDATA)>
+<!ELEMENT sha1 (#PCDATA)>
+
