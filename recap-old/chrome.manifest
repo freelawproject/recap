@@ -1,8 +1,0 @@
-content	recap	content/
-locale	recap	en-US	locale/en-US/
-skin	recap	classic/1.0	skin/
-overlay	chrome://browser/content/browser.xul	chrome://recap/content/firefoxOverlay.xul appversion<4.0b5
-overlay	chrome://browser/content/browser.xul	chrome://recap/content/firefoxOverlayFF4.xul appversion>=4.0b5
-component {2ada744a-7368-4399-9321-f342637bca76} components/recap.js
-contract @cs.princeton.edu/recap;1 {2ada744a-7368-4399-9321-f342637bca76}
-category profile-after-change RECAP @cs.princeton.edu/recap;1
