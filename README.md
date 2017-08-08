@@ -1,5 +1,3 @@
-[![Slack Status](https://join-flp-talk.herokuapp.com/badge.svg)](https://join-flp-talk.herokuapp.com/)
-
 Reporting Issues
 ================
 
@@ -21,8 +19,6 @@ Attempts have been made to make a cross-platform extension that would work on ma
 None of these are fully-functional:
 * [recap-openforge](https://github.com/freelawproject/recap-openforge) (Incomplete; help-wanted)
 * [recap-extension-2.0](https://github.com/freelawproject/recap-extension-2.0) (Incomplete; help-wanted)
-
-We have [a Slack room where people hang out and chat about stuff](https://join-flp-talk.herokuapp.com/).
 
 
 Privacy Concern
