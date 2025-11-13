@@ -1,7 +1,7 @@
 Reporting Issues
 ================
 
-This repository is a centralized place for filing [issues](https://github.com/freelawproject/recap/issues) on any [RECAP](http://recapthelaw.org)-related effort. When you file an issue, please search to make sure no one else has already reported that issue. If you open a new issue, please use labels to indicate which component(s) are affected (firefox, chrome, affects all browsers, server, etc.) and whether you are reporting a "bug" or requesting an "enhancement."
+This repository is a centralized place for filing [issues](https://github.com/freelawproject/recap/issues) on any [RECAP](https://free.law/recap)-related effort. When you file an issue, please search to make sure no one else has already reported that issue. If you open a new issue, please use labels to indicate which component(s) are affected (firefox, chrome, affects all browsers, server, etc.) and whether you are reporting a "bug" or requesting an "enhancement."
 
 Contributing
 ============
@@ -16,9 +16,3 @@ The following repositories are now archived or otherwise obsolete:
 * [recap-server](https://github.com/freelawproject/recap-server) (deprecated, code is being migrated to CourtListener)
 * [recap-openforge](https://github.com/freelawproject/recap-openforge) (Experimental cross-compatible version before WebExtensions were supported in all browsers, now archived)
 * [recap-extension-2.0](https://github.com/freelawproject/recap-extension-2.0) (Experimental upgrade of RECAP Chrome. Never completed, now obsolete.)
-
-
-
-Contact Us
-==========
-You can reach us on Twitter at [@RECAPtheLaw](https://twitter.com/recapthelaw).
