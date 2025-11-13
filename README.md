@@ -16,9 +16,3 @@ The following repositories are now archived or otherwise obsolete:
 * [recap-server](https://github.com/freelawproject/recap-server) (deprecated, code is being migrated to CourtListener)
 * [recap-openforge](https://github.com/freelawproject/recap-openforge) (Experimental cross-compatible version before WebExtensions were supported in all browsers, now archived)
 * [recap-extension-2.0](https://github.com/freelawproject/recap-extension-2.0) (Experimental upgrade of RECAP Chrome. Never completed, now obsolete.)
-
-
-
-Contact Us
-==========
-You can reach us on Twitter at [@RECAP](https://free.law/recap).
